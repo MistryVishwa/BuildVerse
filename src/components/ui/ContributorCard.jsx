@@ -19,7 +19,7 @@ export default function ContributorCard({ contributor, index }) {
         <div className={styles.ring}></div>
         <img src={contributor.avatar_url} alt={contributor.login} className={styles.avatar} />
         <div className={styles.scoreBadge} title="Contribution Score">
-          {contributor.score} pts
+          {contributor.score}
         </div>
       </div>
       
