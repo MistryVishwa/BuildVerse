@@ -1,1 +1,46 @@
-<h1>Crypto Dashboard</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Crypto Dashboard</title>
+    <style>
+        body { margin: 0; padding: 40px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: white; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .card { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .price { font-size: 3rem; font-weight: bold; margin: 10px 0; color: #22c55e; }
+        .chart-box { height: 200px; border-bottom: 2px solid rgba(255,255,255,0.1); border-left: 2px solid rgba(255,255,255,0.1); margin-top: 30px; position: relative; }
+        .bar { position: absolute; bottom: 0; width: 40px; background: #3b82f6; border-radius: 4px 4px 0 0; transition: height 0.5s; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CryptoTracker Pro</h1>
+        <div>User: <strong>Vishwa</strong></div>
+    </div>
+    
+    <div class="card">
+        <h3>Bitcoin (BTC)</h3>
+        <div class="price" id="btc-price">$64,230.00</div>
+        <div class="chart-box" id="chart"></div>
+    </div>
+
+    <script>
+        const chart = document.getElementById('chart');
+        const price = document.getElementById('btc-price');
+        
+        for(let i=0; i<10; i++) {
+            let bar = document.createElement('div');
+            bar.className = 'bar';
+            bar.style.left = (i * 50 + 10) + 'px';
+            bar.style.height = (Math.random() * 150 + 20) + 'px';
+            chart.appendChild(bar);
+        }
+        
+        setInterval(() => {
+            let current = 64230 + (Math.random() * 1000 - 500);
+            price.innerText = '$' + current.toFixed(2);
+            price.style.color = current > 64230 ? '#22c55e' : '#ef4444';
+        }, 2000);
+    </script>
+</body>
+</html>

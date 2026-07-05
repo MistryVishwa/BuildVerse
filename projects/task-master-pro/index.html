@@ -1,1 +1,38 @@
-<h1>Task Master Pro</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Master Pro</title>
+    <style>
+        body { margin: 0; font-family: system-ui, sans-serif; background: #f4f4f5; display: flex; padding: 40px; gap: 20px; }
+        .col { flex: 1; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); min-height: 400px; }
+        .col h2 { margin-top: 0; font-size: 1.2rem; color: #3f3f46; border-bottom: 2px solid #e4e4e7; padding-bottom: 10px; }
+        .task { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 10px; border-radius: 6px; cursor: grab; }
+        .task:active { cursor: grabbing; }
+    </style>
+</head>
+<body>
+    <div class="col" id="todo" ondragover="allowDrop(event)" ondrop="drop(event, 'todo')">
+        <h2>To Do</h2>
+        <div class="task" draggable="true" ondragstart="drag(event)" id="t1">Design UI Mockups</div>
+        <div class="task" draggable="true" ondragstart="drag(event)" id="t2">Setup Next.js</div>
+    </div>
+    <div class="col" id="doing" ondragover="allowDrop(event)" ondrop="drop(event, 'doing')">
+        <h2>In Progress</h2>
+        <div class="task" draggable="true" ondragstart="drag(event)" id="t3">API Integration</div>
+    </div>
+    <div class="col" id="done" ondragover="allowDrop(event)" ondrop="drop(event, 'done')">
+        <h2>Done</h2>
+    </div>
+
+    <script>
+        function allowDrop(ev) { ev.preventDefault(); }
+        function drag(ev) { ev.dataTransfer.setData('text', ev.target.id); }
+        function drop(ev, colId) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData('text');
+            document.getElementById(colId).appendChild(document.getElementById(data));
+        }
+    </script>
+</body>
+</html>

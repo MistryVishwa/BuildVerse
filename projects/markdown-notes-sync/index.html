@@ -1,1 +1,32 @@
-<h1>Markdown Notes Sync</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Markdown Notes Sync</title>
+    <style>
+        body { margin: 0; display: flex; height: 100vh; font-family: sans-serif; background: #18181b; color: #fff; }
+        textarea { flex: 1; background: #27272a; color: #fff; border: none; padding: 20px; font-size: 16px; font-family: monospace; outline: none; resize: none; }
+        #preview { flex: 1; padding: 20px; overflow-y: auto; background: #18181b; }
+        #preview h1 { margin-top: 0; color: #a855f7; }
+    </style>
+</head>
+<body>
+    <textarea id="editor" placeholder="Type Markdown here..."></textarea>
+    <div id="preview"></div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        
+        editor.value = localStorage.getItem('md-notes') || '# Hello World\n\nStart typing...';
+        preview.innerHTML = marked.parse(editor.value);
+        
+        editor.addEventListener('input', (e) => {
+            const val = e.target.value;
+            preview.innerHTML = marked.parse(val);
+            localStorage.setItem('md-notes', val);
+        });
+    </script>
+</body>
+</html>

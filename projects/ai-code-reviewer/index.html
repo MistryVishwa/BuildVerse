@@ -1,1 +1,44 @@
-<h1>AI Code Reviewer CLI</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Code Reviewer CLI</title>
+    <style>
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; background: #1e1e1e; font-family: monospace; }
+        .terminal { background: #000; width: 80%; max-width: 800px; height: 500px; border-radius: 10px; padding: 20px; color: #0f0; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #333; }
+        .prefix { color: #f0f; }
+        .warn { color: #ff0; }
+        .err { color: #f00; }
+        .btn { display: inline-block; padding: 5px 15px; background: #333; color: #fff; cursor: pointer; border-radius: 4px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="terminal" id="term">
+        <div><span class="prefix">~</span> $ ai-review ./src/components</div>
+        <div style="margin-top:10px; color:#aaa;">Analyzing 14 files...</div>
+    </div>
+    
+    <script>
+        const term = document.getElementById('term');
+        const logs = [
+            "<span class='warn'>[WARN]</span> Button.jsx: Unused import 'React'.",
+            "<span class='err'>[ERROR]</span> auth.js: Possible injection vulnerability detected on line 42.",
+            "<span style='color:#0f0'>[OK]</span> Sidebar.jsx looks perfectly optimized.",
+            "<br/><b>AI Summary:</b>",
+            "I found 1 critical security flaw and 1 minor styling issue. Recommend fixing auth.js immediately before merging."
+        ];
+        
+        let i = 0;
+        const int = setInterval(() => {
+            if (i >= logs.length) {
+                clearInterval(int);
+                term.innerHTML += '<div class="btn" onclick="alert(\'Fixing...\')">Auto-Fix All</div>';
+                return;
+            }
+            term.innerHTML += '<div style="margin-top:8px;">' + logs[i] + '</div>';
+            term.scrollTop = term.scrollHeight;
+            i++;
+        }, 800);
+    </script>
+</body>
+</html>
