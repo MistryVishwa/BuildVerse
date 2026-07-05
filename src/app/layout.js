@@ -22,7 +22,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body>
+      <body suppressHydrationWarning>
         <ThemeProvider>
           <Navbar />
           <main style={{ paddingTop: '80px', minHeight: 'calc(100vh - 200px)' }}>

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { ArrowRight, Code2, Users, FolderGit2, Terminal, Cpu } from "lucide-react";
 import { FaReact, FaHtml5, FaCss3Alt, FaJs } from "react-icons/fa";
 import { motion } from "framer-motion";
+import PageTransition from "@/components/layout/PageTransition";
 import ProjectCard from "@/components/ui/ProjectCard";
 import GithubStats from "@/components/ui/GithubStats";
 import AboutSection from "@/components/ui/AboutSection";
