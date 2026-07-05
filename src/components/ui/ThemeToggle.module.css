@@ -1,0 +1,22 @@
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--muted);
+  color: var(--foreground);
+  transition: all 0.2s ease;
+  border: 1px solid var(--border);
+}
+
+.toggleBtn:hover {
+  background: var(--border);
+  transform: scale(1.05);
+}
+
+.togglePlaceholder {
+  width: 36px;
+  height: 36px;
+}

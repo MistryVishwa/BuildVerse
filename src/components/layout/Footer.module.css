@@ -1,0 +1,87 @@
+.footer {
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding: 4rem 0 2rem;
+  margin-top: 4rem;
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 4rem;
+  margin-bottom: 4rem;
+}
+
+.brandInfo {
+  max-width: 400px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.brandText {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.description {
+  color: var(--muted-foreground);
+  line-height: 1.6;
+}
+
+.linkGroup h4 {
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.linkGroup a {
+  display: block;
+  color: var(--muted-foreground);
+  margin-bottom: 0.75rem;
+  transition: color 0.2s ease;
+}
+
+.linkGroup a:hover {
+  color: var(--foreground);
+}
+
+.footerBottom {
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+}
+
+.socialLinks {
+  display: flex;
+  gap: 1rem;
+}
+
+.socialLinks a {
+  color: var(--muted-foreground);
+  transition: color 0.2s ease;
+}
+
+.socialLinks a:hover {
+  color: var(--foreground);
+}
+
+@media (max-width: 768px) {
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .footerBottom {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+}

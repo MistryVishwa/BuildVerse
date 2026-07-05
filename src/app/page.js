@@ -1,66 +1,155 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import { ArrowRight, Code2, Users, FolderGit2, Terminal, Cpu } from "lucide-react";
+import { FaReact, FaHtml5, FaCss3Alt, FaJs } from "react-icons/fa";
+import { motion } from "framer-motion";
+import PageTransition from "@/components/layout/PageTransition";
+import ProjectCard from "@/components/ui/ProjectCard";
+import GithubStats from "@/components/ui/GithubStats";
+import { projectsData } from "@/data/projects";
 import styles from "./page.module.css";
+
+const floatingBadges = [
+  { icon: FaJs, label: "JS", top: "25%", left: "15%", delay: 1.5 },
+  { icon: FaHtml5, label: "HTML", top: "18%", right: "8%", delay: 0.5 },
+  { icon: FaCss3Alt, label: "CSS", top: "65%", right: "12%", delay: 2 },
+];
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <PageTransition>
+      {/* Hero Section */}
+      <section className={styles.hero}>
+        <div className={styles.heroBg}>
+           <div className={styles.glowSpot} style={{ top: '-10%', left: '-10%' }} />
+           <div className={styles.glowSpot} style={{ bottom: '-10%', right: '-10%', background: 'rgba(99, 102, 241, 0.15)' }} />
+           <div className={styles.glowSpot} style={{ top: '30%', left: '30%', width: '40vw', height: '40vw', background: 'rgba(168, 85, 247, 0.08)' }} />
+           
+           <motion.div 
+             className={styles.codeWindow}
+             style={{ bottom: '15%', left: '5%' }}
+             animate={{ y: [0, 20, 0], rotate: [2, -2, 2] }}
+             transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+           >
+             <div className={styles.windowHeader}>
+               <div className={styles.dot} style={{ background: '#ef4444' }} />
+               <div className={styles.dot} style={{ background: '#eab308' }} />
+               <div className={styles.dot} style={{ background: '#22c55e' }} />
+             </div>
+             <pre><code><span style={{ color: '#98c379' }}>$</span> npm install @buildverse/core{"\n"}
+<span style={{ color: '#61afef' }}>[+]</span> Adding packages...{"\n"}
+<span style={{ color: '#61afef' }}>[+]</span> Resolving dependencies...{"\n"}
+<span style={{ color: '#98c379' }}>✔</span> Success! Ready to build.</code></pre>
+           </motion.div>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        
+        {/* Floating Badges */}
+        {floatingBadges.map((badge, index) => (
+          <motion.div
+            key={index}
+            className={styles.floatingBadge}
+            style={{ top: badge.top, left: badge.left, right: badge.right }}
+            animate={{
+              y: [0, -15, 0],
+              rotate: [0, 3, -3, 0],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              delay: badge.delay,
+              ease: "easeInOut",
+            }}
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <badge.icon size={28} className={styles.badgeIcon} />
+            <span>{badge.label}</span>
+          </motion.div>
+        ))}
+
+        <div className={`container ${styles.heroContainer}`}>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className={styles.heroContent}
           >
-            Documentation
-          </a>
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className={styles.badge}
+            >
+              Welcome to BuildVerse
+            </motion.div>
+            <h1 className="heading-1">
+              Build in public.<br />
+              <span className="text-gradient">Elevate your craft.</span>
+            </h1>
+            <p className={styles.heroSubtitle}>
+              BuildVerse is the ultimate open-source ecosystem where developers submit, discover, and collaborate on premium projects.
+            </p>
+            <div className={styles.heroActions}>
+              <Link href="/projects" className="btn btn-primary">
+                Explore Projects <ArrowRight size={18} />
+              </Link>
+              <a href="https://github.com/MistryVishwa/BuildVerse/issues" target="_blank" rel="noreferrer" className="btn btn-outline">
+                Add Project
+              </a>
+            </div>
+          </motion.div>
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className={styles.stats}>
+        <div className="container">
+          <GithubStats styles={styles} />
+        </div>
+      </section>
+
+      {/* Featured Projects */}
+      <section className={styles.featured}>
+        <div className="container">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className={styles.sectionHeader}
+          >
+            <h2 className="heading-2">Featured Projects</h2>
+            <Link href="/projects" className={styles.viewAll}>
+              View all <ArrowRight size={16} />
+            </Link>
+          </motion.div>
+          
+          <div className="grid grid-cols-3">
+            {projectsData.slice(0, 6).map((project, i) => (
+              <motion.div
+                key={project.slug}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+              >
+                <ProjectCard project={project} index={i} />
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div 
+            className={styles.exploreMoreWrapper}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <Link href="/projects" className="btn btn-outline" style={{ marginTop: '3rem', fontSize: '1.05rem', padding: '0.85rem 2rem', borderRadius: '100px' }}>
+              Explore More <ArrowRight size={18} />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+    </PageTransition>
   );
 }
