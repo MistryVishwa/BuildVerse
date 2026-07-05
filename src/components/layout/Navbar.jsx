@@ -26,6 +26,7 @@ export default function Navbar() {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
+    
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -58,7 +59,7 @@ export default function Navbar() {
           <ThemeToggle />
           <a href="https://github.com/MistryVishwa/BuildVerse" target="_blank" rel="noreferrer" className="btn btn-outline" style={{ padding: '0.5rem 1rem' }}>
             <FaGithub size={18} />
-            <span>Star</span>
+            <span>Github</span>
           </a>
           
           <button className={styles.mobileMenuBtn} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
