@@ -9,6 +9,7 @@ import PageTransition from "@/components/layout/PageTransition";
 import ProjectCard from "@/components/ui/ProjectCard";
 import GithubStats from "@/components/ui/GithubStats";
 import AboutSection from "@/components/ui/AboutSection";
+import ProjectsFilter from "@/components/ui/ProjectsFilter";
 import styles from "./page.module.css";
 
 const floatingBadges = [
@@ -19,6 +20,8 @@ const floatingBadges = [
 
 export default function Home() {
   const [projectsData, setProjectsData] = useState([]);
+  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -34,6 +37,13 @@ export default function Home() {
     };
     fetchProjects();
   }, []);
+
+  const filteredProjects = projectsData.filter(project => {
+    const matchesSearch = project.title.toLowerCase().includes(search.toLowerCase()) || 
+                          project.description.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = activeCategory === "All" || project.tags.includes(activeCategory);
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <PageTransition>
@@ -130,13 +140,14 @@ export default function Home() {
 
       {/* Featured Projects */}
       <section className={styles.featured}>
-        <div className="container">
+        <div className="container" style={{ maxWidth: '1200px' }}>
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
             className={styles.sectionHeader}
+            style={{ marginBottom: '1.5rem' }}
           >
             <h2 className="heading-2">Featured Projects</h2>
             <Link href="/projects" className={styles.viewAll}>
@@ -144,18 +155,30 @@ export default function Home() {
             </Link>
           </motion.div>
           
+          <ProjectsFilter 
+            search={search} 
+            setSearch={setSearch} 
+            activeCategory={activeCategory} 
+            setActiveCategory={setActiveCategory}
+            showTitle={false}
+          />
+          
           <div className="grid grid-cols-3">
-            {projectsData.slice(0, 6).map((project, i) => (
-              <motion.div
-                key={project.slug}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-              >
-                <ProjectCard project={project} index={i} />
-              </motion.div>
-            ))}
+            {filteredProjects.length === 0 ? (
+               <p className="text-muted" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem 0' }}>No projects match your filters.</p>
+            ) : (
+              filteredProjects.slice(0, 6).map((project, i) => (
+                <motion.div
+                  key={project.slug}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.6, delay: i * 0.1 }}
+                >
+                  <ProjectCard project={project} index={i} />
+                </motion.div>
+              ))
+            )}
           </div>
 
           <motion.div 
