@@ -11,6 +11,7 @@ import styles from "./Navbar.module.css";
 
 const navLinks = [
   { name: "Projects", path: "/projects" },
+  { name: "Contribute", path: "/#contribute" },
   { name: "Add Project", path: "https://github.com/MistryVishwa/BuildVerse/issues" },
   { name: "Contributors", path: "/contributors" },
   { name: "About", path: "/#about" },

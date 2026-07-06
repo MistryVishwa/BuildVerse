@@ -9,6 +9,7 @@ import PageTransition from "@/components/layout/PageTransition";
 import ProjectCard from "@/components/ui/ProjectCard";
 import GithubStats from "@/components/ui/GithubStats";
 import AboutSection from "@/components/ui/AboutSection";
+import ContributeSection from "@/components/ui/ContributeSection";
 import ProjectsFilter from "@/components/ui/ProjectsFilter";
 import styles from "./page.module.css";
 
@@ -199,6 +200,9 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+
+      {/* Contribute Section */}
+      <ContributeSection />
     </PageTransition>
   );
 }

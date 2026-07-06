@@ -3,7 +3,8 @@ import fs from 'fs';
 import path from 'path';
 
 export async function GET(request, { params }) {
-  const slugArray = params.slug;
+  const resolvedParams = await params;
+  const slugArray = resolvedParams.slug;
   const filePath = path.join(process.cwd(), 'projects', ...slugArray);
   
   if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
