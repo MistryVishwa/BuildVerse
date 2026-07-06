@@ -14,6 +14,7 @@ const navLinks = [
   { name: "Contribute", path: "/#contribute" },
   { name: "Add Project", path: "https://github.com/MistryVishwa/BuildVerse/issues" },
   { name: "Contributors", path: "/contributors" },
+  { name: "FAQ", path: "/faq" },
   { name: "About", path: "/#about" },
 ];
 
