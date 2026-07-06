@@ -2,8 +2,6 @@ name: Bug report
 description: Report a bug in the showcase page, an example project, or the workflow
 title: "[Bug] "
 labels: ["bug"]
-assignees:
-  - MistryVishwa
 body:
   - type: textarea
     id: what-happened

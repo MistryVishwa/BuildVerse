@@ -2,8 +2,6 @@ name: New Project
 description: Submit a new project to the Projects/ folder
 title: "[Project] "
 labels: ["new-project"]
-assignees:
-  - MistryVishwa
 body:
   - type: markdown
     attributes:
