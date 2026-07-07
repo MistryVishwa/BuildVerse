@@ -37,6 +37,10 @@ export default function ContributorCard({ contributor, index }) {
           <span className={styles.statValue}>{contributor.projects}</span>
           <span className={styles.statLabel}>Projects</span>
         </div>
+        <div className={styles.statBlock}>
+          <span className={styles.statValue}>{contributor.prs || 0}</span>
+          <span className={styles.statLabel}>PRs</span>
+        </div>
       </div>
     </motion.a>
   );
