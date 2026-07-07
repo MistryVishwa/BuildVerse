@@ -1,0 +1,118 @@
+.filterContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.titleContainer {
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.subtitle {
+  font-size: 1.15rem;
+  color: var(--muted-foreground);
+}
+
+.highlight {
+  background: rgba(168, 85, 247, 0.15);
+  color: var(--primary);
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-weight: 500;
+  margin: 0 0.2rem;
+}
+
+.searchWrapper {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  padding: 0.75rem 1.25rem;
+  flex: 1;
+  max-width: 500px;
+  transition: all 0.3s ease;
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  color: #fff;
+  outline: none;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.categoriesWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.categoryBtn {
+  background: rgba(255, 255, 255, 0.05);
+  color: #a1a1aa;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 400;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.categoryBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.categoryBtn.active {
+  background: var(--primary);
+  color: #fff;
+  border: 1px solid var(--primary);
+  font-weight: 600;
+}
+
+/* Light Theme Overrides */
+:global([data-theme='light']) .searchBox {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+:global([data-theme='light']) .searchInput {
+  color: var(--foreground);
+}
+:global([data-theme='light']) .searchInput::placeholder {
+  color: var(--muted-foreground);
+}
+:global([data-theme='light']) .categoryBtn {
+  background: var(--card);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+}
+:global([data-theme='light']) .categoryBtn:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+:global([data-theme='light']) .categoryBtn.active {
+  background: var(--primary);
+  color: #fff;
+  border: 1px solid var(--primary);
+}

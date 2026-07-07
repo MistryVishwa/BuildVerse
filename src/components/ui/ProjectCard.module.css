@@ -131,6 +131,15 @@
   background: var(--card);
   border: 1px solid var(--primary);
 }
+:global([data-theme='light']) .favoriteBtn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+:global([data-theme='light']) .favoriteBtn:hover {
+  background: var(--muted);
+  color: #f43f5e;
+}
 :global([data-theme='light']) .title,
 :global([data-theme='light']) .authorLine strong,
 :global([data-theme='light']) .actionBtn {
