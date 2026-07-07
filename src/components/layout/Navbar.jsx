@@ -41,20 +41,36 @@ export default function Navbar() {
         </Link>
 
         <nav className={styles.desktopNav}>
-          {navLinks.map((link) => (
-            <Link 
-              key={link.path} 
-              href={link.path}
-              className={`${styles.navLink} ${pathname === link.path ? styles.active : ""}`}
-              target={link.path.startsWith('http') ? "_blank" : undefined}
-              rel={link.path.startsWith('http') ? "noreferrer" : undefined}
-            >
-              {link.name}
-              {pathname === link.path && (
-                <motion.div layoutId="navbar-indicator" className={styles.activeIndicator} />
-              )}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isHashLink = link.path.includes('#');
+            const isActive = pathname === link.path || (pathname === '/' && isHashLink);
+            
+            const linkProps = {
+              key: link.path,
+              className: `${styles.navLink} ${pathname === link.path ? styles.active : ""}`,
+              ...(link.path.startsWith('http') && { target: "_blank", rel: "noreferrer" })
+            };
+
+            if (isHashLink) {
+              return (
+                <a href={link.path} {...linkProps}>
+                  {link.name}
+                </a>
+              );
+            }
+
+            return (
+              <Link 
+                href={link.path}
+                {...linkProps}
+              >
+                {link.name}
+                {pathname === link.path && (
+                  <motion.div layoutId="navbar-indicator" className={styles.activeIndicator} />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className={styles.actions}>
@@ -78,16 +94,31 @@ export default function Navbar() {
           exit={{ opacity: 0, y: -20 }}
           className={styles.mobileNav}
         >
-          {navLinks.map((link) => (
-            <Link 
-              key={link.path} 
-              href={link.path}
-              className={styles.mobileNavLink}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {link.name}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isHashLink = link.path.includes('#');
+            if (isHashLink) {
+              return (
+                <a 
+                  key={link.path} 
+                  href={link.path}
+                  className={styles.mobileNavLink}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.name}
+                </a>
+              );
+            }
+            return (
+              <Link 
+                key={link.path} 
+                href={link.path}
+                className={styles.mobileNavLink}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
         </motion.div>
       )}
     </header>

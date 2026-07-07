@@ -12,10 +12,11 @@ export async function GET(request, { params }) {
   const resolvedParams = await params;
   const slugArray = resolvedParams.slug;
   
-  // Validate slug contains only safe characters (alphanumeric, hyphens, underscores)
-  const safeSlug = slugArray.map(s => s.replace(/[^a-zA-Z0-9\-_]/g, ''));
+  // Validate slug contains only safe characters (alphanumeric, hyphens, underscores, dots)
+  const safeSlug = slugArray.map(s => s.replace(/[^a-zA-Z0-9\-_.]/g, ''));
   
-  if (safeSlug.some(s => s !== slugArray[slugArray.indexOf(s)])) {
+  // Prevent any empty segments or path traversal attempts
+  if (slugArray.some((s, i) => s !== safeSlug[i] || s === '..')) {
     return new NextResponse('Invalid characters in path', { status: 400 });
   }
   
