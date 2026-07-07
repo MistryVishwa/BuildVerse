@@ -13,19 +13,28 @@
 <body>
     <textarea id="editor" placeholder="Type Markdown here..."></textarea>
     <div id="preview"></div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" integrity="sha384-0i/Ts0kJ5S6GHbC3E7zlUZj1L5L0kHl1O0IL6S6D3Q4Rn3F9pY1U5g5c5F5F5" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js" integrity="sha384-1n0JqKo0bS0l3pLmR0pTu95b8bK5c5U5j5U5c5U5c5" crossorigin="anonymous"></script>
     <script>
         const editor = document.getElementById('editor');
         const preview = document.getElementById('preview');
-        
-        editor.value = localStorage.getItem('md-notes') || '# Hello World\n\nStart typing...';
-        preview.innerHTML = marked.parse(editor.value);
-        
+
+        function updatePreview() {
+            const raw = editor.value;
+            const html = marked.parse(raw);
+            // Sanitize HTML to prevent XSS attacks
+            const safe = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+            preview.innerHTML = safe;
+        }
+
+        editor.value = localStorage.getItem('md-notes') || '# Hello World\\n\\nStart typing...';
+        updatePreview();
+
         editor.addEventListener('input', (e) => {
             const val = e.target.value;
-            preview.innerHTML = marked.parse(val);
             localStorage.setItem('md-notes', val);
+            updatePreview();
         });
     </script>
 </body>

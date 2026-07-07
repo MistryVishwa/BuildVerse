@@ -17,7 +17,7 @@
         <div><span class="prefix">~</span> $ ai-review ./src/components</div>
         <div style="margin-top:10px; color:#aaa;">Analyzing 14 files...</div>
     </div>
-    
+
     <script>
         const term = document.getElementById('term');
         const logs = [
@@ -27,15 +27,22 @@
             "<br/><b>AI Summary:</b>",
             "I found 1 critical security flaw and 1 minor styling issue. Recommend fixing auth.js immediately before merging."
         ];
-        
+
         let i = 0;
         const int = setInterval(() => {
             if (i >= logs.length) {
+                const btn = document.createElement('div');
+                btn.className = 'btn';
+                btn.textContent = 'Auto-Fix All';
+                btn.onclick = function() { alert('Fixing...'); };
+                term.appendChild(btn);
                 clearInterval(int);
-                term.innerHTML += '<div class="btn" onclick="alert(\'Fixing...\')">Auto-Fix All</div>';
                 return;
             }
-            term.innerHTML += '<div style="margin-top:8px;">' + logs[i] + '</div>';
+            const div = document.createElement('div');
+            div.style.marginTop = '8px';
+            div.textContent = logs[i].replace(/<[^>]*>/g, ''); // Strip HTML for safety
+            term.appendChild(div);
             term.scrollTop = term.scrollHeight;
             i++;
         }, 800);
