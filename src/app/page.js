@@ -23,6 +23,7 @@ export default function Home() {
   const [projectsData, setProjectsData] = useState([]);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -37,12 +38,23 @@ export default function Home() {
       }
     };
     fetchProjects();
+
+    const loadFavorites = () => {
+      setFavorites(JSON.parse(localStorage.getItem("buildverse_favorites") || "[]"));
+    };
+    loadFavorites();
+    window.addEventListener("favoritesChanged", loadFavorites);
+    
+    return () => {
+      window.removeEventListener("favoritesChanged", loadFavorites);
+    };
   }, []);
 
   const filteredProjects = projectsData.filter(project => {
     const matchesSearch = project.title.toLowerCase().includes(search.toLowerCase()) || 
                           project.description.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = activeCategory === "All" || project.tags.includes(activeCategory);
+    const matchesCategory = activeCategory === "All" || 
+                            (activeCategory === "Favorites" ? favorites.includes(project.slug) : project.tags.includes(activeCategory));
     return matchesSearch && matchesCategory;
   });
 

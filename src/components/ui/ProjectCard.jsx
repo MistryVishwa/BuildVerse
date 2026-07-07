@@ -41,6 +41,7 @@ export default function ProjectCard({ project, index = 0 }) {
     
     localStorage.setItem("buildverse_favorites", JSON.stringify(newFavorites));
     setIsFavorite(!isFavorite);
+    window.dispatchEvent(new Event("favoritesChanged"));
   };
 
   return (
