@@ -65,8 +65,6 @@ export default function AboutSection() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'flex-start',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                background: 'linear-gradient(145deg, rgba(30,30,35,0.5) 0%, rgba(20,20,25,0.5) 100%)',
                 position: 'relative',
                 overflow: 'hidden'
               }}
