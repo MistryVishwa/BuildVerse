@@ -43,7 +43,5 @@ body:
       options:
         - label: I read CONTRIBUTING.md
           required: true
-        - label: My project folder includes a `preview.png` or `preview.jpg` image
-          required: true
         - label: My project has no console errors and no tracking scripts
           required: true

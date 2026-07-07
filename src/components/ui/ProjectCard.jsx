@@ -61,26 +61,35 @@ export default function ProjectCard({ project, index = 0 }) {
         flexDirection: 'column'
       }}
     >
-      {/* Cover Image Section */}
+      {/* Live Preview Section */}
       <div 
         onClick={() => window.open(project.demoUrl || `/live/${project.slug}/index.html`, '_blank')}
         style={{ 
           height: '220px', 
           width: '100%', 
-          background: project.image ? `url(${project.image}) center/cover` : stringToColor(project.title),
           position: 'relative',
           cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
+          overflow: 'hidden',
+          background: 'rgba(0,0,0,0.5)'
         }}
       >
-        {/* Placeholder if no image */}
-        {!project.image && (
-           <h2 style={{ color: 'rgba(255,255,255,0.4)', fontSize: '2rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', textAlign: 'center', padding: '1rem' }}>
-             {project.title.substring(0, 2)}
-           </h2>
-        )}
+        <iframe 
+          src={project.demoUrl || `/live/${project.slug}/index.html`}
+          tabIndex="-1"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '400%',
+            height: '400%',
+            transform: 'scale(0.25)',
+            transformOrigin: 'top left',
+            pointerEvents: 'none',
+            border: 'none',
+            background: '#fff'
+          }}
+          title={`${project.title} Preview`}
+        />
 
         <button 
           className={styles.favoriteBtn}

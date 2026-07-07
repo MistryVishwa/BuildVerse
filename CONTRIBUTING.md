@@ -22,7 +22,6 @@ git checkout -b feature/your-feature-name
 
 ### 4. Make your Changes
 - Ensure your code adheres to the project's coding standards.
-- Include a `preview.png` or `preview.jpg` inside your project folder. This will be used as the thumbnail on the projects page.
 - Test your changes locally to ensure everything works properly by running `npm run dev`.
 
 ### 5. Commit your Changes

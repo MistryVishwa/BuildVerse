@@ -17,17 +17,9 @@ export async function GET() {
     if (fs.existsSync(projectJsonPath)) {
       try {
         const data = JSON.parse(fs.readFileSync(projectJsonPath, 'utf8'));
-        let image = null;
-        if (fs.existsSync(path.join(projectsDir, folder.name, 'preview.png'))) {
-          image = `/live/${folder.name}/preview.png`;
-        } else if (fs.existsSync(path.join(projectsDir, folder.name, 'preview.jpg'))) {
-          image = `/live/${folder.name}/preview.jpg`;
-        }
-        
         return {
           ...data,
           slug: folder.name,
-          image: image || data.image,
         };
       } catch (e) {
         console.error(`Error parsing project.json for ${folder.name}`, e);
