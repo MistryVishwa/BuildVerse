@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, Github, ExternalLink, ArrowRight } from "lucide-react";
@@ -19,6 +20,28 @@ function stringToColor(str) {
 
 export default function ProjectCard({ project, index = 0 }) {
   const router = useRouter();
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    // Check local storage on mount
+    const savedFavorites = JSON.parse(localStorage.getItem("buildverse_favorites") || "[]");
+    setIsFavorite(savedFavorites.includes(project.slug));
+  }, [project.slug]);
+
+  const toggleFavorite = (e) => {
+    e.stopPropagation();
+    const savedFavorites = JSON.parse(localStorage.getItem("buildverse_favorites") || "[]");
+    let newFavorites;
+    
+    if (isFavorite) {
+      newFavorites = savedFavorites.filter((slug) => slug !== project.slug);
+    } else {
+      newFavorites = [...savedFavorites, project.slug];
+    }
+    
+    localStorage.setItem("buildverse_favorites", JSON.stringify(newFavorites));
+    setIsFavorite(!isFavorite);
+  };
 
   return (
     <motion.div
@@ -60,9 +83,10 @@ export default function ProjectCard({ project, index = 0 }) {
 
         <button 
           className={styles.favoriteBtn}
-          onClick={(e) => { e.stopPropagation(); /* Add favorite logic here */ }}
+          onClick={toggleFavorite}
+          style={{ color: isFavorite ? "var(--primary)" : "inherit" }}
         >
-          <Heart size={18} />
+          <Heart size={18} fill={isFavorite ? "currentColor" : "none"} />
         </button>
       </div>
 
