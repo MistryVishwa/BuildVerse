@@ -7,14 +7,15 @@ export async function GET() {
     // 1. Fetch contributors from GitHub
     const [contributorsRes, pullsRes] = await Promise.all([
       fetch('https://api.github.com/repos/MistryVishwa/BuildVerse/contributors', { next: { revalidate: 3600 } }),
-      fetch('https://api.github.com/repos/MistryVishwa/BuildVerse/pulls?state=all&per_page=100', { next: { revalidate: 3600 } })
+      fetch('https://api.github.com/search/issues?q=repo:MistryVishwa/BuildVerse+is:pr+is:merged+merged-by:MistryVishwa&per_page=100', { next: { revalidate: 3600 } })
     ]);
 
     if (!contributorsRes.ok) throw new Error('Failed to fetch contributors from GitHub API');
     if (!pullsRes.ok) throw new Error('Failed to fetch pulls from GitHub API');
 
     const githubContributors = await contributorsRes.json();
-    const githubPulls = await pullsRes.json();
+    const githubPullsData = await pullsRes.json();
+    const githubPulls = githubPullsData.items || [];
 
     // 2. Aggregate PRs
     const prsMap = {}; // Maps username to PR count
