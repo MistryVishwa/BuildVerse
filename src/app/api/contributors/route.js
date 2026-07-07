@@ -6,8 +6,8 @@ export async function GET() {
   try {
     // 1. Fetch contributors from GitHub
     const [contributorsRes, pullsRes] = await Promise.all([
-      fetch('https://api.github.com/repos/MistryVishwa/BuildVerse/contributors', { next: { revalidate: 3600 } }),
-      fetch('https://api.github.com/search/issues?q=repo:MistryVishwa/BuildVerse+is:pr+is:merged+merged-by:MistryVishwa&per_page=100', { next: { revalidate: 3600 } })
+      fetch('https://api.github.com/repos/MistryVishwa/BuildVerse/contributors', { cache: 'no-store' }),
+      fetch('https://api.github.com/search/issues?q=repo:MistryVishwa/BuildVerse+is:pr+is:merged+merged-by:MistryVishwa&per_page=100', { cache: 'no-store' })
     ]);
 
     if (!contributorsRes.ok) throw new Error('Failed to fetch contributors from GitHub API');
