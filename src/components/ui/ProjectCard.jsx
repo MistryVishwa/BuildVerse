@@ -1,11 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, Github, ExternalLink, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import styles from "./ProjectCard.module.css";
+
+// Helper function to safely parse JSON from localStorage
+function getFavorites() {
+  try {
+    const stored = localStorage.getItem("buildverse_favorites");
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Helper function to safely save favorites to localStorage
+function saveFavorites(favorites) {
+  try {
+    localStorage.setItem("buildverse_favorites", JSON.stringify(favorites));
+  } catch (e) {
+    console.error("Failed to save favorites to localStorage:", e);
+  }
+}
 
 // Allowed domains for demo URLs
 const ALLOWED_DOMAINS = ['github.io', 'vercel.app', 'netlify.app', 'pages.dev'];
@@ -32,19 +51,19 @@ function getSafeDemoUrl(demoUrl, slug) {
   return `/live/${slug}/index.html`;
 }
 
-export default function ProjectCard({ project, index = 0 }) {
+export default memo(function ProjectCard({ project, index = 0 }) {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     // Check local storage on mount
-    const savedFavorites = JSON.parse(localStorage.getItem("buildverse_favorites") || "[]");
+    const savedFavorites = getFavorites();
     setIsFavorite(savedFavorites.includes(project.slug));
   }, [project.slug]);
 
   const toggleFavorite = (e) => {
     e.stopPropagation();
-    const savedFavorites = JSON.parse(localStorage.getItem("buildverse_favorites") || "[]");
+    const savedFavorites = getFavorites();
     let newFavorites;
     
     if (isFavorite) {
@@ -53,7 +72,7 @@ export default function ProjectCard({ project, index = 0 }) {
       newFavorites = [...savedFavorites, project.slug];
     }
     
-    localStorage.setItem("buildverse_favorites", JSON.stringify(newFavorites));
+    saveFavorites(newFavorites);
     setIsFavorite(!isFavorite);
     window.dispatchEvent(new Event("favoritesChanged"));
   };
@@ -140,4 +159,4 @@ export default function ProjectCard({ project, index = 0 }) {
       </div>
     </motion.div>
   );
-}
+});

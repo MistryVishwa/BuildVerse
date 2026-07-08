@@ -31,7 +31,12 @@ export default function ProjectsPage() {
     fetchProjects();
 
     const loadFavorites = () => {
-      setFavorites(JSON.parse(localStorage.getItem("buildverse_favorites") || "[]"));
+      try {
+        const stored = localStorage.getItem("buildverse_favorites");
+        setFavorites(stored ? JSON.parse(stored) : []);
+      } catch {
+        setFavorites([]);
+      }
     };
     loadFavorites();
     window.addEventListener("favoritesChanged", loadFavorites);
