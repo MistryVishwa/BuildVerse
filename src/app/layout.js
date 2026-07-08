@@ -39,9 +39,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
       <body suppressHydrationWarning>
+        <a href="#main-content" className="skip-to-content">Skip to main content</a>
         <ThemeProvider>
           <Navbar />
-          <main style={{ paddingTop: '80px', minHeight: 'calc(100vh - 200px)' }}>
+          <main id="main-content" tabIndex="-1" style={{ paddingTop: '80px', minHeight: 'calc(100vh - 200px)' }}>
             {children}
           </main>
           <Footer />
