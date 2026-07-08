@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, Github, ExternalLink, ArrowRight } from "lucide-react";
@@ -32,7 +32,7 @@ function getSafeDemoUrl(demoUrl, slug) {
   return `/live/${slug}/index.html`;
 }
 
-export default function ProjectCard({ project, index = 0 }) {
+const ProjectCard = memo(function ProjectCard({ project, index = 0 }) {
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -140,4 +140,6 @@ export default function ProjectCard({ project, index = 0 }) {
       </div>
     </motion.div>
   );
-}
+});
+
+export default ProjectCard;
