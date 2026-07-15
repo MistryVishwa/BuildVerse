@@ -203,6 +203,17 @@
       </div>
       <ul class="habit-list" id="habitList"></ul>
     </div>
+
+    <!-- Export & Backup Features -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <h2><div class="card-icon" style="background: #10b981;">💾</div> Backup & Restore</h2>
+      <p class="metric-desc">Export your health reports and backup your wellness data, or restore from a previous backup.</p>
+      <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
+        <button class="btn" style="width: auto;" onclick="exportData()">📥 Export Health Data</button>
+        <button class="btn btn-secondary" style="width: auto;" onclick="document.getElementById('importFile').click()">📤 Restore Data</button>
+        <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(event)">
+      </div>
+    </div>
   </div>
 </div>
 
@@ -397,6 +408,37 @@
   function testReminder() {
     const msgs = ["🔔 Drink a glass of water!", "🔔 Take a 5-minute screen break!", "🔔 Time for a quick stretch!"];
     showToast(msgs[Math.floor(Math.random() * msgs.length)]);
+  }
+
+  function exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+    const dlAnchorElem = document.createElement('a');
+    dlAnchorElem.setAttribute("href", dataStr);
+    dlAnchorElem.setAttribute("download", "health_assistant_backup.json");
+    dlAnchorElem.click();
+    showToast("✅ Health data exported successfully!");
+  }
+
+  function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const importedState = JSON.parse(e.target.result);
+        if (importedState && importedState.goals) {
+          state = importedState;
+          saveState();
+          showToast("✅ Health data restored successfully!");
+        } else {
+          showToast("❌ Invalid backup file format.");
+        }
+      } catch (err) {
+        showToast("❌ Error parsing backup file.");
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset input
   }
 
   // Reminders logic (simulated periodically)
