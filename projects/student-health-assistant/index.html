@@ -1,0 +1,247 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Health Assistant</title>
+  <style>
+    :root {
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent-water: #0ea5e9;
+      --accent-sleep: #8b5cf6;
+      --accent-exercise: #22c55e;
+      --accent-screen: #f59e0b;
+      --border: #e5e7eb;
+      --radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    [data-theme="dark"] {
+      --bg-color: #111827;
+      --card-bg: #1f2937;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --border: #374151;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); transition: background 0.3s, color 0.3s; padding: 2rem; min-height: 100vh; }
+    
+    .container { max-width: 1200px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    h1 { font-size: 2rem; font-weight: 700; background: -webkit-linear-gradient(45deg, var(--primary), var(--accent-sleep)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    .theme-toggle { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; transition: all 0.2s; font-weight: 600; }
+    .theme-toggle:hover { border-color: var(--primary); }
+
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+    
+    .card { background: var(--card-bg); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); border: 1px solid var(--border); transition: transform 0.2s; }
+    .card:hover { transform: translateY(-3px); }
+    .card h2 { font-size: 1.25rem; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem; }
+    .card-icon { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+    
+    .metric-value { font-size: 2.5rem; font-weight: 800; margin: 0.5rem 0; }
+    .metric-desc { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+    
+    .progress-bar { width: 100%; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin-bottom: 1rem; }
+    .progress-fill { height: 100%; border-radius: 5px; transition: width 0.5s ease-out; }
+    
+    .btn { background: var(--primary); color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; width: 100%; }
+    .btn:hover { background: var(--primary-hover); }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+    
+    .controls { display: flex; gap: 0.5rem; }
+    .controls button { flex: 1; }
+    
+    .habit-list { list-style: none; margin-top: 1rem; }
+    .habit-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    .habit-item:last-child { border-bottom: none; }
+    .habit-item.done { text-decoration: line-through; opacity: 0.6; }
+    
+    input[type="text"], input[type="number"] { width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-color); color: var(--text-main); margin-bottom: 0.5rem; }
+    
+    .score-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 12px; font-weight: bold; background: var(--primary); color: white; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Student Health Assistant</h1>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+  </header>
+
+  <div class="dashboard-grid">
+    <!-- Health Overview -->
+    <div class="card" style="grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2 style="margin: 0; font-size: 1.5rem;">Daily Wellness Score</h2>
+        <p class="metric-desc" style="margin-top: 0.5rem; margin-bottom: 0;">Based on your habits today.</p>
+      </div>
+      <div style="font-size: 3rem; font-weight: 800; color: var(--primary);" id="healthScore">0</div>
+    </div>
+
+    <!-- Water Tracker -->
+    <div class="card">
+      <h2><div class="card-icon" style="background: var(--accent-water);">💧</div> Hydration</h2>
+      <div class="metric-value"><span id="waterCount">0</span><span style="font-size:1rem; color:var(--text-muted)"> / 8 glasses</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="waterProgress" style="background: var(--accent-water); width: 0%;"></div></div>
+      <div class="controls">
+        <button class="btn" onclick="addWater(1)">+ 1 Glass</button>
+        <button class="btn btn-secondary" onclick="addWater(-1)">- 1 Glass</button>
+      </div>
+    </div>
+
+    <!-- Sleep Tracker -->
+    <div class="card">
+      <h2><div class="card-icon" style="background: var(--accent-sleep);">🌙</div> Sleep</h2>
+      <div class="metric-value"><span id="sleepCount">0</span><span style="font-size:1rem; color:var(--text-muted)"> hrs</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="sleepProgress" style="background: var(--accent-sleep); width: 0%;"></div></div>
+      <input type="number" id="sleepInput" placeholder="Enter hours slept..." min="0" max="24">
+      <button class="btn" onclick="logSleep()">Log Sleep</button>
+    </div>
+
+    <!-- Exercise Tracker -->
+    <div class="card">
+      <h2><div class="card-icon" style="background: var(--accent-exercise);">🏃</div> Exercise</h2>
+      <div class="metric-value"><span id="exerciseCount">0</span><span style="font-size:1rem; color:var(--text-muted)"> mins</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="exerciseProgress" style="background: var(--accent-exercise); width: 0%;"></div></div>
+      <input type="number" id="exerciseInput" placeholder="Enter workout minutes..." min="0">
+      <button class="btn" onclick="logExercise()">Log Activity</button>
+    </div>
+
+    <!-- Screen Time Tracker -->
+    <div class="card">
+      <h2><div class="card-icon" style="background: var(--accent-screen);">📱</div> Screen Time</h2>
+      <div class="metric-value"><span id="screenCount">0</span><span style="font-size:1rem; color:var(--text-muted)"> hrs</span></div>
+      <p class="metric-desc">Goal: Under 6 hours</p>
+      <input type="number" id="screenInput" placeholder="Enter screen hours..." min="0">
+      <button class="btn" style="background: var(--accent-screen);" onclick="logScreen()">Log Screen Time</button>
+    </div>
+
+    <!-- Habit Manager -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <h2><div class="card-icon" style="background: var(--text-main);">✅</div> Healthy Habit Manager</h2>
+      <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+        <input type="text" id="habitInput" placeholder="Add a new custom habit (e.g., Read 10 pages, Meditate)">
+        <button class="btn" style="width: auto;" onclick="addHabit()">Add Habit</button>
+      </div>
+      <ul class="habit-list" id="habitList">
+        <!-- Habits injected here -->
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  // State Initialization
+  let state = JSON.parse(localStorage.getItem('studentHealthState')) || {
+    date: new Date().toDateString(),
+    water: 0,
+    sleep: 0,
+    exercise: 0,
+    screen: 0,
+    habits: [
+      { id: 1, name: 'Take a 10 min study break', done: false },
+      { id: 2, name: 'Eat a healthy fruit', done: false }
+    ],
+    theme: 'light'
+  };
+
+  // Reset state on a new day
+  if (state.date !== new Date().toDateString()) {
+    state.date = new Date().toDateString();
+    state.water = 0; state.sleep = 0; state.exercise = 0; state.screen = 0;
+    state.habits.forEach(h => h.done = false);
+    saveState();
+  }
+
+  function saveState() {
+    localStorage.setItem('studentHealthState', JSON.stringify(state));
+    render();
+  }
+
+  function render() {
+    // Water
+    document.getElementById('waterCount').textContent = state.water;
+    document.getElementById('waterProgress').style.width = Math.min((state.water / 8) * 100, 100) + '%';
+    
+    // Sleep
+    document.getElementById('sleepCount').textContent = state.sleep;
+    document.getElementById('sleepProgress').style.width = Math.min((state.sleep / 8) * 100, 100) + '%';
+    
+    // Exercise
+    document.getElementById('exerciseCount').textContent = state.exercise;
+    document.getElementById('exerciseProgress').style.width = Math.min((state.exercise / 60) * 100, 100) + '%';
+    
+    // Screen Time
+    document.getElementById('screenCount').textContent = state.screen;
+    
+    // Score Calculation
+    let score = 0;
+    score += Math.min(state.water, 8) * 5; // max 40
+    score += (state.sleep >= 7 && state.sleep <= 9) ? 20 : (state.sleep > 0 ? 10 : 0); // max 20
+    score += Math.min(state.exercise, 60) * 0.5; // max 30
+    score += (state.screen > 0 && state.screen <= 6) ? 10 : 0; // max 10
+    document.getElementById('healthScore').textContent = Math.round(score);
+
+    // Theme
+    document.documentElement.setAttribute('data-theme', state.theme);
+    document.getElementById('themeToggle').textContent = state.theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+
+    // Habits
+    const list = document.getElementById('habitList');
+    list.innerHTML = '';
+    state.habits.forEach(h => {
+      const li = document.createElement('li');
+      li.className = 'habit-item ' + (h.done ? 'done' : '');
+      li.innerHTML = 
+        <span style="cursor:pointer;" onclick="toggleHabit()"></span>
+        <button class="btn-secondary" style="padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer;" onclick="deleteHabit()">❌</button>
+      ;
+      list.appendChild(li);
+    });
+  }
+
+  // Actions
+  function addWater(val) { state.water = Math.max(0, state.water + val); saveState(); }
+  function logSleep() { const v = document.getElementById('sleepInput').value; if(v) { state.sleep = parseFloat(v); document.getElementById('sleepInput').value=''; saveState(); } }
+  function logExercise() { const v = document.getElementById('exerciseInput').value; if(v) { state.exercise += parseFloat(v); document.getElementById('exerciseInput').value=''; saveState(); } }
+  function logScreen() { const v = document.getElementById('screenInput').value; if(v) { state.screen = parseFloat(v); document.getElementById('screenInput').value=''; saveState(); } }
+  
+  function addHabit() {
+    const v = document.getElementById('habitInput').value;
+    if(v.trim()) {
+      state.habits.push({ id: Date.now(), name: v.trim(), done: false });
+      document.getElementById('habitInput').value = '';
+      saveState();
+    }
+  }
+  
+  function toggleHabit(id) {
+    const h = state.habits.find(x => x.id === id);
+    if(h) { h.done = !h.done; saveState(); }
+  }
+
+  function deleteHabit(id) {
+    state.habits = state.habits.filter(x => x.id !== id);
+    saveState();
+  }
+
+  function toggleTheme() {
+    state.theme = state.theme === 'light' ? 'dark' : 'light';
+    saveState();
+  }
+
+  // Initial Render
+  render();
+</script>
+</body>
+</html>
