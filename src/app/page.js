@@ -24,6 +24,7 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [favorites, setFavorites] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -35,6 +36,8 @@ export default function Home() {
         }
       } catch (e) {
         console.error("Failed to fetch projects", e);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchProjects();
@@ -182,7 +185,20 @@ export default function Home() {
           />
           
           <div className="grid grid-cols-3">
-            {filteredProjects.length === 0 ? (
+            {isLoading ? (
+              <>
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className={`glass-panel ${styles.skeletonCard || 'skeletonCard'}`} style={{ height: '380px' }}>
+                    <div className={styles.skeletonImage || 'skeletonImage'} style={{ height: '220px', background: 'rgba(255,255,255,0.05)' }}></div>
+                    <div className={styles.skeletonContent || 'skeletonContent'} style={{ padding: '1.5rem' }}>
+                      <div className={styles.skeletonTitle || 'skeletonTitle'} style={{ height: '24px', background: 'rgba(255,255,255,0.1)', marginBottom: '1rem', borderRadius: '4px', width: '70%' }}></div>
+                      <div className={styles.skeletonText || 'skeletonText'} style={{ height: '16px', background: 'rgba(255,255,255,0.1)', marginBottom: '0.5rem', borderRadius: '4px' }}></div>
+                      <div className={styles.skeletonText || 'skeletonText'} style={{ height: '16px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', width: '80%' }}></div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : filteredProjects.length === 0 ? (
                <p className="text-muted" style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem 0' }}>No projects match your filters.</p>
             ) : (
               filteredProjects.slice(0, 6).map((project, i) => (
