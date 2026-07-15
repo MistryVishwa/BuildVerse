@@ -2,8 +2,34 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-export async function GET() {
+// Simple in-memory rate limiter
+const rateLimit = new Map();
+const RATE_LIMIT_WINDOW_MS = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 60; // 60 requests per minute
+
+export async function GET(request) {
   try {
+    // 0. Rate limiting logic
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+    const now = Date.now();
+    const windowStart = now - RATE_LIMIT_WINDOW_MS;
+
+    const requestData = rateLimit.get(ip) || { count: 0, startTime: now };
+
+    if (requestData.startTime < windowStart) {
+      // Reset window
+      requestData.count = 1;
+      requestData.startTime = now;
+    } else {
+      requestData.count++;
+    }
+
+    rateLimit.set(ip, requestData);
+
+    if (requestData.count > MAX_REQUESTS_PER_WINDOW) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     // 1. Fetch dynamic data from GitHub with caching
     const [pullsRes, commitsRes] = await Promise.all([
       fetch('https://api.github.com/repos/MistryVishwa/BuildVerse/pulls?state=closed&per_page=100', { 
