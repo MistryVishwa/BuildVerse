@@ -18,6 +18,7 @@
         <div style="margin-top:10px; color:#aaa;">Analyzing 14 files...</div>
     </div>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <script>
         const term = document.getElementById('term');
         const logs = [
@@ -32,10 +33,17 @@
         const int = setInterval(() => {
             if (i >= logs.length) {
                 clearInterval(int);
-                term.innerHTML += '<div class="btn" onclick="alert(\'Fixing...\')">Auto-Fix All</div>';
+                const btn = document.createElement('div');
+                btn.className = 'btn';
+                btn.textContent = 'Auto-Fix All';
+                btn.onclick = () => alert('Fixing...');
+                term.appendChild(btn);
                 return;
             }
-            term.innerHTML += '<div style="margin-top:8px;">' + logs[i] + '</div>';
+            const logDiv = document.createElement('div');
+            logDiv.style.marginTop = '8px';
+            logDiv.innerHTML = DOMPurify.sanitize(logs[i]);
+            term.appendChild(logDiv);
             term.scrollTop = term.scrollHeight;
             i++;
         }, 800);
