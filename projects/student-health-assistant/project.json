@@ -1,0 +1,15 @@
+{
+  "title": "Student Health Assistant",
+  "description": "A centralized dashboard helping students monitor hydration, sleep, exercise, screen time, and habits for a balanced lifestyle.",
+  "author": {
+    "name": "Bhuvanesh",
+    "github": "saidai-bhuvanesh"
+  },
+  "tags": [
+    "Health",
+    "Productivity",
+    "Dashboard",
+    "Wellness",
+    "Tool"
+  ]
+}
