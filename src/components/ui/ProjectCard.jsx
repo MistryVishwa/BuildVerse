@@ -75,7 +75,7 @@ const ProjectCard = memo(function ProjectCard({ project, index = 0 }) {
     >
       {/* Live Preview Section */}
       <div 
-        onClick={() => window.open(project.demoUrl || `/live/${project.slug}/index.html`, '_blank')}
+        onClick={() => window.open(getSafeDemoUrl(project.demoUrl, project.slug), '_blank')}
         style={{ 
           height: '220px', 
           width: '100%', 
@@ -114,7 +114,7 @@ const ProjectCard = memo(function ProjectCard({ project, index = 0 }) {
 
       {/* Card Content */}
       <div className={styles.cardBody}>
-        <div style={{ cursor: 'pointer' }} onClick={() => window.open(project.demoUrl || `/live/${project.slug}/index.html`, '_blank')}>
+        <div style={{ cursor: 'pointer' }} onClick={() => window.open(getSafeDemoUrl(project.demoUrl, project.slug), '_blank')}>
           <h3 className={styles.title}>{project.title}</h3>
           <p className={styles.description}>{project.description}</p>
         </div>
