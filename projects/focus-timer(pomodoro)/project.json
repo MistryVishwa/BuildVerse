@@ -1,0 +1,15 @@
+{
+  "title": "Focus Timer (Pomodoro)",
+  "description": "A mechanical, brass-instrument-styled Pomodoro timer with a draggable dial for custom durations, a task list linked to sessions, a session ledger, and a stats dashboard with a 7-day focus chart.",
+  "author": {
+    "name": "Mehwish",
+    "github": "MEHWISH310"
+  },
+  "tags": [
+    "JavaScript",
+    "CSS",
+    "Productivity",
+    "Pomodoro",
+    "Timer"
+  ]
+}
