@@ -1,0 +1,16 @@
+{
+  "title": "Grid Recall Challenge",
+  "description": "A memory-based puzzle game where you memorize highlighted grid cells and reproduce them. Features increasing grid sizes, perfect recall streak rewards, animated feedback, and local high-score persistence.",
+  "author": {
+    "name": "Mohammad Hassan",
+    "github": "Mohammad-Hassan027"
+  },
+  "tags": [
+    "Game",
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "Vanilla-js",
+    "Memory"
+  ]
+}
