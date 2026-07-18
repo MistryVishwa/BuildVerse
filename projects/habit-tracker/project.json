@@ -1,0 +1,16 @@
+{
+  "title": "Habit Tracker",
+  "description": "A modern, responsive habit tracker to help you build positive daily routines. Features daily check-offs, streak tracking, a GitHub-style activity heatmap, 12 achievement badges, per-habit analytics, archive support, and dark/light mode.",
+  "author": {
+    "name": "Mohammad Hassan",
+    "github": "Mohammad-Hassan027"
+  },
+  "tags": [
+    "Tool",
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "Vanilla-js",
+    "Productivity"
+  ]
+}
