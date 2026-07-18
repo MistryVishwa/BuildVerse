@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code Toolkit — BuildVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<style>
+:root {
+  --bg: #14100e;
+  --panel: #1c1714;
+  --panel-line: #332a23;
+  --paper: #ece5d8;
+  --paper-dim: #cfc6b6;
+  --safelight: #d5432b;
+  --safelight-light: #ee7a5c;
+  --ink: #1c1714;
+  --muted: #9a8f80;
+  --ok: #79946f;
+  --radius: 6px;
+  --font-display: "IBM Plex Mono", monospace;
+  --font-body: "IBM Plex Sans", sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(circle at 15% -10%, #241c17 0%, transparent 55%), var(--bg);
+  color: var(--paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 960px; margin: 0 auto; padding: 40px 20px 60px; }
+
+/* ---- Masthead ---- */
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+.masthead__mark { display: flex; align-items: center; gap: 10px; }
+.masthead__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--safelight-light), var(--safelight) 70%); box-shadow: 0 0 8px rgba(213,67,43,0.6); }
+.masthead__title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.masthead__sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+/* ---- Tabs (filmstrip) ---- */
+.filmstrip { display: flex; justify-content: center; gap: 4px; margin-bottom: 24px; border-top: 1px dashed var(--panel-line); border-bottom: 1px dashed var(--panel-line); padding: 8px 0; }
+.tab {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  background: transparent; border: 1px solid transparent; color: var(--muted);
+  padding: 9px 20px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease;
+}
+.tab:hover { color: var(--paper); }
+.tab.is-active { background: var(--safelight); border-color: var(--safelight); color: #fff3ef; }
+
+.view { display: none; }
+.view.is-active { display: block; }
+
+/* ---- Panels ---- */
+.panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px; padding: 22px; }
+.panel + .panel { margin-top: 18px; }
+.panel__title { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--safelight-light); margin: 0 0 16px; }
+
+/* ---- Generate layout ---- */
+.gen-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+@media (max-width: 760px) { .gen-grid { grid-template-columns: 1fr; } }
+
+.type-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.type-chip {
+  font-family: var(--font-display); font-size: 11.5px; letter-spacing: 0.04em;
+  background: transparent; border: 1px solid var(--panel-line); color: var(--muted);
+  padding: 7px 14px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease;
+}
+.type-chip:hover { border-color: var(--safelight); color: var(--paper); }
+.type-chip.is-active { background: var(--safelight); border-color: var(--safelight); color: #fff3ef; }
+
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+.field input[type="text"], .field input[type="url"], .field input[type="tel"], .field input[type="email"], .field textarea, .field select {
+  width: 100%; background: #100d0b; border: 1px solid var(--panel-line); border-radius: var(--radius);
+  padding: 9px 10px; color: var(--paper); font-family: var(--font-body); font-size: 13.5px;
+}
+.field textarea { min-height: 70px; resize: vertical; }
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--safelight); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.checkbox-row input { accent-color: var(--safelight); }
+
+.color-row { display: flex; gap: 16px; margin: 16px 0; }
+.color-field { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.color-field label { font-size: 11px; color: var(--muted); }
+.color-field input[type="color"] { width: 40px; height: 32px; border: 1px solid var(--panel-line); border-radius: 4px; background: none; cursor: pointer; }
+
+.logo-row { margin-bottom: 6px; }
+.logo-row input[type="file"] { font-size: 12px; color: var(--muted); }
+.logo-actions { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+
+/* ---- QR Preview ---- */
+.preview {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  background: var(--paper); border-radius: 10px; padding: 20px;
+}
+.preview canvas { max-width: 100%; border-radius: 4px; }
+.preview__actions { display: flex; gap: 8px; width: 100%; }
+
+.btn {
+  font-family: var(--font-body); font-weight: 600; border-radius: var(--radius); border: 1px solid transparent;
+  cursor: pointer; transition: transform 0.1s ease, background 0.2s ease; font-size: 13px; padding: 10px 16px;
+}
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: linear-gradient(180deg, var(--safelight-light), var(--safelight)); color: #fff3ef; flex: 1; }
+.btn--ghost { background: transparent; border-color: var(--panel-line); color: var(--muted); }
+.btn--ghost:hover { color: var(--paper); border-color: var(--safelight); }
+.btn--dark { background: var(--ink); color: var(--paper); flex: 1; }
+.btn--full { width: 100%; }
+.btn--danger { background: transparent; border-color: #6b3a33; color: #d5766a; }
+.btn--danger:hover { background: #3a201c; }
+
+/* ---- Scan ---- */
+.scan-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.scan-video-wrap { position: relative; width: 100%; max-width: 420px; aspect-ratio: 1; background: #0c0a08; border-radius: 10px; overflow: hidden; border: 1px solid var(--panel-line); }
+.scan-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scan-reticle { position: absolute; inset: 12%; border: 2px solid var(--safelight-light); border-radius: 10px; opacity: 0.7; pointer-events: none; }
+.scan-controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.scan-result { width: 100%; max-width: 420px; background: var(--paper); color: var(--ink); border-radius: var(--radius); padding: 14px; font-family: var(--font-display); font-size: 13px; word-break: break-word; display: none; }
+.scan-result.is-visible { display: block; }
+.scan-result__actions { display: flex; gap: 8px; margin-top: 10px; }
+.scan-status { font-size: 12.5px; color: var(--muted); }
+
+/* ---- History ---- */
+.history-list { display: flex; flex-direction: column; gap: 10px; }
+.history-row { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; padding: 10px; border: 1px solid var(--panel-line); border-radius: var(--radius); }
+.history-row canvas { border-radius: 3px; background: var(--paper); }
+.history-row__meta { overflow: hidden; }
+.history-row__type { font-family: var(--font-display); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--safelight-light); }
+.history-row__text { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-row__time { font-size: 11px; color: var(--muted); }
+.history-row__del { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; }
+.history-row__del:hover { color: var(--safelight-light); }
+.empty-note { font-size: 13px; color: var(--muted); }
+
+.colophon { text-align: center; margin-top: 32px; font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="masthead__mark">
+      <span class="masthead__dot"></span>
+      <span class="masthead__title">QR Code Toolkit</span>
+    </div>
+    <p class="masthead__sub">Generate, scan, and keep a history — all in the browser.</p>
+  </header>
+
+  <nav class="filmstrip">
+    <button class="tab is-active" data-view="generate">Generate</button>
+    <button class="tab" data-view="scan">Scan</button>
+    <button class="tab" data-view="history">History</button>
+  </nav>
+
+  <!-- ============ GENERATE ============ -->
+  <section class="view is-active" id="view-generate">
+    <div class="gen-grid">
+      <div class="panel">
+        <h2 class="panel__title">Content</h2>
+
+        <div class="type-row" id="typeRow">
+          <button class="type-chip is-active" data-type="url">URL</button>
+          <button class="type-chip" data-type="text">Text</button>
+          <button class="type-chip" data-type="wifi">WiFi</button>
+          <button class="type-chip" data-type="contact">Contact</button>
+        </div>
+
+        <div class="field-block" id="fields-url">
+          <div class="field"><label for="urlInput">URL</label>
+            <input type="url" id="urlInput" placeholder="https://example.com" value="https://">
+          </div>
+        </div>
+
+        <div class="field-block" id="fields-text" style="display:none">
+          <div class="field"><label for="textInput">Text</label>
+            <textarea id="textInput" placeholder="Anything you want encoded"></textarea>
+          </div>
+        </div>
+
+        <div class="field-block" id="fields-wifi" style="display:none">
+          <div class="field"><label for="wifiSsid">Network name (SSID)</label>
+            <input type="text" id="wifiSsid" placeholder="My WiFi">
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="wifiPass">Password</label>
+              <input type="text" id="wifiPass" placeholder="password">
+            </div>
+            <div class="field"><label for="wifiEnc">Security</label>
+              <select id="wifiEnc">
+                <option value="WPA">WPA/WPA2</option>
+                <option value="WEP">WEP</option>
+                <option value="nopass">None</option>
+              </select>
+            </div>
+          </div>
+          <div class="checkbox-row"><input type="checkbox" id="wifiHidden"><label for="wifiHidden">Hidden network</label></div>
+        </div>
+
+        <div class="field-block" id="fields-contact" style="display:none">
+          <div class="field"><label for="cName">Full name</label>
+            <input type="text" id="cName" placeholder="Jane Doe">
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="cPhone">Phone</label>
+              <input type="tel" id="cPhone" placeholder="+1 555 0100">
+            </div>
+            <div class="field"><label for="cEmail">Email</label>
+              <input type="email" id="cEmail" placeholder="jane@example.com">
+            </div>
+          </div>
+          <div class="field"><label for="cOrg">Organization</label>
+            <input type="text" id="cOrg" placeholder="Optional">
+          </div>
+        </div>
+
+        <h2 class="panel__title" style="margin-top:20px">Style</h2>
+        <div class="color-row">
+          <div class="color-field"><label>Foreground</label><input type="color" id="fgColor" value="#1c1714"></div>
+          <div class="color-field"><label>Background</label><input type="color" id="bgColor" value="#ece5d8"></div>
+        </div>
+        <div class="logo-row">
+          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;">Logo overlay (optional)</label>
+          <input type="file" id="logoInput" accept="image/*">
+          <div class="logo-actions">
+            <button class="btn btn--ghost" id="clearLogoBtn" type="button" style="display:none">Remove logo</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="preview">
+        <canvas id="qrCanvas" width="260" height="260"></canvas>
+        <div class="preview__actions">
+          <button class="btn btn--dark" id="downloadPngBtn">PNG</button>
+          <button class="btn btn--dark" id="downloadSvgBtn">SVG</button>
+        </div>
+        <button class="btn btn--primary btn--full" id="saveHistoryBtn">Save to history</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCAN ============ -->
+  <section class="view" id="view-scan">
+    <div class="panel">
+      <h2 class="panel__title">Scan a QR code</h2>
+      <div class="scan-stage">
+        <div class="scan-video-wrap">
+          <video id="scanVideo" playsinline muted></video>
+          <div class="scan-reticle"></div>
+        </div>
+        <div class="scan-controls">
+          <button class="btn btn--primary" id="startScanBtn">Start camera</button>
+          <button class="btn btn--ghost" id="stopScanBtn" style="display:none">Stop camera</button>
+          <label class="btn btn--ghost" style="cursor:pointer">
+            Upload image
+            <input type="file" id="scanFileInput" accept="image/*" style="display:none">
+          </label>
+        </div>
+        <p class="scan-status" id="scanStatus">Camera is off.</p>
+        <div class="scan-result" id="scanResult">
+          <div id="scanResultText"></div>
+          <div class="scan-result__actions">
+            <button class="btn btn--ghost" id="copyResultBtn">Copy</button>
+            <button class="btn btn--ghost" id="saveScanBtn">Save to history</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section class="view" id="view-history">
+    <div class="panel">
+      <h2 class="panel__title">History</h2>
+      <div class="history-list" id="historyList"></div>
+      <p class="empty-note" id="historyEmptyNote">Nothing here yet — generate or scan a code to save it.</p>
+      <button class="btn btn--danger" id="clearHistoryBtn" style="margin-top:14px;display:none">Clear all history</button>
+    </div>
+  </section>
+
+  <footer class="colophon">Built for BuildVerse</footer>
+</div>
+
+<canvas id="hiddenCanvas" style="display:none"></canvas>
+
+<script>
+(() => {
+  'use strict';
+
+  const KEY_HISTORY = 'bv_qr_history';
+  const load = (k, f) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : f; } catch { return f; } };
+  const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+  let history = load(KEY_HISTORY, []);
+  let currentType = 'url';
+  let logoImage = null;
+
+  /* ---------------- Tabs ---------------- */
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('is-active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      document.getElementById('view-' + tab.dataset.view).classList.add('is-active');
+      if (tab.dataset.view === 'history') renderHistory();
+      if (tab.dataset.view !== 'scan') stopCamera();
+    });
+  });
+
+  /* ---------------- Type switcher ---------------- */
+  document.querySelectorAll('.type-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('is-active'));
+      chip.classList.add('is-active');
+      currentType = chip.dataset.type;
+      ['url', 'text', 'wifi', 'contact'].forEach(t => {
+        document.getElementById('fields-' + t).style.display = t === currentType ? 'block' : 'none';
+      });
+      updatePreview();
+    });
+  });
+
+  /* ---------------- Build payload string per type ---------------- */
+  function escapeWifi(s) { return (s || '').replace(/([\\;,:"])/g, '\\$1'); }
+
+  function buildPayload() {
+    if (currentType === 'url') {
+      let v = document.getElementById('urlInput').value.trim();
+      return v || 'https://';
+    }
+    if (currentType === 'text') {
+      return document.getElementById('textInput').value.trim() || ' ';
+    }
+    if (currentType === 'wifi') {
+      const ssid = escapeWifi(document.getElementById('wifiSsid').value.trim());
+      const pass = escapeWifi(document.getElementById('wifiPass').value.trim());
+      const enc = document.getElementById('wifiEnc').value;
+      const hidden = document.getElementById('wifiHidden').checked;
+      return `WIFI:T:${enc};S:${ssid};P:${enc === 'nopass' ? '' : pass};H:${hidden ? 'true' : 'false'};;`;
+    }
+    if (currentType === 'contact') {
+      const name = document.getElementById('cName').value.trim();
+      const phone = document.getElementById('cPhone').value.trim();
+      const email = document.getElementById('cEmail').value.trim();
+      const org = document.getElementById('cOrg').value.trim();
+      return `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\n${org ? 'ORG:' + org + '\n' : ''}${phone ? 'TEL:' + phone + '\n' : ''}${email ? 'EMAIL:' + email + '\n' : ''}END:VCARD`;
+    }
+    return ' ';
+  }
+
+  /* ---------------- QR generation helpers ---------------- */
+  function makeQR(text, ecLevel) {
+    let qr;
+    for (let type = 0; type <= 40; type++) {
+      try {
+        qr = qrcode(type, ecLevel);
+        qr.addData(text);
+        qr.make();
+        return qr;
+      } catch (e) {
+        if (type === 40) throw e;
+      }
+    }
+  }
+
+  function drawQRToCanvas(canvas, text, opts) {
+    const { fg, bg, size, logo } = opts;
+    const ecLevel = logo ? 'H' : 'M';
+    const qr = makeQR(text, ecLevel);
+    const count = qr.getModuleCount();
+    const cell = size / count;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = fg;
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) ctx.fillRect(c * cell, r * cell, cell + 0.5, cell + 0.5);
+      }
+    }
+    if (logo) {
+      const boxSize = size * 0.26;
+      const bx = (size - boxSize) / 2;
+      ctx.fillStyle = bg;
+      ctx.fillRect(bx - 6, bx - 6, boxSize + 12, boxSize + 12);
+      ctx.drawImage(logo, bx, bx, boxSize, boxSize);
+    }
+    return qr;
+  }
+
+  function buildQRSvg(text, opts) {
+    const { fg, bg, size } = opts;
+    const qr = makeQR(text, 'M');
+    const count = qr.getModuleCount();
+    const cell = size / count;
+    let rects = '';
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) {
+          rects += `<rect x="${(c * cell).toFixed(2)}" y="${(r * cell).toFixed(2)}" width="${(cell + 0.5).toFixed(2)}" height="${(cell + 0.5).toFixed(2)}" fill="${fg}"/>`;
+        }
+      }
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}"><rect width="${size}" height="${size}" fill="${bg}"/>${rects}</svg>`;
+  }
+
+  /* ---------------- Preview ---------------- */
+  const canvas = document.getElementById('qrCanvas');
+  function updatePreview() {
+    const fg = document.getElementById('fgColor').value;
+    const bg = document.getElementById('bgColor').value;
+    const text = buildPayload();
+    try {
+      drawQRToCanvas(canvas, text, { fg, bg, size: 480, logo: logoImage });
+    } catch (e) {
+      // too much data for a QR code — ignore silently, keep last valid render
+    }
+  }
+
+  document.querySelectorAll('#fields-url input, #fields-text textarea, #fields-wifi input, #fields-wifi select, #fields-contact input, #fgColor, #bgColor')
+    .forEach(node => node.addEventListener('input', updatePreview));
+
+  document.getElementById('logoInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => {
+      logoImage = img;
+      document.getElementById('clearLogoBtn').style.display = 'inline-block';
+      updatePreview();
+    };
+    img.src = URL.createObjectURL(file);
+  });
+  document.getElementById('clearLogoBtn').addEventListener('click', () => {
+    logoImage = null;
+    document.getElementById('logoInput').value = '';
+    document.getElementById('clearLogoBtn').style.display = 'none';
+    updatePreview();
+  });
+
+  document.getElementById('downloadPngBtn').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.download = 'qr-code.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  });
+  document.getElementById('downloadSvgBtn').addEventListener('click', () => {
+    const fg = document.getElementById('fgColor').value;
+    const bg = document.getElementById('bgColor').value;
+    const svg = buildQRSvg(buildPayload(), { fg, bg, size: 480 });
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.download = 'qr-code.svg';
+    a.href = URL.createObjectURL(blob);
+    a.click();
+  });
+
+  document.getElementById('saveHistoryBtn').addEventListener('click', () => {
+    addHistoryEntry(currentType, buildPayload());
+  });
+
+  /* ---------------- History ---------------- */
+  function addHistoryEntry(type, payload) {
+    history.unshift({ id: Date.now().toString(36), type, payload, ts: Date.now() });
+    history = history.slice(0, 60);
+    save(KEY_HISTORY, history);
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('historyList');
+    const emptyNote = document.getElementById('historyEmptyNote');
+    const clearBtn = document.getElementById('clearHistoryBtn');
+    list.innerHTML = '';
+    emptyNote.style.display = history.length ? 'none' : 'block';
+    clearBtn.style.display = history.length ? 'inline-block' : 'none';
+
+    history.forEach(entry => {
+      const row = document.createElement('div');
+      row.className = 'history-row';
+      const thumb = document.createElement('canvas');
+      try { drawQRToCanvas(thumb, entry.payload, { fg: '#1c1714', bg: '#ece5d8', size: 56, logo: null }); } catch {}
+      const meta = document.createElement('div');
+      meta.className = 'history-row__meta';
+      const time = new Date(entry.ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      meta.innerHTML = `
+        <div class="history-row__type">${entry.type}</div>
+        <div class="history-row__text"></div>
+        <div class="history-row__time">${time}</div>
+      `;
+      meta.querySelector('.history-row__text').textContent = entry.payload.slice(0, 80);
+      const del = document.createElement('button');
+      del.className = 'history-row__del';
+      del.textContent = '×';
+      del.addEventListener('click', () => {
+        history = history.filter(h => h.id !== entry.id);
+        save(KEY_HISTORY, history);
+        renderHistory();
+      });
+      row.appendChild(thumb);
+      row.appendChild(meta);
+      row.appendChild(del);
+      list.appendChild(row);
+    });
+  }
+  document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+    if (!confirm('Clear all history?')) return;
+    history = [];
+    save(KEY_HISTORY, history);
+    renderHistory();
+  });
+
+  /* ---------------- Scanning ---------------- */
+  const video = document.getElementById('scanVideo');
+  const hiddenCanvas = document.getElementById('hiddenCanvas');
+  const hiddenCtx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
+  let stream = null;
+  let scanLoopHandle = null;
+  let lastResult = '';
+
+  function setScanStatus(msg) { document.getElementById('scanStatus').textContent = msg; }
+
+  function showScanResult(text) {
+    lastResult = text;
+    const resultBox = document.getElementById('scanResult');
+    resultBox.classList.add('is-visible');
+    document.getElementById('scanResultText').textContent = text;
+  }
+
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      video.srcObject = stream;
+      await video.play();
+      document.getElementById('startScanBtn').style.display = 'none';
+      document.getElementById('stopScanBtn').style.display = 'inline-block';
+      setScanStatus('Point the camera at a QR code…');
+      scanLoop();
+    } catch (e) {
+      setScanStatus('Could not access camera — try uploading an image instead.');
+    }
+  }
+
+  function stopCamera() {
+    if (scanLoopHandle) cancelAnimationFrame(scanLoopHandle);
+    scanLoopHandle = null;
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    document.getElementById('startScanBtn').style.display = 'inline-block';
+    document.getElementById('stopScanBtn').style.display = 'none';
+    setScanStatus('Camera is off.');
+  }
+
+  function scanLoop() {
+    if (!stream) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      hiddenCanvas.width = video.videoWidth;
+      hiddenCanvas.height = video.videoHeight;
+      hiddenCtx.drawImage(video, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
+      const imageData = hiddenCtx.getImageData(0, 0, hiddenCanvas.width, hiddenCanvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if (code && code.data) {
+        showScanResult(code.data);
+        setScanStatus('Code found!');
+      }
+    }
+    scanLoopHandle = requestAnimationFrame(scanLoop);
+  }
+
+  document.getElementById('startScanBtn').addEventListener('click', startCamera);
+  document.getElementById('stopScanBtn').addEventListener('click', stopCamera);
+
+  document.getElementById('scanFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => {
+      hiddenCanvas.width = img.width;
+      hiddenCanvas.height = img.height;
+      hiddenCtx.drawImage(img, 0, 0);
+      const imageData = hiddenCtx.getImageData(0, 0, img.width, img.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if (code && code.data) {
+        showScanResult(code.data);
+        setScanStatus('Code found in image.');
+      } else {
+        setScanStatus('No QR code found in that image.');
+      }
+    };
+    img.src = URL.createObjectURL(file);
+  });
+
+  document.getElementById('copyResultBtn').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(lastResult); setScanStatus('Copied to clipboard.'); } catch {}
+  });
+  document.getElementById('saveScanBtn').addEventListener('click', () => {
+    if (!lastResult) return;
+    addHistoryEntry('scanned', lastResult);
+    setScanStatus('Saved to history.');
+  });
+
+  /* ---------------- Init ---------------- */
+  updatePreview();
+  renderHistory();
+})();
+</script>
+</body>
+</html>

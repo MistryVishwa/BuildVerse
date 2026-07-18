@@ -1,0 +1,14 @@
+{
+  "title": "QR Code Toolkit",
+  "description": "Generate and scan QR codes for URLs, WiFi credentials, contact cards, and text — with color customization, logo upload, and history.",
+  "author": {
+    "name": "Mehwish",
+    "github": "MEHWISH310"
+  },
+  "tags": [
+    "JavaScript",
+    "QR Code",
+    "Utility",
+    "Camera"
+  ]
+}
