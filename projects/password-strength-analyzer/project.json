@@ -1,0 +1,16 @@
+{
+  "title": "Password Strength Analyzer",
+  "description": "An interactive real-time password strength analyzer that calculates entropy, detects common passwords, suggests improvements, generates secure passwords, and educates users on password security best practices.",
+  "author": {
+    "name": "Mohammad Hassan",
+    "github": "Mohammad-Hassan027"
+  },
+  "tags": [
+    "Tool",
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "Vanilla-js",
+    "Security"
+  ]
+}
