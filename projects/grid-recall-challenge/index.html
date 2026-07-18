@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grid Recall Challenge – Memory Puzzle Game</title>
+  <meta name="description" content="Test your memory by recalling highlighted grid patterns. Grid grows with each level, and perfect streaks unlock bonus rewards." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── CSS Variables & Reset ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #05060f;
+      --surface:       #0d0f1e;
+      --surface2:      #141628;
+      --border:        rgba(139, 92, 246, 0.18);
+      --primary:       #8b5cf6;
+      --primary-glow:  rgba(139, 92, 246, 0.4);
+      --accent:        #06b6d4;
+      --accent-glow:   rgba(6, 182, 212, 0.35);
+      --success:       #10b981;
+      --success-glow:  rgba(16, 185, 129, 0.4);
+      --danger:        #ef4444;
+      --danger-glow:   rgba(239, 68, 68, 0.4);
+      --gold:          #f59e0b;
+      --gold-glow:     rgba(245, 158, 11, 0.4);
+      --text:          #e2e8f0;
+      --text-muted:    #64748b;
+      --radius:        14px;
+      --cell-size:     clamp(44px, 7vmin, 72px);
+      --transition:    0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ─── Starfield Canvas ──────────────────────────────────────────── */
+    #stars-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─── App Shell ─────────────────────────────────────────────────── */
+    #app {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: clamp(12px, 3vw, 28px) clamp(12px, 4vw, 40px);
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    /* ─── Header ────────────────────────────────────────────────────── */
+    header {
+      width: 100%;
+      max-width: 760px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 0 20px var(--primary-glow);
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .logo-title {
+      font-size: clamp(13px, 2.5vw, 17px);
+      font-weight: 700;
+      background: linear-gradient(90deg, #e2e8f0, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ─── Stats Bar ─────────────────────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px 12px;
+      font-size: clamp(11px, 1.8vw, 13px);
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .stat-chip .val {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .stat-chip.streak-chip .val { color: var(--gold); }
+    .stat-chip.best-chip .val   { color: var(--accent); }
+
+    /* ─── Level + Phase Banner ──────────────────────────────────────── */
+    .level-bar {
+      width: 100%;
+      max-width: 760px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .level-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(13px, 2.2vw, 15px);
+      font-weight: 700;
+    }
+
+    .level-num {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-size: clamp(18px, 3vw, 24px);
+    }
+
+    .phase-badge {
+      padding: 4px 14px;
+      border-radius: 100px;
+      font-size: clamp(10px, 1.6vw, 12px);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: var(--transition);
+    }
+
+    .phase-memorize {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: #a78bfa;
+      animation: phasePulse 1.4s ease-in-out infinite;
+    }
+
+    .phase-recall {
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      color: #67e8f9;
+    }
+
+    .phase-result {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .phase-fail {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    @keyframes phasePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.3); }
+      50%       { box-shadow: 0 0 0 6px rgba(139, 92, 246, 0); }
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+      flex: 1;
+      height: 5px;
+      background: var(--surface2);
+      border-radius: 100px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      border-radius: 100px;
+      transition: width 1s linear;
+    }
+
+    /* ─── Countdown Timer ───────────────────────────────────────────── */
+    .timer-ring {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: clamp(12px, 2vw, 14px);
+      font-weight: 700;
+      color: var(--accent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .timer-ring.visible { opacity: 1; }
+    .timer-ring.urgent  { color: var(--danger); animation: timerUrgent 0.5s ease-in-out infinite; }
+
+    @keyframes timerUrgent {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.08); }
+    }
+
+    /* ─── Grid Container ────────────────────────────────────────────── */
+    .grid-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #game-grid {
+      display: grid;
+      gap: clamp(4px, 0.8vmin, 8px);
+      transition: opacity 0.3s;
+    }
+
+    /* ─── Cell Styles ───────────────────────────────────────────────── */
+    .cell {
+      width: var(--cell-size);
+      height: var(--cell-size);
+      border-radius: 10px;
+      border: 1.5px solid rgba(255, 255, 255, 0.06);
+      background: var(--surface2);
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+      transition:
+        background var(--transition),
+        border-color var(--transition),
+        box-shadow var(--transition),
+        transform var(--transition);
+      user-select: none;
+    }
+
+    /* Shimmer overlay */
+    .cell::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
+    /* Memorize phase – highlighted */
+    .cell.highlighted {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      border-color: rgba(139, 92, 246, 0.6);
+      box-shadow:
+        0 0 0 2px rgba(139, 92, 246, 0.25),
+        0 0 24px rgba(139, 92, 246, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+
+    /* Recall phase – clickable idle */
+    .cell.recall-idle {
+      cursor: pointer;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .cell.recall-idle:hover {
+      background: rgba(139, 92, 246, 0.12);
+      border-color: rgba(139, 92, 246, 0.4);
+      transform: scale(1.04);
+      box-shadow: 0 0 12px var(--primary-glow);
+    }
+
+    .cell.recall-idle:active { transform: scale(0.96); }
+
+    /* Recall phase – selected by user */
+    .cell.selected {
+      background: linear-gradient(135deg, #0891b2, #0e7490);
+      border-color: rgba(6, 182, 212, 0.6);
+      box-shadow:
+        0 0 0 2px rgba(6, 182, 212, 0.2),
+        0 0 20px rgba(6, 182, 212, 0.45);
+      cursor: pointer;
+    }
+
+    /* Result – correct */
+    .cell.correct {
+      background: linear-gradient(135deg, #059669, #047857);
+      border-color: rgba(16, 185, 129, 0.6);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2), 0 0 22px var(--success-glow);
+      animation: cellCorrect 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Result – wrong */
+    .cell.wrong {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      border-color: rgba(239, 68, 68, 0.6);
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2), 0 0 22px var(--danger-glow);
+      animation: cellWrong 0.4s ease;
+    }
+
+    /* Result – missed (should have been selected) */
+    .cell.missed {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.2));
+      border-color: rgba(245, 158, 11, 0.5);
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.3);
+    }
+
+    @keyframes cellCorrect {
+      0%   { transform: scale(0.85); opacity: 0.6; }
+      60%  { transform: scale(1.08); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes cellWrong {
+      0%, 100% { transform: translateX(0); }
+      20%      { transform: translateX(-5px); }
+      40%      { transform: translateX(5px); }
+      60%      { transform: translateX(-3px); }
+      80%      { transform: translateX(3px); }
+    }
+
+    /* ─── Message Overlay ───────────────────────────────────────────── */
+    #msg-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .msg-bubble {
+      padding: 10px 22px;
+      border-radius: 100px;
+      font-size: clamp(14px, 2.5vw, 18px);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      opacity: 0;
+      transform: scale(0.7) translateY(10px);
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      white-space: nowrap;
+    }
+
+    .msg-bubble.visible {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    .msg-success {
+      background: rgba(16, 185, 129, 0.18);
+      border: 1.5px solid rgba(16, 185, 129, 0.45);
+      color: #6ee7b7;
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.25);
+    }
+
+    .msg-fail {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1.5px solid rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.2);
+    }
+
+    .msg-streak {
+      background: rgba(245, 158, 11, 0.18);
+      border: 1.5px solid rgba(245, 158, 11, 0.45);
+      color: #fde68a;
+      box-shadow: 0 0 30px rgba(245, 158, 11, 0.25);
+    }
+
+    /* ─── Action Buttons ────────────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 22px;
+      border-radius: 100px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: clamp(12px, 2vw, 14px);
+      cursor: pointer;
+      border: none;
+      transition: var(--transition);
+      letter-spacing: 0.03em;
+      outline: none;
+    }
+
+    .btn:active { transform: scale(0.96); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--primary-glow);
+    }
+
+    .btn-primary:hover { box-shadow: 0 4px 30px var(--primary-glow); transform: translateY(-1px); }
+
+    .btn-submit {
+      background: linear-gradient(135deg, var(--accent), #0891b2);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-submit:hover { box-shadow: 0 4px 30px var(--accent-glow); transform: translateY(-1px); }
+
+    .btn-secondary {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-secondary:hover { color: var(--text); border-color: rgba(139, 92, 246, 0.4); }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* ─── Start / Game-Over Screen ──────────────────────────────────── */
+    #start-screen, #gameover-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 24px;
+      background: radial-gradient(ellipse at center, rgba(13, 15, 30, 0.96) 0%, rgba(5, 6, 15, 0.99) 100%);
+      backdrop-filter: blur(6px);
+      text-align: center;
+      transition: opacity 0.4s;
+    }
+
+    #gameover-screen { display: none; }
+
+    .screen-icon {
+      font-size: clamp(48px, 8vw, 72px);
+      line-height: 1;
+      animation: iconFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50%       { transform: translateY(-12px) rotate(3deg); }
+    }
+
+    .screen-title {
+      font-size: clamp(26px, 5vw, 44px);
+      font-weight: 900;
+      background: linear-gradient(135deg, #e2e8f0, #a78bfa, #67e8f9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .screen-body {
+      max-width: 480px;
+      font-size: clamp(14px, 2.2vw, 16px);
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .how-to {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .how-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 12px;
+      font-size: clamp(11px, 1.8vw, 13px);
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .how-card strong {
+      display: block;
+      color: var(--text);
+      font-size: clamp(12px, 2vw, 14px);
+      margin-bottom: 4px;
+    }
+
+    .how-card .how-icon { font-size: 20px; margin-bottom: 6px; display: block; }
+
+    /* Result card on game-over */
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .result-stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .result-stat-val {
+      font-size: clamp(22px, 4vw, 30px);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .result-stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ─── Streak Burst Particles ────────────────────────────────────── */
+    .particle {
+      position: fixed;
+      pointer-events: none;
+      border-radius: 50%;
+      z-index: 30;
+      animation: particleFly var(--dur, 0.9s) ease-out forwards;
+    }
+
+    @keyframes particleFly {
+      0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+    }
+
+    /* ─── Confetti canvas ───────────────────────────────────────────── */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      pointer-events: none;
+    }
+
+    /* ─── Responsive tweaks ─────────────────────────────────────────── */
+    @media (max-height: 640px) {
+      #app { gap: 8px; padding: 8px; }
+      .how-card { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .result-grid { grid-template-columns: repeat(3, 1fr); }
+      .how-to { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* ─── Glow orb background decoration ───────────────────────────── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.28;
+    }
+
+    .orb-1 { width: 500px; height: 500px; background: #3b0764; top: -120px; left: -120px; }
+    .orb-2 { width: 400px; height: 400px; background: #083344; bottom: -80px; right: -80px; }
+    .orb-3 { width: 300px; height: 300px; background: #1e1b4b; top: 40%; left: 40%; }
+  </style>
+</head>
+<body>
+
+<!-- Background orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<canvas id="stars-canvas"></canvas>
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ─── Start Screen ────────────────────────────────────── -->
+<div id="start-screen" role="dialog" aria-labelledby="start-title">
+  <div class="screen-icon">🧠</div>
+  <h1 id="start-title" class="screen-title">Grid Recall<br/>Challenge</h1>
+  <p class="screen-body">
+    Memorize the glowing cells, then tap them back in any order.
+    Nail every round to build your streak — miss one and start again!
+  </p>
+
+  <div class="how-to" role="list">
+    <div class="how-card" role="listitem">
+      <span class="how-icon">👁️</span>
+      <strong>Memorize</strong>
+      Watch the highlighted cells carefully
+    </div>
+    <div class="how-card" role="listitem">
+      <span class="how-icon">🖱️</span>
+      <strong>Recall</strong>
+      Click every glowing cell from memory
+    </div>
+    <div class="how-card" role="listitem">
+      <span class="how-icon">📈</span>
+      <strong>Scale</strong>
+      Grid grows every few perfect rounds
+    </div>
+    <div class="how-card" role="listitem">
+      <span class="how-icon">🔥</span>
+      <strong>Streak</strong>
+      Perfect recall chains earn bonus points
+    </div>
+  </div>
+
+  <button id="start-btn" class="btn btn-primary" onclick="startGame()">
+    ▶ &nbsp;Start Game
+  </button>
+</div>
+
+<!-- ─── Game-Over Screen ─────────────────────────────────── -->
+<div id="gameover-screen" role="dialog" aria-labelledby="gameover-title">
+  <div class="screen-icon">💀</div>
+  <h2 id="gameover-title" class="screen-title">Game Over</h2>
+
+  <div class="result-grid">
+    <div class="result-stat">
+      <div class="result-stat-val" id="res-score">0</div>
+      <div class="result-stat-label">Score</div>
+    </div>
+    <div class="result-stat">
+      <div class="result-stat-val" id="res-level">1</div>
+      <div class="result-stat-label">Level</div>
+    </div>
+    <div class="result-stat">
+      <div class="result-stat-val" id="res-streak">0</div>
+      <div class="result-stat-label">Best Streak</div>
+    </div>
+  </div>
+
+  <p class="screen-body" id="res-msg"></p>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">▶ &nbsp;Play Again</button>
+    <button class="btn btn-secondary" onclick="shareScore()">🔗 Share</button>
+  </div>
+</div>
+
+<!-- ─── Main Game UI ─────────────────────────────────────── -->
+<div id="app" role="main">
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🧩</div>
+      <div class="logo-text">
+        <span class="logo-title">Grid Recall</span>
+        <span class="logo-sub">Memory Challenge</span>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-chip">🏆 Score <span class="val" id="score-val">0</span></div>
+      <div class="stat-chip streak-chip">🔥 Streak <span class="val" id="streak-val">0</span></div>
+      <div class="stat-chip best-chip">⭐ Best <span class="val" id="best-val">0</span></div>
+    </div>
+  </header>
+
+  <!-- Level + Phase -->
+  <div class="level-bar">
+    <div class="level-badge">
+      Level <span class="level-num" id="level-val">1</span>
+      &nbsp;·&nbsp; <span id="grid-label" style="color:var(--text-muted);font-size:0.85em;font-weight:500">3×3</span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-fill" id="timer-bar" style="width:100%"></div>
+    </div>
+    <div class="timer-ring" id="timer-ring">⏱ <span id="timer-val">5</span>s</div>
+    <span class="phase-badge phase-memorize" id="phase-badge">Memorize</span>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-wrap">
+    <div id="game-grid" aria-label="Memory game grid" role="grid"></div>
+    <div id="msg-overlay">
+      <div class="msg-bubble" id="msg-bubble" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="btn-row" id="action-row">
+    <button class="btn btn-submit" id="submit-btn" onclick="submitRecall()" disabled>
+      ✓ &nbsp;Submit
+    </button>
+    <button class="btn btn-secondary" id="clear-btn" onclick="clearSelection()" disabled>
+      ✕ Clear
+    </button>
+    <button class="btn btn-secondary" onclick="openGameOver()" title="Quit" style="padding:10px 14px;">✕ Quit</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   STARFIELD
+══════════════════════════════════════════════════════════ */
+(function initStars() {
+  const canvas = document.getElementById('stars-canvas');
+  const ctx    = canvas.getContext('2d');
+  let W, H, stars = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    stars = Array.from({ length: 160 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.2 + 0.2,
+      a: Math.random(),
+      da: (Math.random() - 0.5) * 0.008,
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (const s of stars) {
+      s.a = Math.max(0.05, Math.min(1, s.a + s.da));
+      if (s.a <= 0.05 || s.a >= 1) s.da *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200, 190, 255, ${s.a})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  draw();
+})();
+
+/* ══════════════════════════════════════════════════════════
+   CONFETTI
+══════════════════════════════════════════════════════════ */
+const confettiCanvas = document.getElementById('confetti-canvas');
+const confettiCtx    = confettiCanvas.getContext('2d');
+let confettiPieces   = [];
+let confettiRunning  = false;
+
+function launchConfetti() {
+  confettiCanvas.width  = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+  confettiPieces = Array.from({ length: 90 }, () => ({
+    x: Math.random() * confettiCanvas.width,
+    y: -10,
+    w: Math.random() * 10 + 5,
+    h: Math.random() * 5 + 3,
+    r: Math.random() * Math.PI * 2,
+    dr: (Math.random() - 0.5) * 0.2,
+    vx: (Math.random() - 0.5) * 6,
+    vy: Math.random() * 4 + 2,
+    color: `hsl(${Math.random() * 360}, 80%, 65%)`,
+  }));
+  if (!confettiRunning) animateConfetti();
+}
+
+function animateConfetti() {
+  confettiRunning = true;
+  confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  confettiPieces.forEach(p => {
+    p.y += p.vy; p.x += p.vx; p.r += p.dr; p.vy += 0.05;
+    confettiCtx.save();
+    confettiCtx.translate(p.x, p.y);
+    confettiCtx.rotate(p.r);
+    confettiCtx.fillStyle = p.color;
+    confettiCtx.globalAlpha = Math.max(0, 1 - p.y / confettiCanvas.height);
+    confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    confettiCtx.restore();
+  });
+  confettiPieces = confettiPieces.filter(p => p.y < confettiCanvas.height + 20);
+  if (confettiPieces.length > 0) {
+    requestAnimationFrame(animateConfetti);
+  } else {
+    confettiRunning = false;
+    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   GAME STATE
+══════════════════════════════════════════════════════════ */
+const GRID_SCHEDULE = [
+  // [gridSize, cellsToHighlight, memorizeSeconds]
+  [3, 3, 3],   // Levels 1–3
+  [3, 4, 3],
+  [4, 5, 4],   // Levels 4–6
+  [4, 6, 4],
+  [5, 7, 5],   // Levels 7–10
+  [5, 8, 5],
+  [6, 9, 6],   // Levels 11+
+  [6, 11, 6],
+  [7, 13, 7],
+];
+
+const STREAK_REWARDS = {
+  3:  { msg: '🔥 On Fire! +50 bonus',  pts: 50  },
+  5:  { msg: '⚡ Blazing! +100 bonus',  pts: 100 },
+  7:  { msg: '🌟 Unstoppable! +150',    pts: 150 },
+  10: { msg: '👑 Legendary! +250',      pts: 250 },
+  15: { msg: '🦄 Mythic! +500',         pts: 500 },
+};
+
+let level       = 1;
+let score       = 0;
+let streak      = 0;
+let bestStreak  = 0;
+let bestScore   = parseInt(localStorage.getItem('grc_best_score') || '0', 10);
+let sessionBestStreak = 0;
+
+let highlighted  = new Set();  // indices shown during memorize
+let selected     = new Set();  // indices chosen by player
+let phase        = 'idle';     // idle | memorize | recall | result
+let timerInterval  = null;
+let timerRemaining = 0;
+
+const gridEl      = document.getElementById('game-grid');
+const scorEl      = document.getElementById('score-val');
+const strkEl      = document.getElementById('streak-val');
+const bestEl      = document.getElementById('best-val');
+const levelEl     = document.getElementById('level-val');
+const gridLabel   = document.getElementById('grid-label');
+const phaseBadge  = document.getElementById('phase-badge');
+const timerBar    = document.getElementById('timer-bar');
+const timerRing   = document.getElementById('timer-ring');
+const timerValEl  = document.getElementById('timer-val');
+const submitBtn   = document.getElementById('submit-btn');
+const clearBtn    = document.getElementById('clear-btn');
+const msgBubble   = document.getElementById('msg-bubble');
+
+/* ─── Utility ──────────────────────────────────────────── */
+function getSchedule() {
+  const idx = Math.min(Math.floor((level - 1) / 2), GRID_SCHEDULE.length - 1);
+  return GRID_SCHEDULE[idx];
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function updateStats() {
+  scorEl.textContent  = score;
+  strkEl.textContent  = streak;
+  bestEl.textContent  = Math.max(bestScore, score);
+}
+
+/* ─── Build Grid ───────────────────────────────────────── */
+function buildGrid(size) {
+  gridEl.innerHTML = '';
+  gridEl.style.gridTemplateColumns = `repeat(${size}, var(--cell-size))`;
+  const total = size * size;
+  for (let i = 0; i < total; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.dataset.idx = i;
+    cell.setAttribute('role', 'gridcell');
+    cell.setAttribute('aria-label', `Cell ${i + 1}`);
+    gridEl.appendChild(cell);
+  }
+}
+
+function getCells() { return gridEl.querySelectorAll('.cell'); }
+
+/* ─── Phase: Memorize ──────────────────────────────────── */
+function startMemorize() {
+  phase = 'memorize';
+  const [size, count, secs] = getSchedule();
+  gridLabel.textContent = `${size}×${size}`;
+
+  buildGrid(size);
+
+  // Pick random cells to highlight
+  const total   = size * size;
+  const indices = shuffle([...Array(total).keys()]).slice(0, count);
+  highlighted   = new Set(indices);
+  selected      = new Set();
+
+  // Show highlighted
+  const cells = getCells();
+  cells.forEach(c => c.classList.remove(
+    'highlighted', 'recall-idle', 'selected', 'correct', 'wrong', 'missed'
+  ));
+  highlighted.forEach(i => cells[i].classList.add('highlighted'));
+
+  // Update UI
+  setPhaseBadge('memorize', 'Memorize');
+  submitBtn.disabled = true;
+  clearBtn.disabled  = true;
+
+  // Countdown timer
+  startCountdown(secs, () => startRecall());
+}
+
+/* ─── Phase: Recall ────────────────────────────────────── */
+function startRecall() {
+  phase = 'recall';
+  const cells = getCells();
+
+  // Hide highlights
+  cells.forEach(c => {
+    c.classList.remove('highlighted');
+    c.classList.add('recall-idle');
+    c.onclick = () => toggleCell(c);
+    c.setAttribute('aria-pressed', 'false');
+  });
+
+  setPhaseBadge('recall', 'Your Turn');
+  submitBtn.disabled = false;
+  clearBtn.disabled  = false;
+  timerRing.classList.remove('visible');
+  timerBar.style.width = '0%';
+}
+
+/* ─── Cell Toggle ──────────────────────────────────────── */
+function toggleCell(cell) {
+  if (phase !== 'recall') return;
+  const idx = parseInt(cell.dataset.idx, 10);
+
+  if (selected.has(idx)) {
+    selected.delete(idx);
+    cell.classList.remove('selected');
+    cell.classList.add('recall-idle');
+    cell.setAttribute('aria-pressed', 'false');
+  } else {
+    selected.add(idx);
+    cell.classList.remove('recall-idle');
+    cell.classList.add('selected');
+    cell.setAttribute('aria-pressed', 'true');
+    sparkle(cell);
+  }
+}
+
+/* ─── Submit Recall ────────────────────────────────────── */
+function submitRecall() {
+  if (phase !== 'recall') return;
+  phase = 'result';
+  submitBtn.disabled = true;
+  clearBtn.disabled  = true;
+
+  const cells = getCells();
+
+  // Disable further clicks
+  cells.forEach(c => { c.classList.remove('recall-idle'); c.onclick = null; });
+
+  // Evaluate
+  let allCorrect = true;
+  const [, count] = getSchedule();
+
+  cells.forEach(c => {
+    const idx = parseInt(c.dataset.idx, 10);
+    const wasHighlighted = highlighted.has(idx);
+    const wasSelected    = selected.has(idx);
+
+    if (wasHighlighted && wasSelected) {
+      c.classList.remove('selected');
+      c.classList.add('correct');
+    } else if (wasSelected && !wasHighlighted) {
+      c.classList.remove('selected');
+      c.classList.add('wrong');
+      allCorrect = false;
+    } else if (wasHighlighted && !wasSelected) {
+      c.classList.add('missed');
+      allCorrect = false;
+    }
+  });
+
+  if (allCorrect && selected.size === highlighted.size) {
+    handleSuccess();
+  } else {
+    handleFailure();
+  }
+}
+
+/* ─── Success ──────────────────────────────────────────── */
+function handleSuccess() {
+  const [, count] = getSchedule();
+  const base = count * 10 * level;
+  streak++;
+  sessionBestStreak = Math.max(sessionBestStreak, streak);
+
+  // Check streak reward
+  let bonus = 0;
+  if (STREAK_REWARDS[streak]) {
+    const reward = STREAK_REWARDS[streak];
+    bonus = reward.pts;
+    setTimeout(() => showMessage(reward.msg, 'streak'), 600);
+    launchConfetti();
+  }
+
+  score += base + bonus;
+  bestScore = Math.max(bestScore, score);
+  localStorage.setItem('grc_best_score', bestScore);
+  updateStats();
+
+  setPhaseBadge('result', '✓ Perfect!');
+
+  if (!STREAK_REWARDS[streak]) {
+    showMessage(`✓ Perfect! +${base}`, 'success');
+  }
+
+  level++;
+  levelEl.textContent = level;
+
+  setTimeout(() => startMemorize(), 1600);
+}
+
+/* ─── Failure ──────────────────────────────────────────── */
+function handleFailure() {
+  setPhaseBadge('fail', '✗ Miss!');
+  showMessage('✗ Wrong! Game Over', 'fail');
+
+  setTimeout(() => openGameOver(), 1600);
+}
+
+/* ─── Clear Selection ──────────────────────────────────── */
+function clearSelection() {
+  if (phase !== 'recall') return;
+  selected.clear();
+  const cells = getCells();
+  cells.forEach(c => {
+    c.classList.remove('selected');
+    c.classList.add('recall-idle');
+    c.setAttribute('aria-pressed', 'false');
+  });
+}
+
+/* ─── Countdown ────────────────────────────────────────── */
+function startCountdown(secs, onDone) {
+  clearInterval(timerInterval);
+  timerRemaining = secs;
+  timerValEl.textContent = secs;
+  timerBar.style.transition = 'none';
+  timerBar.style.width = '100%';
+  timerRing.classList.add('visible');
+  timerRing.classList.remove('urgent');
+
+  void timerBar.offsetWidth; // reflow
+  timerBar.style.transition = `width ${secs}s linear`;
+  timerBar.style.width = '0%';
+
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    timerValEl.textContent = timerRemaining;
+    if (timerRemaining <= 2) timerRing.classList.add('urgent');
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      timerRing.classList.remove('visible', 'urgent');
+      onDone();
+    }
+  }, 1000);
+}
+
+/* ─── Phase Badge ──────────────────────────────────────── */
+function setPhaseBadge(type, text) {
+  phaseBadge.className = 'phase-badge';
+  if (type === 'memorize') phaseBadge.classList.add('phase-memorize');
+  else if (type === 'recall')  phaseBadge.classList.add('phase-recall');
+  else if (type === 'result')  phaseBadge.classList.add('phase-result');
+  else if (type === 'fail')    phaseBadge.classList.add('phase-fail');
+  phaseBadge.textContent = text;
+}
+
+/* ─── Message Bubble ───────────────────────────────────── */
+let msgTimer = null;
+function showMessage(text, type) {
+  clearTimeout(msgTimer);
+  msgBubble.textContent = text;
+  msgBubble.className = `msg-bubble msg-${type}`;
+  void msgBubble.offsetWidth;
+  msgBubble.classList.add('visible');
+  msgTimer = setTimeout(() => msgBubble.classList.remove('visible'), 1800);
+}
+
+/* ─── Sparkle Effect ───────────────────────────────────── */
+function sparkle(el) {
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top  + rect.height / 2;
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement('div');
+    const angle = (Math.PI * 2 * i) / 6;
+    const dist  = 30 + Math.random() * 20;
+    p.className = 'particle';
+    p.style.cssText = `
+      left: ${cx}px; top: ${cy}px;
+      width: ${4 + Math.random() * 4}px;
+      height: ${4 + Math.random() * 4}px;
+      background: hsl(${260 + Math.random() * 60}, 90%, 70%);
+      --tx: ${Math.cos(angle) * dist}px;
+      --ty: ${Math.sin(angle) * dist}px;
+      --dur: ${0.5 + Math.random() * 0.4}s;
+    `;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 900);
+  }
+}
+
+/* ─── Start / Restart ──────────────────────────────────── */
+function startGame() {
+  document.getElementById('start-screen').style.display   = 'none';
+  document.getElementById('gameover-screen').style.display = 'none';
+
+  level      = 1;
+  score      = 0;
+  streak     = 0;
+  sessionBestStreak = 0;
+  highlighted.clear();
+  selected.clear();
+  clearInterval(timerInterval);
+
+  levelEl.textContent = level;
+  updateStats();
+  startMemorize();
+}
+
+/* ─── Game Over Screen ─────────────────────────────────── */
+function openGameOver() {
+  clearInterval(timerInterval);
+  phase = 'idle';
+
+  document.getElementById('res-score').textContent  = score;
+  document.getElementById('res-level').textContent  = level;
+  document.getElementById('res-streak').textContent = sessionBestStreak;
+
+  // Fun message
+  const msgs = [
+    "Memory is a muscle — keep training!",
+    "So close! Try again to beat your score.",
+    "Your brain is warming up. Go again!",
+    `Best score so far: ${Math.max(bestScore, score)}. Can you do better?`,
+  ];
+  document.getElementById('res-msg').textContent = msgs[Math.floor(Math.random() * msgs.length)];
+
+  document.getElementById('gameover-screen').style.display = 'flex';
+}
+
+/* ─── Share ────────────────────────────────────────────── */
+function shareScore() {
+  const text = `🧠 Grid Recall Challenge\n🏆 Score: ${score} | 🔥 Streak: ${sessionBestStreak} | Level ${level}\nCan you beat me? Play at BuildVerse!`;
+  if (navigator.share) {
+    navigator.share({ title: 'Grid Recall Challenge', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => alert('Score copied to clipboard!')).catch(() => {});
+  }
+}
+</script>
+</body>
+</html>
