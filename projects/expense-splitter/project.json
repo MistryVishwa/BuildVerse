@@ -1,0 +1,16 @@
+{
+  "title": "Expense Splitter",
+  "description": "A smart group expense calculator that splits bills fairly among participants. Supports equal, percentage, and custom splits. Includes a settlement engine, balance tracker, category breakdown, and CSV export.",
+  "author": {
+    "name": "Mohammad Hassan",
+    "github": "Mohammad-Hassan027"
+  },
+  "tags": [
+    "Tool",
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "Vanilla-js",
+    "Finance"
+  ]
+}
