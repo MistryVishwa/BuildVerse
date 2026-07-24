@@ -1,0 +1,1 @@
+﻿{"title":"Fake Product Detector","description":"Scan a product barcode, look it up against a built-in registry of known brands, report authenticity, and file fraud reports - all client-side with localStorage audit trail.","author":{"name":"Archit Adish Gupta","github":"arcgod-design"},"tags":["JavaScript","Barcode","Anti-Counterfeit","Utility"]}
