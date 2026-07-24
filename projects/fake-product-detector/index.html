@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fake Product Detector — BuildVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
+<style>
+:root {
+  --bg: #0f1216;
+  --panel: #181c22;
+  --panel-line: #2a2f37;
+  --paper: #ece5d8;
+  --paper-dim: #cfc6b6;
+  --safelight: #d5432b;
+  --safelight-light: #ee7a5c;
+  --ink: #1c1714;
+  --muted: #8a877e;
+  --ok: #79946f;
+  --warn: #e0a458;
+  --bad: #d5432b;
+  --radius: 6px;
+  --font-display: "IBM Plex Mono", monospace;
+  --font-body: "IBM Plex Sans", sans-serif;
+}
+[data-theme="light"] {
+  --bg: #f3f1ec;
+  --panel: #ffffff;
+  --panel-line: #d8d3c8;
+  --paper: #1c1714;
+  --paper-dim: #4a4239;
+  --muted: #7a756c;
+  --safelight: #b73a23;
+  --safelight-light: #d5432b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: radial-gradient(circle at 15% -10%, #1a1f25 0%, transparent 55%), var(--bg);
+  color: var(--paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+.wrap { max-width: 960px; margin: 0 auto; padding: 40px 20px 60px; }
+
+/* ---- Masthead ---- */
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+.masthead__mark { display: flex; align-items: center; gap: 10px; }
+.masthead__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--safelight-light), var(--safelight) 70%); box-shadow: 0 0 8px rgba(213,67,43,0.6); }
+.masthead__title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.masthead__sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+.theme-toggle { position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid var(--panel-line); color: var(--muted); padding: 6px 12px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s ease; }
+.theme-toggle:hover { color: var(--paper); border-color: var(--safelight); }
+
+/* ---- Tabs (filmstrip) ---- */
+.filmstrip { display: flex; justify-content: center; gap: 4px; margin-bottom: 24px; border-top: 1px dashed var(--panel-line); border-bottom: 1px dashed var(--panel-line); padding: 8px 0; flex-wrap: wrap; }
+.tab {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  background: transparent; border: 1px solid transparent; color: var(--muted);
+  padding: 9px 20px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease;
+}
+.tab:hover { color: var(--paper); }
+.tab.is-active { background: var(--safelight); border-color: var(--safelight); color: #fff3ef; }
+
+.view { display: none; }
+.view.is-active { display: block; }
+
+/* ---- Panels ---- */
+.panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px; padding: 22px; }
+.panel + .panel { margin-top: 18px; }
+.panel__title { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--safelight-light); margin: 0 0 16px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+.field input, .field textarea, .field select {
+  width: 100%; background: #0a0d10; border: 1px solid var(--panel-line); border-radius: var(--radius);
+  padding: 10px 12px; color: var(--paper); font-family: var(--font-body); font-size: 13.5px;
+  transition: border 0.15s;
+}
+[data-theme="light"] .field input, [data-theme="light"] .field textarea, [data-theme="light"] .field select { background: #f9f6ef; color: var(--paper); }
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--safelight); }
+.field-row { display: flex; gap: 10px; }
+.field-row > * { flex: 1; }
+
+.btn {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--safelight); border: 1px solid var(--safelight); color: #fff3ef;
+  padding: 11px 18px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s ease;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn--ghost { background: transparent; color: var(--paper-dim); border-color: var(--panel-line); }
+.btn--ghost:hover { border-color: var(--safelight); color: var(--paper); }
+.btn--small { padding: 7px 12px; }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { flex: 1; }
+
+/* ---- Camera viewport ---- */
+.camera { width: 100%; background: #000; border: 1px solid var(--panel-line); border-radius: 6px; overflow: hidden; aspect-ratio: 4/3; position: relative; margin-bottom: 12px; }
+.camera video { width: 100%; height: 100%; object-fit: cover; }
+.camera--hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px; pointer-events: none; font-family: var(--font-display); letter-spacing: 0.06em; }
+.camera--overlay { position: absolute; top: 30%; bottom: 30%; left: 12%; right: 12%; border: 2px dashed var(--safelight); border-radius: 6px; pointer-events: none; }
+
+/* ---- Verdict card ---- */
+.verdict { border: 1px solid var(--panel-line); border-radius: 10px; padding: 18px; margin-top: 20px; }
+.verdict--authentic { border-color: var(--ok); background: linear-gradient(180deg, rgba(121,148,111,0.08), transparent); }
+.verdict--suspicious { border-color: var(--warn); background: linear-gradient(180deg, rgba(224,164,88,0.08), transparent); }
+.verdict--counterfeit { border-color: var(--bad); background: linear-gradient(180deg, rgba(213,67,43,0.08), transparent); }
+.verdict__head { display: flex; align-items: center; gap: 12px; }
+.verdict__badge { font-family: var(--font-display); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; border: 1px solid currentColor; }
+.verdict__title { font-size: 18px; font-weight: 700; flex: 1; }
+.verdict__sub { color: var(--muted); font-size: 12px; font-family: var(--font-display); letter-spacing: 0.04em; }
+.verdict__meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 14px; }
+.verdict__meta dt { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; font-family: var(--font-display); }
+.verdict__meta dd { margin-top: 3px; font-size: 13.5px; }
+
+/* ---- Audit log ---- */
+.audit { display: flex; flex-direction: column; gap: 8px; max-height: 460px; overflow: auto; padding-right: 4px; }
+.audit--empty { color: var(--muted); font-family: var(--font-display); font-size: 12px; letter-spacing: 0.06em; padding: 20px; text-align: center; }
+.audit__row { display: grid; grid-template-columns: 50px 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; background: var(--panel); border: 1px solid var(--panel-line); border-radius: var(--radius); }
+.audit__badge { width: 8px; height: 8px; border-radius: 50%; }
+.audit__badge--authentic { background: var(--ok); }
+.audit__badge--suspicious { background: var(--warn); }
+.audit__badge--counterfeit { background: var(--bad); }
+.audit__badge--report { background: var(--safelight-light); }
+.audit__body { font-size: 12.5px; }
+.audit__title { font-weight: 600; color: var(--paper); }
+.audit__meta { color: var(--muted); font-size: 11.5px; margin-top: 2px; font-family: var(--font-display); letter-spacing: 0.04em; }
+.audit__time { font-family: var(--font-display); font-size: 11px; color: var(--muted); letter-spacing: 0.04em; white-space: nowrap; }
+
+/* ---- Reports ---- */
+.report-row { background: var(--panel); border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; }
+.report-row__head { display: flex; justify-content: space-between; align-items: baseline; }
+.report-row__title { font-weight: 600; font-size: 13.5px; }
+.report-row__time { font-family: var(--font-display); font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+.report-row__reason { font-size: 12px; color: var(--warn); margin-top: 4px; }
+.report-row__note { color: var(--muted); font-size: 12px; margin-top: 6px; font-style: italic; }
+
+.flash { position: fixed; bottom: 24px; right: 24px; background: var(--safelight); color: #fff3ef; padding: 10px 16px; border-radius: var(--radius); font-size: 13px; z-index: 999; transition: opacity 0.3s; opacity: 0; pointer-events: none; }
+.flash.is-visible { opacity: 1; }
+.stack { display: flex; flex-direction: column; gap: 8px; }
+@media (max-width: 700px) {
+  .theme-toggle { position: static; margin-bottom: 16px; }
+  .field-row { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" type="button">🌙 Light</button>
+<div class="wrap">
+  <header class="masthead">
+    <div class="masthead__mark">
+      <span class="masthead__dot" aria-hidden="true"></span>
+      <span class="masthead__title">Fake Product Detector</span>
+    </div>
+    <p class="masthead__sub">Scan a barcode, verify authenticity, and file a fraud report — all client-side.</p>
+  </header>
+
+  <nav class="filmstrip" role="tablist" aria-label="Tool sections">
+    <button class="tab is-active" data-tab="scan" role="tab">Scan</button>
+    <button class="tab" data-tab="manual" role="tab">Manual Entry</button>
+    <button class="tab" data-tab="report" role="tab">File Report</button>
+    <button class="tab" data-tab="audit" role="tab">Audit Log</button>
+    <button class="tab" data-tab="brand" role="tab">Brand Registry</button>
+  </nav>
+
+  <!-- ─────── Scan ─────── -->
+  <section class="view is-active" data-view="scan">
+    <div class="panel">
+      <h2 class="panel__title">Live Scan</h2>
+      <div class="camera" id="camera">
+        <video id="video" autoplay playsinline muted aria-label="Live camera feed for barcode scanning"></video>
+        <div class="camera--overlay" aria-hidden="true"></div>
+        <div class="camera--hint" id="cameraHint">Press "Start Camera" and aim at a barcode</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="startCamera" type="button">▶ Start Camera</button>
+        <button class="btn btn--ghost" id="stopCamera" type="button">■ Stop</button>
+        <button class="btn btn--ghost" id="captureStill" type="button">⇪ Capture frame</button>
+      </div>
+      <canvas id="captureCanvas" hidden></canvas>
+    </div>
+
+    <div id="verdictSlot"></div>
+  </section>
+
+  <!-- ─────── Manual ─────── -->
+  <section class="view" data-view="manual">
+    <div class="panel">
+      <h2 class="panel__title">Manual Lookup</h2>
+      <div class="field">
+        <label for="manualBarcode">Barcode (digits only)</label>
+        <input type="text" id="manualBarcode" inputmode="numeric" pattern="[0-9]{8,14}" placeholder="e.g. 8901030865210" maxlength="14">
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="verifyManual" type="button">✓ Verify</button>
+        <button class="btn btn--ghost" id="lookupBrand" type="button">Brand prefix table</button>
+      </div>
+    </div>
+    <div id="manualVerdictSlot"></div>
+  </section>
+
+  <!-- ─────── Report ─────── -->
+  <section class="view" data-view="report">
+    <div class="panel">
+      <h2 class="panel__title">File a Fraud Report</h2>
+      <div class="field">
+        <label for="reportBarcode">Barcode</label>
+        <input type="text" id="reportBarcode" inputmode="numeric" maxlength="14" placeholder="8901030865210">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="reportBrand">Suspected brand (optional)</label>
+          <input type="text" id="reportBrand" placeholder="e.g. Surf Excel">
+        </div>
+        <div class="field">
+          <label for="reportReason">Reason</label>
+          <select id="reportReason">
+            <option value="counterfeit_packaging">Counterfeit packaging</option>
+            <option value="wrong_seal">Wrong / tampered seal</option>
+            <option value="suspicious_texture">Suspicious texture / smell</option>
+            <option value="price_mismatch">Price mismatch / unauthorized seller</option>
+            <option value="location_discrepancy">Sold outside official distribution channels</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="reportNote">Reviewer note (optional)</label>
+        <textarea id="reportNote" rows="3" placeholder="What did you observe? (e.g. seal was squashed and re-glued)"></textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="submitReport" type="button">⚠ File report</button>
+        <button class="btn btn--ghost" id="clearReport" type="button">Clear</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel__title">Filed reports</h2>
+      <div class="stack" id="reportsList"></div>
+    </div>
+  </section>
+
+  <!-- ─────── Audit ─────── -->
+  <section class="view" data-view="audit">
+    <div class="panel">
+      <h2 class="panel__title">Audit Trail</h2>
+      <div class="btn-row" style="margin-bottom: 16px;">
+        <button class="btn btn--ghost btn--small" id="exportLog" type="button">Export JSON</button>
+        <button class="btn btn--ghost btn--small" id="clearLog" type="button">Clear all</button>
+      </div>
+      <div class="audit" id="auditList"></div>
+    </div>
+  </section>
+
+  <!-- ─────── Brand registry ─────── -->
+  <section class="view" data-view="brand">
+    <div class="panel">
+      <h2 class="panel__title">Known brand prefixes (GS1 3-digit)</h2>
+      <p style="color: var(--muted); margin-bottom: 16px; font-size: 13px;">
+        The first 3 digits of most retail barcodes are the GS1 company prefix encoding the country/region. Use this table to identify brand of origin even for products not in the in-memory catalog.
+      </p>
+      <div class="audit" id="brandList" style="max-height: 600px;"></div>
+    </div>
+  </section>
+</div>
+
+<div class="flash" id="flash" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================================
+ * Fake Product Detector — single-file vanilla JS
+ * No backend, no build. localStorage audit trail persists across reloads.
+ * ========================================================================= */
+(function () {
+  'use strict';
+
+  // ---- Brand prefix table (subset of GS1 country codes; deliberately
+  // sparse so this demo stays a single-file exercise). Real production
+  // would query an authoritative GS1 prefix service.
+  var BRAND_PREFIXES = {
+    '890': 'India (GS1 India)',
+    '891': 'India (alt register)',
+    '600': 'South Africa (GS1 ZA)',
+    '690': 'China (GS1 CN)',
+    '691': 'China (GS1 CN)',
+    '692': 'China (GS1 CN)',
+    '693': 'China (GS1 CN)',
+    '00':  'USA / Canada (GS1 US)',
+    '01':  'USA / Canada (GS1 US)',
+    '03':  'USA / Canada (GS1 US)',
+    '04':  'USA / Canada (GS1 US)',
+    '30':  'France (GS1 FR)',
+    '31':  'France (GS1 FR)',
+    '32':  'France (GS1 FR)',
+    '33':  'France (GS1 FR)',
+    '34':  'France (GS1 FR)',
+    '35':  'France (GS1 FR)',
+    '40':  'Germany (GS1 DE)',
+    '42':  'Germany (GS1 DE)',
+    '44':  'Germany (GS1 DE)',
+    '45':  'Japan (GS1 JP)',
+    '49':  'Japan (GS1 JP)',
+    '50':  'United Kingdom (GS1 UK)',
+    '93':  'Australia (GS1 AU)'
+  };
+
+  // ---- Catalog of known authentic barcodes (in-memory; extendable)
+  var CATALOG = {
+    '8901030865210': { brand: 'Surf Excel', name: 'Surf Excel Matic Front Load 1kg', maker: 'Hindustan Unilever', risk: 0 },
+    '8901030865227': { brand: 'Surf Excel', name: 'Surf Excel Matic Top Load 1kg',  maker: 'Hindustan Unilever', risk: 0 },
+    '8901302710019': { brand: 'Colgate',    name: 'Colgate Strong Teeth 200g',       maker: 'Colgate-Palmolive',  risk: 0 },
+    '8901592001230': { brand: 'Parachute',  name: 'Parachute Coconut Oil 300ml',    maker: 'Marico',             risk: 0 },
+    '6901234567892': { brand: 'Mifa',       name: 'Mifa Power Bank 10000mAh',       maker: 'Mifa Tech (Shenzhen)', risk: 0 },
+    '4569951110019': { brand: 'Sony',       name: 'Sony DualShock 4 Controller',   maker: 'Sony Interactive',  risk: 0 },
+    '8901411011125': { brand: 'Dabur',      name: 'Dabur Honey 250g',                maker: 'Dabur India',        risk: 1 },
+    '8901411011120': { brand: 'FakeBrand',  name: 'LOOK-ALIKE — Dabur Honey 250g',  maker: 'Unknown',            risk: 5 }
+  };
+
+  // ---- localStorage helpers
+  function loadLogs() {
+    try { return JSON.parse(localStorage.getItem('fpd:logs') || '[]'); }
+    catch (e) { return []; }
+  }
+  function saveLogs(logs) {
+    try { localStorage.setItem('fpd:logs', JSON.stringify(logs)); } catch (e) {}
+  }
+  function loadTheme() {
+    try { return localStorage.getItem('fpd:theme') || 'dark'; } catch (e) { return 'dark'; }
+  }
+  function saveTheme(t) {
+    try { localStorage.setItem('fpd:theme', t); } catch (e) {}
+  }
+
+  var logs = loadLogs();
+
+  // ---- Theme toggle
+  var themeToggle = document.getElementById('themeToggle');
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themeToggle.textContent = t === 'dark' ? '🌙 Light' : '☀ Dark';
+  }
+  applyTheme(loadTheme());
+  themeToggle.addEventListener('click', function () {
+    var current = document.documentElement.getAttribute('data-theme') || 'dark';
+    var next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    saveTheme(next);
+  });
+
+  // ---- Tabs
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('is-active'); });
+      document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('is-active'); });
+      tab.classList.add('is-active');
+      var which = tab.getAttribute('data-tab');
+      document.querySelector('.view[data-view="' + which + '"]').classList.add('is-active');
+      if (which === 'audit') renderAudit();
+      if (which === 'brand') renderBrand();
+      if (which === 'report') renderReports();
+    });
+  });
+
+  // ---- Flash toast
+  var flash = document.getElementById('flash');
+  var flashTimer = null;
+  function showFlash(msg) {
+    flash.textContent = msg;
+    flash.classList.add('is-visible');
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { flash.classList.remove('is-visible'); }, 2500);
+  }
+
+  // ---- Verification core
+  function prefixFor(barcode) {
+    if (!/^\d{8,14}$/.test(barcode)) return null;
+    var three = barcode.slice(0, 3);
+    if (BRAND_PREFIXES[three]) return { code: three, brand: BRAND_PREFIXES[three] };
+    var two = barcode.slice(0, 2);
+    if (BRAND_PREFIXES[two]) return { code: two, brand: BRAND_PREFIXES[two] };
+    return null;
+  }
+
+  function verdictFor(barcode) {
+    var known = CATALOG[barcode];
+    if (known) {
+      var level = known.risk || 0;
+      var status = level === 0 ? 'authentic' : (level >= 5 ? 'counterfeit' : 'suspicious');
+      return {
+        status: status,
+        title: known.name,
+        brand: known.brand,
+        maker: known.maker,
+        prefix: prefixFor(barcode) || { code: '—', brand: 'Unknown' },
+        source: 'catalog'
+      };
+    }
+    // Unknown barcode — flag suspicious and surface brand-prefix info.
+    var pfx = prefixFor(barcode);
+    return {
+      status: 'suspicious',
+      title: 'Unknown product — verify manually',
+      brand: pfx ? pfx.brand : 'Unknown prefix',
+      maker: '—',
+      prefix: pfx || { code: '?', brand: 'Unknown' },
+      source: 'heuristic'
+    };
+  }
+
+  function renderVerdictInto(slot, barcode) {
+    var v = verdictFor(barcode);
+    var statusLabel = {
+      authentic: 'AUTHENTIC',
+      suspicious: 'SUSPICIOUS',
+      counterfeit: 'COUNTERFEIT'
+    }[v.status];
+    var classMod = v.status === 'authentic' ? 'authentic' : v.status === 'counterfeit' ? 'counterfeit' : 'suspicious';
+    var html = '' +
+      '<div class="verdict verdict--' + classMod + '">' +
+      '  <div class="verdict__head">' +
+      '    <span class="verdict__badge">' + statusLabel + '</span>' +
+      '    <span class="verdict__title">' + escapeHtml(v.title) + '</span>' +
+      '    <span class="verdict__sub">' + v.source + '</span>' +
+      '  </div>' +
+      '  <dl class="verdict__meta">' +
+      '    <div><dt>Brand</dt><dd>' + escapeHtml(v.brand) + '</dd></div>' +
+      '    <div><dt>Maker</dt><dd>' + escapeHtml(v.maker) + '</dd></div>' +
+      '    <div><dt>Barcode</dt><dd><code>' + escapeHtml(barcode) + '</code></dd></div>' +
+      '    <div><dt>Prefix</dt><dd>' + escapeHtml(v.prefix.code) + ' — ' + escapeHtml(v.prefix.brand) + '</dd></div>' +
+      '  </dl>' +
+      '  <div class="btn-row" style="margin-top: 14px;">' +
+      '    <button class="btn btn--small" type="button" onclick="window._fpdGoReport(\'' + escapeHtml(barcode) + '\')">⚠ File report</button>' +
+      '    <button class="btn btn--ghost btn--small" type="button" onclick="window._fpdLogScan(\'' + escapeHtml(barcode) + '\')">⊕ Log scan</button>' +
+      '  </div>' +
+      '</div>';
+    slot.innerHTML = html;
+    return v;
+  }
+
+  // Pre-fill the report tab with a barcode (called from verdict File-report button)
+  window._fpdGoReport = function (barcode) {
+    document.getElementById('reportBarcode').value = barcode;
+    // Look up suspected brand from verdict
+    var v = verdictFor(barcode);
+    if (v && v.brand && v.brand !== 'Unknown prefix' && v.brand !== 'Unknown') {
+      document.getElementById('reportBrand').value = v.brand;
+    }
+    document.querySelector('.tab[data-tab="report"]').click();
+  };
+
+  window._fpdLogScan = function (barcode) {
+    var v = verdictFor(barcode);
+    logs.push({
+      kind: 'scan',
+      barcode: barcode,
+      status: v.status,
+      title: v.title,
+      brand: v.brand,
+      at: Date.now()
+    });
+    saveLogs(logs);
+    showFlash('Logged scan for ' + barcode);
+  };
+
+  // ---- Manual entry
+  document.getElementById('verifyManual').addEventListener('click', function () {
+    var code = (document.getElementById('manualBarcode').value || '').trim();
+    if (!/^\d{8,14}$/.test(code)) {
+      showFlash('Barcode must be 8-14 digits');
+      return;
+    }
+    var v = renderVerdictInto(document.getElementById('manualVerdictSlot'), code);
+    logs.push({ kind: 'scan', barcode: code, status: v.status, title: v.title, brand: v.brand, at: Date.now() });
+    saveLogs(logs);
+  });
+
+  document.getElementById('lookupBrand').addEventListener('click', function () {
+    document.querySelector('.tab[data-tab="brand"]').click();
+  });
+
+  // ---- Camera scan via ZXing
+  var video = document.getElementById('video');
+  var cameraHint = document.getElementById('cameraHint');
+  var captureCanvas = document.getElementById('captureCanvas');
+  var codeReader = null;
+  var stream = null;
+  var scanning = false;
+
+  function supportsCamera() {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  }
+
+  function startScan() {
+    if (!supportsCamera()) {
+      showFlash('Camera API not supported; use Manual Entry.');
+      document.querySelector('.tab[data-tab="manual"]').click();
+      return;
+    }
+    if (typeof window.ZXing === 'undefined' && typeof window.BrowserMultiFormatReader === 'undefined') {
+      showFlash('ZXing failed to load; use Manual Entry.');
+      document.querySelector('.tab[data-tab="manual"]').click();
+      return;
+    }
+    codeReader = new (window.ZXing || window).BrowserMultiFormatReader();
+    codeReader.decodeFromVideoDevice(undefined, video, function (result, err) {
+      if (result) {
+        var raw = result.getText();
+        var numeric = raw.replace(/[^0-9]/g, '').slice(0, 14);
+        if (!numeric) return;
+        stopScan();
+        var v = renderVerdictInto(document.getElementById('verdictSlot'), numeric);
+        logs.push({ kind: 'scan', barcode: numeric, status: v.status, title: v.title, brand: v.brand, at: Date.now() });
+        saveLogs(logs);
+        showFlash('Got barcode: ' + numeric);
+      }
+    });
+    scanning = true;
+    cameraHint.textContent = 'Aim at a barcode…';
+    document.getElementById('startCamera').disabled = true;
+    document.getElementById('stopCamera').disabled = false;
+  }
+
+  function stopScan() {
+    if (codeReader) {
+      try { codeReader.reset(); } catch (e) {}
+      codeReader = null;
+    }
+    if (stream) {
+      stream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) {} });
+      stream = null;
+    }
+    if (video) { try { video.srcObject = null; } catch (e) {} }
+    scanning = false;
+    cameraHint.textContent = 'Camera stopped.';
+    document.getElementById('startCamera').disabled = false;
+    document.getElementById('stopCamera').disabled = true;
+  }
+
+  document.getElementById('startCamera').addEventListener('click', startScan);
+  document.getElementById('stopCamera').addEventListener('click', stopScan);
+  document.getElementById('captureStill').addEventListener('click', function () {
+    if (!video.videoWidth) { showFlash('No video feed active'); return; }
+    captureCanvas.width = video.videoWidth;
+    captureCanvas.height = video.videoHeight;
+    captureCanvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+    if (!codeReader) codeReader = new (window.ZXing || window).BrowserMultiFormatReader();
+    codeReader.decodeFromImage(undefined, captureCanvas.toDataURL('image/png'))
+      .then(function (result) {
+        var numeric = (result.getText() || '').replace(/[^0-9]/g, '').slice(0, 14);
+        if (!numeric) { showFlash('No barcode in frame'); return; }
+        var v = renderVerdictInto(document.getElementById('verdictSlot'), numeric);
+        logs.push({ kind: 'scan', barcode: numeric, status: v.status, title: v.title, brand: v.brand, at: Date.now() });
+        saveLogs(logs);
+        showFlash('Captured: ' + numeric);
+      })
+      .catch(function () { showFlash('No barcode detected'); });
+  });
+  window.addEventListener('beforeunload', function () { if (scanning) stopScan(); });
+
+  // ---- Report form
+  document.getElementById('submitReport').addEventListener('click', function () {
+    var barcode = (document.getElementById('reportBarcode').value || '').trim();
+    var brand = (document.getElementById('reportBrand').value || '').trim();
+    var reason = (document.getElementById('reportReason').value || '').trim();
+    var note = (document.getElementById('reportNote').value || '').trim();
+    if (!barcode) { showFlash('Enter a barcode'); return; }
+    var entry = {
+      kind: 'report',
+      barcode: barcode,
+      brand: brand,
+      reason: reason,
+      note: note,
+      at: Date.now()
+    };
+    logs.push(entry);
+    saveLogs(logs);
+    document.getElementById('reportBarcode').value = '';
+    document.getElementById('reportBrand').value = '';
+    document.getElementById('reportNote').value = '';
+    renderReports();
+    showFlash('Report filed for ' + barcode);
+  });
+
+  document.getElementById('clearReport').addEventListener('click', function () {
+    document.getElementById('reportBarcode').value = '';
+    document.getElementById('reportBrand').value = '';
+    document.getElementById('reportNote').value = '';
+  });
+
+  function renderReports() {
+    var slot = document.getElementById('reportsList');
+    var reports = logs.filter(function (l) { return l.kind === 'report'; }).reverse();
+    if (reports.length === 0) {
+      slot.innerHTML = '<div class="audit--empty">No reports filed yet.</div>';
+      return;
+    }
+    slot.innerHTML = reports.map(function (r) {
+      return '' +
+        '<div class="report-row">' +
+        '  <div class="report-row__head">' +
+        '    <span class="report-row__title">' + escapeHtml(r.brand || 'Unknown brand') + ' — <code>' + escapeHtml(r.barcode) + '</code></span>' +
+        '    <time class="report-row__time">' + new Date(r.at).toLocaleString() + '</time>' +
+        '  </div>' +
+        '  <div class="report-row__reason">Reason: ' + escapeHtml(humanReason(r.reason)) + '</div>' +
+        (r.note ? '<div class="report-row__note">"' + escapeHtml(r.note) + '"</div>' : '') +
+        '</div>';
+    }).join('');
+  }
+
+  function humanReason(code) {
+    return {
+      counterfeit_packaging: 'Counterfeit packaging',
+      wrong_seal: 'Tampered seal',
+      suspicious_texture: 'Suspicious texture / smell',
+      price_mismatch: 'Price mismatch / unauthorized seller',
+      location_discrepancy: 'Sold outside official channels',
+      other: 'Other'
+    }[code] || code;
+  }
+
+  // ---- Audit log
+  function renderAudit() {
+    var slot = document.getElementById('auditList');
+    if (logs.length === 0) {
+      slot.innerHTML = '<div class="audit--empty">No activity yet. Scan a barcode or file a report to begin.</div>';
+      return;
+    }
+    var rows = logs.slice().reverse().map(function (entry) {
+      var badgeClass = entry.kind === 'scan' ? ('audit__badge--' + (entry.status || 'suspicious')) : 'audit__badge--report';
+      var title = entry.kind === 'scan' ? (entry.title || ('Scan of ' + entry.barcode)) : ('Report filed for ' + entry.barcode);
+      var meta = entry.kind === 'scan' ? ('barcode ' + entry.barcode + ' — ' + (entry.brand || 'unknown')) : ('brand: ' + (entry.brand || '—') + ' · ' + humanReason(entry.reason));
+      var time = new Date(entry.at).toLocaleTimeString();
+      return '' +
+        '<div class="audit__row">' +
+        '  <span class="audit__badge ' + badgeClass + '" aria-hidden="true"></span>' +
+        '  <div class="audit__body"><div class="audit__title">' + escapeHtml(title) + '</div>' +
+        '    <div class="audit__meta">' + escapeHtml(meta) + '</div></div>' +
+        '  <time class="audit__time">' + time + '</time>' +
+        '</div>';
+    }).join('');
+    slot.innerHTML = rows;
+  }
+
+  document.getElementById('exportLog').addEventListener('click', function () {
+    var blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'fpd_audit_' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  });
+
+  document.getElementById('clearLog').addEventListener('click', function () {
+    if (!confirm('Clear all audit logs and reports?')) return;
+    logs = [];
+    saveLogs(logs);
+    renderAudit();
+    renderReports();
+    showFlash('Audit log cleared');
+  });
+
+  // ---- Brand registry
+  function renderBrand() {
+    var slot = document.getElementById('brandList');
+    var html = Object.keys(BRAND_PREFIXES).sort().map(function (code) {
+      return '' +
+        '<div class="audit__row" style="grid-template-columns: 80px 1fr;">' +
+        '  <code class="audit__title">' + escapeHtml(code) + '</code>' +
+        '  <div class="audit__meta" style="color: var(--paper);">' + escapeHtml(BRAND_PREFIXES[code]) + '</div>' +
+        '</div>';
+    }).join('');
+    html += '<div class="audit--empty" style="margin-top: 16px;">Tip: the first 3 digits of most retail barcodes form the GS1 company-prefix. Full authoritative table: <a href="https://www.gs1.org/standards/id-keys/company-prefix" target="_blank" rel="noopener" style="color: var(--safelight-light);">gs1.org prefix list</a>.</div>';
+    slot.innerHTML = html;
+  }
+
+  // ---- Utilities
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' }[c];
+    });
+  }
+
+  // ---- Initial renders (in case user lands on those views first)
+  renderReports();
+})();
+</script>
+</body>
+</html>
