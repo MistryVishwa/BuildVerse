@@ -1,0 +1,15 @@
+{
+  "title": "Event Management Platform",
+  "description": "Register attendees, issue QR-coded tickets, check people in by scanning or searching, and track live registration and attendance analytics.",
+  "author": {
+    "name": "Mehwish",
+    "github": "MEHWISH310"
+  },
+  "tags": [
+    "JavaScript",
+    "QR Code",
+    "Event Management",
+    "Analytics",
+    "Camera"
+  ]
+}
