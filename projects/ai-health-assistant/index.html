@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Health Assistant — BuildVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #0f1a18; --panel: #16221f; --panel-line: #2a3531; --paper: #ece5d8; --paper-dim: #cfc6b6; --safelight: #0ea5a4; --safelight-light: #5cc8c7; --ok: #79946f; --warn: #e0a458; --bad: #d5432b; --radius: 6px; --muted: #7a8682; --font-display: "IBM Plex Mono", monospace; --font-body: "IBM Plex Sans", sans-serif; }
+[data-theme="light"] { --bg: #f3f6f5; --panel: #ffffff; --panel-line: #d8d3c8; --paper: #1c2624; --paper-dim: #4a524e; --muted: #7a756c; --safelight: #0c8887; --safelight-light: #11a8a7; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: radial-gradient(circle at 15% -10%, #1a2825 0%, transparent 55%), var(--bg); color: var(--paper); font-family: var(--font-body); -webkit-font-smoothing: antialiased; min-height: 100vh; padding-bottom: 40px; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 40px 20px 60px; }
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+.masthead__mark { display: flex; align-items: center; gap: 10px; }
+.masthead__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--safelight-light), var(--safelight) 70%); box-shadow: 0 0 8px rgba(14,165,164,0.6); }
+.masthead__title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.masthead__sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.theme-toggle { position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid var(--panel-line); color: var(--muted); padding: 6px 12px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s ease; }
+.theme-toggle:hover { color: var(--paper); border-color: var(--safelight); }
+
+.filmstrip { display: flex; justify-content: center; gap: 4px; margin-bottom: 24px; border-top: 1px dashed var(--panel-line); border-bottom: 1px dashed var(--panel-line); padding: 8px 0; flex-wrap: wrap; }
+.tab { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; background: transparent; border: 1px solid transparent; color: var(--muted); padding: 9px 20px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease; }
+.tab:hover { color: var(--paper); }
+.tab.is-active { background: var(--safelight); border-color: var(--safelight); color: #eefdfc; }
+.view { display: none; }
+.view.is-active { display: block; }
+.panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px; padding: 22px; margin-bottom: 18px; }
+.panel__title { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--safelight); margin: 0 0 16px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+.field textarea, .field input, .field select { width: 100%; background: #0a1413; border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 10px 12px; color: var(--paper); font-family: var(--font-body); font-size: 13.5px; }
+[data-theme="light"] .field textarea, [data-theme="light"] .field input, [data-theme="light"] .field select { background: #f6f9f8; color: var(--paper); }
+.field textarea:focus, .field input:focus, .field select:focus { outline: none; border-color: var(--safelight); }
+.field-row { display: flex; gap: 10px; }
+.field-row>*{flex:1;}
+.btn { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--safelight); border: 1px solid var(--safelight); color: #eefdfc; padding: 11px 18px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s ease; }
+.btn:hover { filter: brightness(1.1); }
+.btn--ghost { background: transparent; color: var(--paper-dim); border-color: var(--panel-line); }
+.btn--ghost:hover { border-color: var(--safelight); color: var(--paper); }
+.btn--small { padding: 7px 12px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-row .btn { flex: 1; }
+
+.symptom-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip { padding: 6px 12px; border: 1px solid var(--panel-line); border-radius: 999px; cursor: pointer; font-size: 12.5px; background: transparent; color: var(--paper-dim); transition: all 0.12s ease; font-family: var(--font-display); }
+.chip:hover { border-color: var(--safelight); color: var(--paper); }
+.chip.is-active { background: var(--safelight); border-color: var(--safelight); color: #eefdfc; }
+.tip-card { padding: 14px 18px; border: 1px solid var(--panel-line); border-radius: var(--radius); margin-bottom: 8px; background: var(--panel); }
+.tip-card__title { font-weight: 600; font-size: 14px; }
+.tip-card__desc { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
+
+.verdict { margin-top: 14px; padding: 14px 16px; border-radius: var(--radius); }
+.verdict--low { background: rgba(121,148,111,0.10); border: 1px solid var(--ok); }
+.verdict--medium { background: rgba(224,164,88,0.10); border: 1px solid var(--warn); }
+.verdict--high { background: rgba(213,67,43,0.10); border: 1px solid var(--bad); }
+.verdict__title { font-weight: 700; font-size: 15px; font-family: var(--font-display); }
+
+.flash { position: fixed; bottom: 24px; right: 24px; background: var(--safelight); color: #eefdfc; padding: 10px 16px; border-radius: var(--radius); font-size: 13px; z-index: 999; transition: opacity 0.3s; opacity: 0; pointer-events: none; font-family: var(--font-display); letter-spacing: 0.06em; }
+.flash.is-visible { opacity: 1; }
+.empty-note { color: var(--muted); font-family: var(--font-display); font-size: 12px; letter-spacing: 0.06em; padding: 20px; text-align: center; }
+@media (max-width: 700px) { .theme-toggle { position: static; margin-bottom: 16px; } .field-row { flex-direction: column; } }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" type="button">🌙 Light</button>
+<div class="wrap">
+  <header class="masthead">
+    <div class="masthead__mark"><span class="masthead__dot" aria-hidden="true"></span><span class="masthead__title">AI Health Assistant</span></div>
+    <p class="masthead__sub">Symptom checker, health tips, and appointment booking — offline heuristic AI.</p>
+  </header>
+  <nav class="filmstrip" role="tablist">
+    <button class="tab is-active" data-tab="symptoms" role="tab">Symptom Checker</button>
+    <button class="tab" data-tab="tips" role="tab">Health Tips</button>
+    <button class="tab" data-tab="appointments" role="tab">Appointments</button>
+    <button class="tab" data-tab="history" role="tab">History</button>
+  </nav>
+  <section class="view is-active" data-view="symptoms">
+    <div class="panel">
+      <h2 class="panel__title">Select your symptoms</h2>
+      <div class="symptom-chips" id="chipList"></div>
+      <div class="field">Quick doctor slot: <button class="btn btn--ghost btn--small" id="adviceBtn">Evaluate</button></div>
+      <div id="verdictSlot" style="margin-top: 14px;"></div>
+    </div>
+  </section>
+  <section class="view" data-view="tips">
+    <div class="panel">
+      <h2 class="panel__title">Today's health tips</h2>
+      <div id="tipsList"></div>
+    </div>
+  </section>
+  <section class="view" data-view="appointments">
+    <div class="panel">
+      <h2 class="panel__title">Book a mock appointment</h2>
+      <div class="field-row">
+        <div class="field"><label for="aName">Your name</label><input type="text" id="aName" placeholder="e.g. Gabriel Gupta" autocomplete="off"></div>
+        <div class="field"><label for="aDate">Date</label><input type="date" id="aDate"></div>
+        <div class="field"><label for="aReason">Reason</label><input type="text" id="aReason" placeholder="e.g. General checkup" autocomplete="off"></div>
+      </div>
+      <button class="btn" id="bookApt" type="button">Book</button>
+      <div id="aptList" style="margin-top: 14px;"></div>
+    </div>
+  </section>
+  <section class="view" data-view="history">
+    <div class="panel">
+      <h2 class="panel__title">Symptom check & visit log</h2>
+      <div id="historyList"></div>
+    </div>
+  </section>
+</div>
+<div class="flash" id="flash" role="status" aria-live="polite"></div>
+<script>
+(function () {
+  'use strict';
+  var SYMPTOMS = ['Headache','Fever','Cough','Fatigue','Body ache','Nausea','Sore throat','Runny nose','Chest pain','Shortness of breath','Diarrhea','Vomiting','Rash','Swelling','Dizziness','Joint pain','Eye irritation','Ear pain','Insomnia','Loss of appetite','Weight loss','Weight gain','Palpitations','Night sweats','Memory loss','Depression','Anxiety','Allergy','Skin irritation','Boil'];
+  var TIPS = [
+    { title: 'Hydration', desc: 'Drink 8 glasses of water daily. Dehydration mimics fatigue and headache.' },
+    { title: 'Sleep hygiene', desc: '7-8 hours of sleep; consistent bedtime; no screens 30 min before sleep.' },
+    { title: 'Exercise', desc: '150 minutes of moderate walking/cardio per week raises serotonin and energy.' },
+    { title: 'Posture', desc: 'Adjust chair and monitor at eye level; stretch every 45 minutes if desk-based.' },
+    { title: 'Nutrition', desc: 'Color-palette diet: eat 5 colors daily. Think spinach (green), carrots (orange), blue berries (purple).' },
+    { title: 'Mental wellness', desc: '5-minute breathing exercise: inhale 4s, hold 4s, exhale 4s, repeat 5x.' }
+  ];
+
+  var STORE = 'hass:history';
+  var STORE_TH = 'hass:theme';
+  function loadLogs() { try { return JSON.parse(localStorage.getItem(STORE) || '[]'); } catch (e) { return []; } }
+  function saveLogs(l) { try { localStorage.setItem(STORE, JSON.stringify(l)); } catch (e) {} }
+  var logs = loadLogs();
+  var activeSymptoms = [];
+  function loadTheme() { try { return localStorage.getItem(STORE_TH) || 'dark'; } catch (e) { return 'dark'; } }
+  function saveTheme(t) { try { localStorage.setItem(STORE_TH, t); } catch (e) {} }
+  var themeToggle = document.getElementById('themeToggle');
+  function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); themeToggle.textContent = t === 'dark' ? '🌙 Light' : '☀ Dark'; }
+  applyTheme(loadTheme());
+  themeToggle.addEventListener('click', function () { var cur = document.documentElement.getAttribute('data-theme') || 'dark'; var next = cur === 'dark' ? 'light' : 'dark'; applyTheme(next); saveTheme(next); });
+  var flash = document.getElementById('flash'); var flashTimer = null;
+  function toast(msg) { flash.textContent = msg; flash.classList.add('is-visible'); clearTimeout(flashTimer); flashTimer = setTimeout(function () { flash.classList.remove('is-visible'); }, 2500); }
+  function goTo(tab) {
+    document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('is-active'); });
+    document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('is-active'); });
+    document.querySelector('.tab[data-tab="' + tab + '"]').classList.add('is-active');
+    document.querySelector('.view[data-view="' + tab + '"]').classList.add('is-active');
+    if (tab === 'history') renderHistory();
+  }
+  document.querySelectorAll('.tab').forEach(function (t) { t.addEventListener('click', function () { goTo(t.getAttribute('data-tab')); }); });
+
+  function renderChips() {
+    var slot = document.getElementById('chipList');
+    slot.innerHTML = SYMPTOMS.map(function (s) {
+      return '<span class="chip' + (activeSymptoms.indexOf(s) !== -1 ? ' is-active' : '') + '" data-sym="' + s + '">' + escapeHtml(s) + '</span>';
+    }).join('');
+    slot.querySelectorAll('.chip').forEach(function (c) {
+      c.addEventListener('click', function () {
+        var sym = c.getAttribute('data-sym');
+        var idx = activeSymptoms.indexOf(sym);
+        if (idx !== -1) activeSymptoms.splice(idx, 1);
+        else { if (activeSymptoms.length < 8) activeSymptoms.push(sym); else toast('Select up to 8 symptoms.'); }
+        renderChips();
+      });
+    });
+  }
+
+  function evaluateSymptoms() {
+    var slot = document.getElementById('verdictSlot');
+    if (!activeSymptoms.length) { slot.innerHTML = '<div class="empty-note">Select symptoms above, then evaluate.</div>'; slot.style.display = 'none'; return; }
+    var high = activeSymptoms.filter(function (s) { return s.indexOf('breath') !== -1 || s.indexOf('chest') !== -1 || s.indexOf('stroke') !== -1 || s.indexOf('pain') !== -1; });
+    var mod = activeSymptoms.filter(function (s) { return s.indexOf('vomit') !== -1 || s.indexOf('Diarrhea') !== -1 || s.indexOf('Nausea') !== -1 || s.indexOf('Fatigue') !== -1; });
+    var level = high.length ? 'high' : mod.length >= 2 ? 'medium' : 'low';
+    var note = level === 'high' ? 'These symptoms may be urgent; seek quick medical advice.' : level === 'medium' ? 'Consider visit to physician soon if persist over 48 hours.' : 'Rest, hydrate, self-isolate; symptoms likely low-risk.';
+    slot.style.display = '';
+    slot.innerHTML = '<div class="verdict verdict--' + level + '"><div class="verdict__title">' + (level === 'high' ? '⚠ Possible urgent' : level === 'medium' ? '✓ Moderate risk' : 'Low risk') + '</div><div style="margin-top: 6px; color: var(--muted);">' + note + '</div></div>';
+    logs.unshift({ symptoms: activeSymptoms.slice(), level: level, note: note, at: Date.now() });
+    saveLogs(logs);
+  }
+
+  document.getElementById('evaluateBtn').addEventListener('click', evaluateSyms);
+
+  function renderAppointmentList() {
+    var sel = document.getElementById('appointmentList');
+    sel.innerHTML = '<option value="">Select time slot</option>'; for (var h = 9; h < 17; h++) { sel.innerHTML += '<option value="' + h + '">' + h + ':00 - ' + (h+1) + ':00</option>'; }
+    // Also main appointment list.
+    var slot = document.getElementById('aptList');
+    if (logs.filter(function (l) { return l.type === 'appt'; }).length === 0) {
+      slot.innerHTML = '<div class="empty-note">No appointments yet. Book one below.</div>';
+    } else {
+      slot.innerHTML = logs.filter(function (l) { return l.type === 'appt'; }).map(function (a) {
+        return '<div style="padding:10px 14px; border:1px solid var(--panel-line); border-radius:var(--radius); margin-bottom:6px; background:var(--panel);"><strong>' + escapeHtml(a.name) + '</strong> · ' + escapeHtml(a.date) + ' · ' + escapeHtml(a.reason) + '</div>';
+      }).join('');
+    }
+  }
+
+  document.getElementById('bookApt').addEventListener('click', function () {
+    var name = (document.getElementById('aName').value || '').trim();
+    var date = document.getElementById('aDate').value;
+    var reason = (document.getElementById('aReason').value || '').trim();
+    if (!name || !date) { toast('Name and date required'); return; }
+    logs.unshift({ type: 'appt', name: name, date: date, reason: reason, at: Date.now() });
+    saveLogs(logs);
+    toast('Mock appointment for ' + name + ' saved');
+    renderAppointment();
+  });
+
+  function renderHistory() {
+    document.getElementById('historyList').innerHTML = logs.slice(0, 20).map(function (l) {
+      if (l.type === 'appt') return '<div style="padding:10px 14px; border:1px solid var(--panel-line); border-radius:var(--radius); margin-bottom:6px;"><strong>' + escapeHtml(l.name) + '</strong> · ' + escapeHtml(l.date) + ' · ' + escapeHtml(l.reason) + ' · ' + new Date(l.at).toLocaleString() + '</div>';
+      var emoji = l.level === 'high' ? '⚠' : l.level === 'medium' ? '🟡' : '✅';
+      return '<div style="padding:10px 14px; border:1px solid var(--panel-line); border-radius:var(--radius); margin-bottom:6px;">' + emoji + ' <strong>Risk: ' + l.level + '</strong> · ' + escapeHtml((l.symptoms || []).join(', ')) + ' · ' + new Date(l.at).toLocaleString() + '</div>';
+    }).join('') || '<div class="empty-note">No history yet.</div>';
+  }
+
+  function renderTips() {
+    document.getElementById('tipsList').innerHTML = TIPS.map(function (t) {
+      return '<div class="tip-card">' + t.title + '<div class="tip-card__desc">' + t.desc + '</div></div>';
+    }).join('');
+  }
+
+  function escapeHtml(s) { if (s == null) return ''; return String(s).replace(/[&<>""]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '$#39;' }[c]; }); }
+
+  function init() {
+    renderChips();
+    renderAppointmentList();
+    renderTips();
+    renderHistory();
+    goTo('symptoms');
+    document.getElementById('adviceBtn').addEventListener('click', evaluateSymptoms);
+  }
+  init();
+})();
+</script>
+</body>
+</html>
