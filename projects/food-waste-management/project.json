@@ -1,0 +1,16 @@
+{
+  "title": "Food Waste Management",
+  "description": "A platform connecting restaurants with surplus food to nearby NGOs. Restaurants register and post food donations, NGOs discover and claim nearby donations, pickups are scheduled and tracked end-to-end, and everyone stays in sync through a live notification feed.",
+  "author": {
+    "name": "Mehwish",
+    "github": "MEHWISH310"
+  },
+  "tags": [
+    "Web App",
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "Vanilla-js",
+    "Social Good"
+  ]
+}
