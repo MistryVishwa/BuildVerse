@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical Appointment System — BuildVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1a18;
+  --panel: #16221f;
+  --panel-line: #2a3531;
+  --paper: #ece5d8;
+  --paper-dim: #cfc6b6;
+  --safelight: #0ea5a4;
+  --safelight-light: #5cc8c7;
+  --ink: #1c2624;
+  --muted: #7a8682;
+  --ok: #79946f;
+  --warn: #e0a458;
+  --bad: #d5432b;
+  --radius: 6px;
+  --font-display: "IBM Plex Mono", monospace;
+  --font-body: "IBM Plex Sans", sans-serif;
+}
+[data-theme="light"] {
+  --bg: #f3f6f5;
+  --panel: #ffffff;
+  --panel-line: #d8d3c8;
+  --paper: #1c2624;
+  --paper-dim: #4a524e;
+  --muted: #7a756c;
+  --safelight: #0c8887;
+  --safelight-light: #11a8a7;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: radial-gradient(circle at 15% -10%, #1a2825 0%, transparent 55%), var(--bg);
+  color: var(--paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding: 40px 20px 60px; }
+
+/* ---- Masthead ---- */
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+.masthead__mark { display: flex; align-items: center; gap: 10px; }
+.masthead__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--safelight-light), var(--safelight) 70%); box-shadow: 0 0 8px rgba(14,165,164,0.6); }
+.masthead__title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.masthead__sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+.theme-toggle { position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid var(--panel-line); color: var(--muted); padding: 6px 12px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s ease; }
+.theme-toggle:hover { color: var(--paper); border-color: var(--safelight); }
+
+/* ---- Tabs (filmstrip) ---- */
+.filmstrip { display: flex; justify-content: center; gap: 4px; margin-bottom: 24px; border-top: 1px dashed var(--panel-line); border-bottom: 1px dashed var(--panel-line); padding: 8px 0; flex-wrap: wrap; }
+.tab {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  background: transparent; border: 1px solid transparent; color: var(--muted);
+  padding: 9px 20px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease;
+}
+.tab:hover { color: var(--paper); }
+.tab.is-active { background: var(--safelight); border-color: var(--safelight); color: #eefdfc; }
+
+.view { display: none; }
+.view.is-active { display: block; }
+
+/* ---- Panels ---- */
+.panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px; padding: 22px; }
+.panel + .panel { margin-top: 18px; }
+.panel__title { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--safelight-light); margin: 0 0 16px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+.field input, .field textarea, .field select {
+  width: 100%; background: #0a1413; border: 1px solid var(--panel-line); border-radius: var(--radius);
+  padding: 10px 12px; color: var(--paper); font-family: var(--font-body); font-size: 13.5px;
+}
+[data-theme="light"] .field input, [data-theme="light"] .field textarea, [data-theme="light"] .field select { background: #f6f9f8; color: var(--paper); }
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--safelight); }
+.field-row { display: flex; gap: 10px; }
+.field-row > * { flex: 1; }
+
+.btn {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+  background: var(--safelight); border: 1px solid var(--safelight); color: #eefdfc;
+  padding: 11px 18px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s ease;
+}
+.btn:hover { filter: brightness(1.1); }
+.btn--ghost { background: transparent; color: var(--paper-dim); border-color: var(--panel-line); }
+.btn--ghost:hover { border-color: var(--safelight); color: var(--paper); }
+.btn--bad { background: var(--bad); border-color: var(--bad); color: #fff3ef; }
+.btn--small { padding: 7px 12px; }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { flex: 1; }
+
+/* ---- Doctor cards ---- */
+.doctors-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 10px; }
+.doctor-card { border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; transition: all 0.15s ease; background: transparent; }
+.doctor-card:hover { border-color: var(--safelight); }
+.doctor-card.is-active { background: rgba(14, 165, 164, 0.08); border-color: var(--safelight); }
+.doctor-card__name { font-weight: 600; font-size: 14.5px; }
+.doctor-card__spec { color: var(--muted); font-size: 12px; margin-top: 2px; font-family: var(--font-display); letter-spacing: 0.04em; }
+
+/* ---- Slot grid ---- */
+.slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
+.slot { padding: 9px 10px; border: 1px solid var(--panel-line); border-radius: var(--radius); background: transparent; color: var(--paper-dim); cursor: pointer; font-family: var(--font-display); font-size: 12px; letter-spacing: 0.05em; transition: all 0.12s ease; text-align: center; }
+.slot:hover { border-color: var(--safelight); color: var(--paper); }
+.slot.is-taken { background: rgba(213, 67, 43, 0.08); border-color: var(--bad); color: var(--bad); cursor: not-allowed; }
+.slot.is-taken:hover { filter: none; }
+.slot.is-chosen { background: var(--safelight); border-color: var(--safelight); color: #eefdfc; }
+
+/* ---- Queue ---- */
+.queue-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+.queue-count { font-family: var(--font-display); font-size: 13px; color: var(--muted); letter-spacing: 0.08em; }
+.queue-row { display: grid; grid-template-columns: 84px 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; background: var(--panel); border: 1px solid var(--panel-line); border-radius: var(--radius); margin-bottom: 8px; }
+.queue-row.is-now { border-color: var(--safelight); background: rgba(14,165,164,0.10); }
+.queue-row.is-done { opacity: 0.4; text-decoration: line-through; }
+.token { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.08em; }
+.queue-meta { font-size: 13px; }
+.queue-meta__title { font-weight: 600; }
+.queue-meta__sub { color: var(--muted); font-size: 11.5px; margin-top: 2px; font-family: var(--font-display); letter-spacing: 0.04em; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10.5px; font-family: var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid currentColor; margin-left: 8px; }
+.tag--walkin { color: var(--warn); }
+
+/* ---- Reports ---- */
+.report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 22px; }
+.metric { border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 14px 16px; background: var(--panel); }
+.metric__label { font-size: 11px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; font-family: var(--font-display); }
+.metric__value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+
+table.report-table { width: 100%; border-collapse: collapse; }
+.report-table th, .report-table td { padding: 8px 10px; text-align: left; font-size: 12.5px; border-bottom: 1px solid var(--panel-line); }
+.report-table th { font-family: var(--font-display); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+/* ---- History ---- */
+.history-row { padding: 14px 16px; background: var(--panel); border: 1px solid var(--panel-line); border-radius: var(--radius); margin-bottom: 8px; }
+.history-row__head { display: flex; justify-content: space-between; align-items: baseline; }
+.history-row__title { font-weight: 600; font-size: 14px; }
+.history-row__time { font-size: 11.5px; color: var(--muted); font-family: var(--font-display); letter-spacing: 0.04em; }
+.history-row__rx { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--panel-line); font-size: 13px; color: var(--paper-dim); }
+
+/* ---- Toast ---- */
+.flash { position: fixed; bottom: 24px; right: 24px; background: var(--safelight); color: #eefdfc; padding: 10px 16px; border-radius: var(--radius); font-size: 13px; z-index: 999; transition: opacity 0.3s; opacity: 0; pointer-events: none; font-family: var(--font-display); letter-spacing: 0.06em; }
+.flash.is-visible { opacity: 1; }
+.stack { display: flex; flex-direction: column; gap: 8px; }
+.empty-note { color: var(--muted); font-family: var(--font-display); font-size: 12px; letter-spacing: 0.06em; padding: 20px; text-align: center; }
+
+@media (max-width: 700px) {
+  .theme-toggle { position: static; margin-bottom: 16px; }
+  .field-row { flex-direction: column; }
+  .queue-row { grid-template-columns: 70px 1fr; }
+  .queue-row button { grid-column: 1 / -1; }
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" type="button">🌙 Light</button>
+<div class="wrap">
+  <header class="masthead">
+    <div class="masthead__mark">
+      <span class="masthead__dot" aria-hidden="true"></span>
+      <span class="masthead__title">Medical Appointment System</span>
+    </div>
+    <p class="masthead__sub">Book appointments, manage the live queue, store prescriptions, export clinic-day reports.</p>
+  </header>
+
+  <nav class="filmstrip" role="tablist">
+    <button class="tab is-active" data-tab="book" role="tab">Book</button>
+    <button class="tab" data-tab="walkin" role="tab">Walk-in</button>
+    <button class="tab" data-tab="queue" role="tab">Queue</button>
+    <button class="tab" data-tab="history" role="tab">Visits</button>
+    <button class="tab" data-tab="reports" role="tab">Reports</button>
+  </nav>
+
+  <!-- ─────── Book ─────── -->
+  <section class="view is-active" data-view="book">
+    <div class="panel">
+      <h2 class="panel__title">1. Choose a doctor</h2>
+      <div class="doctors-grid" id="doctorsGrid"></div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel__title">2. Pick a date & slot</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="bookDate">Date</label>
+          <input type="date" id="bookDate">
+        </div>
+        <div class="field">
+          <label for="bookPatient">Patient name</label>
+          <input type="text" id="bookPatient" placeholder="e.g. Anita Rao" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="bookReason">Reason (optional)</label>
+          <input type="text" id="bookReason" placeholder="e.g. Follow-up check" autocomplete="off">
+        </div>
+      </div>
+      <div class="slot-grid" id="slotGrid"></div>
+      <div class="btn-row" style="margin-top: 14px;">
+        <button class="btn" id="confirmBooking" type="button">✓ Confirm booking</button>
+        <button class="btn btn--ghost" id="resetDate" type="button">⟳ Reload slots</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── Walk-in ─────── -->
+  <section class="view" data-view="walkin">
+    <div class="panel">
+      <h2 class="panel__title">Add walk-in patient</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="walkinPatient">Patient name</label>
+          <input type="text" id="walkinPatient" placeholder="e.g. Kiran Singh" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="walkinDoctor">Assign doctor</label>
+          <select id="walkinDoctor"></select>
+        </div>
+        <div class="field">
+          <label for="walkinReason">Reason (optional)</label>
+          <input type="text" id="walkinReason" placeholder="e.g. Fever, cough" autocomplete="off">
+        </div>
+      </div>
+      <button class="btn" id="addWalkin" type="button">⊕ Add to queue</button>
+      <p style="color: var(--muted); margin-top: 14px; font-size: 12.5px;">Walk-ins are appended to the chosen doctor's queue with a generated 6-digit token.</p>
+    </div>
+  </section>
+
+  <!-- ─────── Queue ─────── -->
+  <section class="view" data-view="queue">
+    <div class="panel">
+      <div class="queue-head">
+        <h2 class="panel__title" style="margin: 0;">Live queue</h2>
+        <span class="queue-count" id="queueCount">0 patients</span>
+      </div>
+      <div class="stack" id="queueList">
+        <div class="empty-note">No patients waiting.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── History ─────── -->
+  <section class="view" data-view="history">
+    <div class="panel">
+      <h2 class="panel__title">Closed visits & prescriptions</h2>
+      <div class="stack" id="historyList">
+        <div class="empty-note">No visits closed yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── Reports ─────── -->
+  <section class="view" data-view="reports">
+    <div class="panel">
+      <h2 class="panel__title">Per-day clinic report</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="reportDate">Date</label>
+          <input type="date" id="reportDate">
+        </div>
+        <div class="field">
+          <label for="reportDoctor">Doctor filter (optional)</label>
+          <select id="reportDoctor"></select>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-bottom: 16px;">
+        <button class="btn" id="viewReport" type="button">⟳ View report</button>
+        <button class="btn btn--ghost" id="exportJson" type="button">⇪ Export JSON</button>
+        <button class="btn btn--ghost" id="exportCsv" type="button">⇪ Export CSV</button>
+      </div>
+      <div id="reportSummary"></div>
+      <div id="reportTable"></div>
+    </div>
+  </section>
+</div>
+
+<div class="flash" id="flash" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ─── Static data ───────────────────────────────────────
+  var DOCTORS = [
+    { id: 'doc1', name: 'Dr. Anita Rao',    spec: 'General medicine' },
+    { id: 'doc2', name: 'Dr. Karan Mehta',  spec: 'Pediatrics' },
+    { id: 'doc3', name: 'Dr. Sneha Iyer',   spec: 'Cardiology' },
+    { id: 'doc4', name: 'Dr. Omar Khan',    spec: 'Orthopedics' }
+  ];
+  // 15-minute slots from 09:00 to 17:00 (32 slots).
+  var SLOTS = [];
+  for (var h = 9; h < 17; h++) {
+    for (var m = 0; m < 60; m += 15) {
+      SLOTS.push(pad(h) + ':' + pad(m));
+    }
+  }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  // ─── localStorage ──────────────────────────────────────
+  function loadVisits() {
+    try { return JSON.parse(localStorage.getItem('mas:visits') || '[]'); }
+    catch (e) { return []; }
+  }
+  function saveVisits(v) {
+    try { localStorage.setItem('mas:visits', JSON.stringify(v)); } catch (e) {}
+  }
+  function loadTheme() {
+    try { return localStorage.getItem('mas:theme') || 'dark'; } catch (e) { return 'dark'; }
+  }
+  function saveTheme(t) {
+    try { localStorage.setItem('mas:theme', t); } catch (e) {}
+  }
+  var visits = loadVisits();
+
+  // ─── Theme ─────────────────────────────────────────────
+  var themeToggle = document.getElementById('themeToggle');
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themeToggle.textContent = t === 'dark' ? '🌙 Light' : '☀ Dark';
+  }
+  applyTheme(loadTheme());
+  themeToggle.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+    var next = cur === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+    saveTheme(next);
+  });
+
+  // ─── Tabs ──────────────────────────────────────────────
+  function goTo(tab) {
+    document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('is-active'); });
+    document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('is-active'); });
+    document.querySelector('.tab[data-tab="' + tab + '"]').classList.add('is-active');
+    document.querySelector('.view[data-view="' + tab + '"]').classList.add('is-active');
+    if (tab === 'queue') renderQueue();
+    if (tab === 'history') renderHistory();
+    if (tab === 'reports') { populateReportDropdowns(); renderReport(); }
+  }
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () { goTo(t.getAttribute('data-tab')); });
+  });
+
+  // ─── Toast ────────────────────────────────────────────
+  var flash = document.getElementById('flash');
+  var flashTimer = null;
+  function toast(msg) {
+    flash.textContent = msg;
+    flash.classList.add('is-visible');
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { flash.classList.remove('is-visible'); }, 2400);
+  }
+
+  // ─── Booking ──────────────────────────────────────────
+  var booking = { doctor: null, date: null, slot: null };
+
+  function renderDoctors() {
+    var slot = document.getElementById('doctorsGrid');
+    slot.innerHTML = DOCTORS.map(function (d) {
+      var active = booking.doctor === d.id ? ' is-active' : '';
+      return '' +
+        '<div class="doctor-card' + active + '" data-doctor="' + d.id + '">' +
+        '  <div class="doctor-card__name">' + escapeHtml(d.name) + '</div>' +
+        '  <div class="doctor-card__spec">' + escapeHtml(d.spec) + '</div>' +
+        '</div>';
+    }).join('');
+    slot.querySelectorAll('.doctor-card').forEach(function (el) {
+      el.addEventListener('click', function () {
+        booking.doctor = el.getAttribute('data-doctor');
+        booking.slot = null;
+        renderDoctors();
+        renderSlots();
+      });
+    });
+  }
+
+  function takenSlots(doctorId, date) {
+    var taken = {};
+    visits.forEach(function (v) {
+      if (v.doctorId === doctorId && v.date === date && v.kind === 'booked' && v.status !== 'cancelled') {
+        taken[v.slot] = true;
+      }
+    });
+    return taken;
+  }
+
+  function renderSlots() {
+    var grid = document.getElementById('slotGrid');
+    if (!booking.doctor || !booking.date) {
+      grid.innerHTML = '<div class="empty-note" style="grid-column: 1/-1;">Pick a doctor and date first.</div>';
+      return;
+    }
+    var taken = takenSlots(booking.doctor, booking.date);
+    grid.innerHTML = SLOTS.map(function (s) {
+      var cls = 'slot';
+      if (taken[s]) cls += ' is-taken';
+      else if (booking.slot === s) cls += ' is-chosen';
+      return '<button class="' + cls + '" data-slot="' + s + '" type="button" ' + (taken[s] ? 'disabled' : '') + '>' + s + '</button>';
+    }).join('');
+    grid.querySelectorAll('.slot').forEach(function (b) {
+      b.addEventListener('click', function () {
+        if (b.classList.contains('is-taken')) return;
+        booking.slot = b.getAttribute('data-slot');
+        renderSlots();
+      });
+    });
+  }
+
+  document.getElementById('bookDate').addEventListener('change', function () {
+    booking.date = this.value;
+    booking.slot = null;
+    renderSlots();
+  });
+
+  document.getElementById('resetDate').addEventListener('click', function () {
+    booking.slot = null;
+    renderSlots();
+  });
+
+  document.getElementById('confirmBooking').addEventListener('click', function () {
+    if (!booking.doctor) { toast('Pick a doctor'); return; }
+    if (!booking.date) { toast('Pick a date'); return; }
+    if (!booking.slot) { toast('Pick a slot'); return; }
+    var patient = (document.getElementById('bookPatient').value || '').trim();
+    if (!patient) { toast('Patient name required'); return; }
+    var reason = (document.getElementById('bookReason').value || '').trim();
+    var taken = takenSlots(booking.doctor, booking.date);
+    if (taken[booking.slot]) { toast('Slot already taken'); return; }
+    var v = {
+      id: 'b_' + Date.now().toString(36),
+      kind: 'booked',
+      token: nextToken(),
+      doctorId: booking.doctor,
+      date: booking.date,
+      slot: booking.slot,
+      patient: patient,
+      reason: reason,
+      status: 'waiting',
+      addedAt: Date.now()
+    };
+    visits.push(v);
+    saveVisits(visits);
+    toast('Booked: ' + patient + ' @ ' + booking.slot);
+    booking.slot = null;
+    document.getElementById('bookPatient').value = '';
+    document.getElementById('bookReason').value = '';
+    renderSlots();
+  });
+
+  function nextToken() {
+    // 6-digit token, monotonically incrementing clinic-day seed.
+    var seed = parseInt(localStorage.getItem('mas:token') || '100', 10);
+    seed += 1;
+    if (seed > 999999) seed = 100;
+    localStorage.setItem('mas:token', String(seed));
+    return pad6(seed);
+  }
+  function pad6(n) { n = String(n); while (n.length < 6) n = '0' + n; return n; }
+
+  // ─── Walk-in ───────────────────────────────────────────
+  function populateWalkinDropdown() {
+    var sel = document.getElementById('walkinDoctor');
+    sel.innerHTML = DOCTORS.map(function (d) {
+      return '<option value="' + d.id + '">' + escapeHtml(d.name) + ' — ' + escapeHtml(d.spec) + '</option>';
+    }).join('');
+  }
+
+  document.getElementById('addWalkin').addEventListener('click', function () {
+    var patient = (document.getElementById('walkinPatient').value || '').trim();
+    var doctorId = document.getElementById('walkinDoctor').value;
+    var reason = (document.getElementById('walkinReason').value || '').trim();
+    if (!patient) { toast('Patient name required'); return; }
+    if (!doctorId) { toast('Pick a doctor'); return; }
+    visits.push({
+      id: 'w_' + Date.now().toString(36),
+      kind: 'walkin',
+      token: nextToken(),
+      doctorId: doctorId,
+      date: todayStr(),
+      slot: null,
+      patient: patient,
+      reason: reason,
+      status: 'waiting',
+      addedAt: Date.now()
+    });
+    saveVisits(visits);
+    document.getElementById('walkinPatient').value = '';
+    document.getElementById('walkinReason').value = '';
+    toast('Walk-in ' + patient + ' added to ' + doctorName(doctorId));
+  });
+
+  function doctorName(id) {
+    var d = DOCTORS.find(function (x) { return x.id === id; });
+    return d ? d.name : 'Unknown';
+  }
+
+  // ─── Queue ─────────────────────────────────────────────
+  function renderQueue() {
+    var list = document.getElementById('queueList');
+    var countEl = document.getElementById('queueCount');
+    var waiting = visits.filter(function (v) { return v.status === 'waiting'; });
+    waiting.sort(function (a, b) { return a.addedAt - b.addedAt; });
+    countEl.textContent = waiting.length + ' patient' + (waiting.length === 1 ? '' : 's');
+    if (waiting.length === 0) {
+      list.innerHTML = '<div class="empty-note">No patients waiting.</div>';
+      return;
+    }
+    var now = waiting[0];
+    list.innerHTML = waiting.map(function (v) {
+      var isNow = v === now;
+      var doctor = doctorName(v.doctorId);
+      var when = v.kind === 'booked' ? (v.date + ' ' + v.slot) : ('walk-in ' + v.date);
+      var tag = v.kind === 'walkin' ? '<span class="tag tag--walkin">WALK-IN</span>' : '';
+      return '' +
+        '<div class="queue-row' + (isNow ? ' is-now' : '') + '">' +
+        '  <span class="token">#' + escapeHtml(v.token) + '</span>' +
+        '  <div class="queue-meta">' +
+        '    <div class="queue-meta__title">' + escapeHtml(v.patient) + tag + '</div>' +
+        '    <div class="queue-meta__sub">' + escapeHtml(doctor) + ' · ' + escapeHtml(when) + (v.reason ? ' · ' + escapeHtml(v.reason) : '') + '</div>' +
+        '  </div>' +
+        (isNow ?
+          '<button class="btn btn--small" type="button" onclick="window._masMarkNow(\'' + v.id + '\')">✓ Mark done</button>' :
+          '<button class="btn btn--ghost btn--small" type="button" onclick="window._masMarkSkip(\'' + v.id + '\')">Skip</button>'
+        ) +
+        '</div>';
+    }).join('');
+  }
+
+  window._masMarkNow = function (id) { markVisit(id, 'done'); };
+  window._masMarkSkip = function (id) { markVisit(id, 'skipped'); };
+
+  function markVisit(id, status) {
+    var v = visits.find(function (x) { return x.id === id; });
+    if (!v) return;
+    v.status = status;
+    v.closedAt = Date.now();
+    if (status === 'done') {
+      // Prompt for prescription via inline modal-ish flow.
+      openPrescriptionFor(v);
+    } else {
+      saveVisits(visits);
+      renderQueue();
+    }
+  }
+
+  // ─── Prescription capture (inline panel) ───────────────
+  var activePrescriptionId = null;
+
+  function openPrescriptionFor(v) {
+    activePrescriptionId = v.id;
+    var slot = document.getElementById('queueList');
+    var row = slot.querySelector('div.queue-row');
+    if (!row) { saveVisits(visits); renderQueue(); return; }
+    // Inject an inline form above the row.
+    var form = document.createElement('div');
+    form.className = 'queue-row is-now';
+    form.style.gridTemplateColumns = '1fr';
+    form.innerHTML = '' +
+      '<div><strong>Prescription for ' + escapeHtml(v.patient) + ' (#' + escapeHtml(v.token) + ')</strong></div>' +
+      '<div class="field" style="margin-top: 12px;">' +
+      '  <label for="rxText">Prescription note</label>' +
+      '  <textarea id="rxText" rows="3" placeholder="e.g. Tab. Azithromycin 500mg OD x 5 days; rest; follow-up in 7 days"></textarea>' +
+      '</div>' +
+      '<div class="field">' +
+      '  <label for="rxMeds">Medications (one per line)</label>' +
+      '  <textarea id="rxMeds" rows="3" placeholder="Azithromycin 500mg\nParacetamol 500mg SOS"></textarea>' +
+      '</div>' +
+      '<div class="btn-row">' +
+      '  <button class="btn" type="button" onclick="window._masSaveRx()">✓ Save & close visit</button>' +
+      '  <button class="btn btn--ghost" type="button" onclick="window._masSkipRx()">Skip for now</button>' +
+      '</div>';
+    row.insertAdjacentElement('beforebegin', form);
+  }
+
+  window._masSaveRx = function () {
+    var v = visits.find(function (x) { return x.id === activePrescriptionId; });
+    if (!v) { activePrescriptionId = null; return; }
+    v.prescription = (document.getElementById('rxText').value || '').trim();
+    v.medications = (document.getElementById('rxMeds').value || '').trim();
+    v.closedAt = Date.now();
+    saveVisits(visits);
+    activePrescriptionId = null;
+    renderQueue();
+    toast('Visit closed & prescription saved');
+  };
+  window._masSkipRx = function () {
+    activePrescriptionId = null;
+    saveVisits(visits);
+    renderQueue();
+  };
+
+  // ─── History ───────────────────────────────────────────
+  function renderHistory() {
+    var slot = document.getElementById('historyList');
+    var closed = visits.filter(function (v) { return v.status === 'done' && v.prescription; });
+    closed.sort(function (a, b) { return (b.closedAt || 0) - (a.closedAt || 0); });
+    if (closed.length === 0) {
+      slot.innerHTML = '<div class="empty-note">No prescriptions written yet. Close a visit from the Queue tab to add one.</div>';
+      return;
+    }
+    slot.innerHTML = closed.map(function (v) {
+      var when = new Date(v.closedAt || v.addedAt).toLocaleString();
+      var medList = v.medications ? v.medications.split(/\n/).map(function (m) { return '<li>' + escapeHtml(m.trim()) + '</li>'; }).join('') : '';
+      return '' +
+        '<div class="history-row">' +
+        '  <div class="history-row__head">' +
+        '    <span class="history-row__title">#' + escapeHtml(v.token) + ' · ' + escapeHtml(v.patient) + ' — ' + escapeHtml(doctorName(v.doctorId)) + '</span>' +
+        '    <time class="history-row__time">' + when + '</time>' +
+        '  </div>' +
+        '  <div class="history-row__rx">' + escapeHtml(v.prescription) + (medList ? '<ul style="margin-top: 8px; padding-left: 18px;">' + medList + '</ul>' : '') + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  // ─── Reports ──────────────────────────────────────────
+  function populateReportDropdowns() {
+    var today = todayStr();
+    if (!document.getElementById('reportDate').value) {
+      document.getElementById('reportDate').value = today;
+    }
+    var sel = document.getElementById('reportDoctor');
+    if (sel.children.length === 0) {
+      sel.innerHTML = '<option value="">All doctors</option>' + DOCTORS.map(function (d) {
+        return '<option value="' + d.id + '">' + escapeHtml(d.name) + '</option>';
+      }).join('');
+    }
+  }
+  function todayStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+
+  function reportFilteredVisits() {
+    var date = document.getElementById('reportDate').value || todayStr();
+    var doctorId = document.getElementById('reportDoctor').value || '';
+    return visits.filter(function (v) {
+      if (v.date !== date) return false;
+      if (doctorId && v.doctorId !== doctorId) return false;
+      return true;
+    });
+  }
+
+  function renderReport() {
+    var filtered = reportFilteredVisits();
+    var closed = filtered.filter(function (v) { return v.status === 'done'; });
+    var skipped = filtered.filter(function (v) { return v.status === 'skipped'; });
+    var cancelled = filtered.filter(function (v) { return v.status === 'cancelled'; });
+    var stillWaiting = filtered.filter(function (v) { return v.status === 'waiting'; });
+    var byDoc = {};
+    closed.forEach(function (v) { byDoc[v.doctorId] = (byDoc[v.doctorId] || 0) + 1; });
+    var doctorSummary = Object.keys(byDoc).map(function (k) {
+      return doctorName(k) + ': ' + byDoc[k];
+    }).join(' · ') || '—';
+
+    document.getElementById('reportSummary').innerHTML = '' +
+      '<div class="report-grid">' +
+      '  <div class="metric"><div class="metric__label">Total visits</div><div class="metric__value">' + filtered.length + '</div></div>' +
+      '  <div class="metric"><div class="metric__label">Closed</div><div class="metric__value">' + closed.length + '</div></div>' +
+      '  <div class="metric"><div class="metric__label">Skipped</div><div class="metric__value">' + skipped.length + '</div></div>' +
+      '  <div class="metric"><div class="metric__label">Cancelled</div><div class="metric__value">' + cancelled.length + '</div></div>' +
+      '  <div class="metric"><div class="metric__label">Still waiting</div><div class="metric__value">' + stillWaiting.length + '</div></div>' +
+      '  <div class="metric"><div class="metric__label">Doctor load</div><div class="metric__value" style="font-size: 14px; line-height: 1.4;">' + escapeHtml(doctorSummary) + '</div></div>' +
+      '</div>';
+
+    if (filtered.length === 0) {
+      document.getElementById('reportTable').innerHTML = '<div class="empty-note">No visits on the chosen date.</div>';
+      return;
+    }
+    var rows = filtered.slice().sort(function (a, b) { return (a.addedAt || 0) - (b.addedAt || 0); });
+    document.getElementById('reportTable').innerHTML = '' +
+      '<table class="report-table"><thead><tr><th>Token</th><th>Patient</th><th>Doctor</th><th>Slot</th><th>Reason</th><th>Status</th><th>Closed</th></tr></thead><tbody>' +
+      rows.map(function (v) {
+        var when = v.closedAt ? new Date(v.closedAt).toLocaleTimeString() : '—';
+        return '' +
+          '<tr><td><code>' + escapeHtml(v.token) + '</code></td>' +
+          '<td>' + escapeHtml(v.patient) + '</td>' +
+          '<td>' + escapeHtml(doctorName(v.doctorId)) + '</td>' +
+          '<td>' + escapeHtml(v.slot || 'walk-in') + '</td>' +
+          '<td>' + escapeHtml(v.reason || '—') + '</td>' +
+          '<td>' + escapeHtml(v.status) + '</td>' +
+          '<td>' + escapeHtml(when) + '</td></tr>';
+      }).join('') +
+      '</tbody></table>';
+  }
+
+  document.getElementById('viewReport').addEventListener('click', renderReport);
+
+  document.getElementById('exportJson').addEventListener('click', function () {
+    var filtered = reportFilteredVisits();
+    var payload = {
+      date: document.getElementById('reportDate').value,
+      doctor_filter: document.getElementById('reportDoctor').value || null,
+      visits: filtered,
+      counts: {
+        total: filtered.length,
+        closed: filtered.filter(function (v) { return v.status === 'done'; }).length,
+        skipped: filtered.filter(function (v) { return v.status === 'skipped'; }).length,
+        cancelled: filtered.filter(function (v) { return v.status === 'cancelled'; }).length,
+        waiting: filtered.filter(function (v) { return v.status === 'waiting'; }).length
+      }
+    };
+    download(JSON.stringify(payload, null, 2), 'clinic_report_' + payload.date + '.json', 'application/json');
+  });
+
+  document.getElementById('exportCsv').addEventListener('click', function () {
+    var filtered = reportFilteredVisits();
+    var lines = ['token,patient,doctor,slot,reason,status,closed_at'];
+    filtered.forEach(function (v) {
+      lines.push([
+        v.token, csvEscape(v.patient), csvEscape(doctorName(v.doctorId)),
+        v.slot || 'walk-in', csvEscape(v.reason || ''), v.status,
+        v.closedAt ? new Date(v.closedAt).toISOString() : ''
+      ].join(','));
+    });
+    download(lines.join('\n'), 'clinic_report_' + (document.getElementById('reportDate').value || todayStr()) + '.csv', 'text/csv');
+  });
+
+  function csvEscape(s) {
+    s = String(s == null ? '' : s);
+    if (/[",\n\r]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function download(content, filename, mime) {
+    var blob = new Blob([content], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  // ─── Utilities ────────────────────────────────────────
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' }[c];
+    });
+  }
+
+  // ─── Init ─────────────────────────────────────────────
+  function init() {
+    renderDoctors();
+    populateWalkinDropdown();
+    var today = todayStr();
+    document.getElementById('bookDate').value = today;
+    booking.date = today;
+    renderSlots();
+    renderQueue();
+    renderHistory();
+    populateReportDropdowns();
+    renderReport();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
