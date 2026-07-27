@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR-Based Digital Identity Card — BuildVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+:root { --bg: #11121a; --panel: #1a1c2a; --panel-line: #2c2f43; --paper: #ece5d8; --paper-dim: #cfc6b6; --safelight: #7c3aed; --safelight-light: #a577e8; --ok: #79946f; --warn: #e0a458; --bad: #d5432b; --radius: 6px; --muted: #807a72; --font-display: "IBM Plex Mono", monospace; --font-body: "IBM Plex Sans", sans-serif; }
+[data-theme="light"] { --bg: #f3f1ec; --panel: #ffffff; --panel-line: #d8d3c8; --paper: #1c1714; --paper-dim: #4a4239; --muted: #7a756c; --safelight: #6a26d2; --safelight-light: #8c43d6; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: radial-gradient(circle at 15% -10%, #201e2e 0%, transparent 55%), var(--bg); color: var(--paper); font-family: var(--font-body); -webkit-font-smoothing: antialiased; min-height: 100vh; padding-bottom: 40px; }
+.wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px 60px; }
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+.masthead__mark { display: flex; align-items: center; gap: 10px; }
+.masthead__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--safelight-light), var(--safelight) 70%); box-shadow: 0 0 8px rgba(124,58,237,0.6); }
+.masthead__title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.masthead__sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.theme-toggle { position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid var(--panel-line); color: var(--muted); padding: 6px 12px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s ease; }
+.theme-toggle:hover { color: var(--paper); border-color: var(--safelight); }
+
+.panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px; padding: 22px; margin-bottom: 18px; }
+.panel__title { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--safelight-light); margin: 0 0 16px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+.field input { width: 100%; background: #0a0d12; border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 10px 12px; color: var(--paper); font-family: var(--font-body); font-size: 13.5px; }
+[data-theme="light"] .field input { background: #f6f4ef; color: var(--paper); }
+.field input:focus { outline: none; border-color: var(--safelight); }
+.field-row { display: flex; gap: 10px; }
+.field-row>*{flex:1;}
+
+.btn { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--safelight); border: 1px solid var(--safelight); color: #f5edff; padding: 11px 18px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s ease; }
+.btn:hover { filter: brightness(1.1); }
+.btn--ghost { background: transparent; color: var(--paper-dim); border-color: var(--panel-line); }
+.btn--ghost:hover { border-color: var(--safelight); color: var(--paper); }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { flex: 1; }
+
+.qr { text-align: center; margin: 14px 0; }
+.qr canvas { border: 4px solid var(--safelight); border-radius: 8px; }
+.card-preview { border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 16px 20px; margin-top: 16px; background: var(--panel); }
+.card-preview h3 { margin-bottom: 4px; font-size: 16px; }
+.card-preview ._tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10.5px; font-family: var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid currentColor; margin-right: 6px; color: var(--safelight-light); }
+.card-preview ._links { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.card-preview ._links a { color: var(--safelight-light); font-size: 12.5px; }
+
+.flash { position: fixed; bottom: 24px; right: 24px; background: var(--safelight); color: #f5edff; padding: 10px 16px; border-radius: var(--radius); font-size: 13px; z-index: 999; transition: opacity 0.3s; opacity: 0; pointer-events: none; font-family: var(--font-display); letter-spacing: 0.06em; }
+.flash.is-visible { opacity: 1; }
+.analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+@media (max-width: 700px) { .theme-toggle { position: static; margin-bottom: 16px; } .field-row { flex-direction: column; } }
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" type="button">🌙 Light</button>
+<div class="wrap">
+  <header class="masthead">
+    <div class="masthead__mark"><span class="masthead__dot" aria-hidden="true"></span><span class="masthead__title">Digital Identity Card</span></div>
+    <p class="masthead__sub">Build your profile, share via QR, and track who's scanning you.</p>
+  </header>
+  <div class="panel">
+    <h2 class="panel__title">Profile edit</h2>
+    <div class="field-row">
+      <div class="field"><label for="pfName">Full name</label><input type="text" id="pfName" placeholder="e.g. Gabriel A. Gupta" autocomplete="off"></div>
+      <div class="field"><label for="pfTitle">Job title</label><input type="text" id="pfTitle" placeholder="e.g. Software Engineer" autocomplete="off"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label for="pfEmail">Email</label><input type="email" id="pfEmail" placeholder="you@example.com"></div>
+      <div class="field"><label for="pfPhone">Phone</label><input type="tel" id="pfPhone" placeholder="+1-555-0199" autocomplete="off"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label for="pfPortfolio">Portfolio URL</label><input type="url" id="pfPortfolio" placeholder="https://your.portfolio" autocomplete="off"></div>
+      <div class="field"><label for="pfGithub">GitHub</label><input type="text" id="pfGithub" placeholder="arcgod-design" autocomplete="off"></div>
+      <div class="field"><label for="pfLinkedin">LinkedIn</label><input type="text" id="pfLinkedin" placeholder="your-handle" autocomplete="off"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label for="pfResume">Resume / CV link</label><input type="url" id="pfResume" placeholder="https://cvsite.me/RESUME.pdf" autocomplete="off"></div>
+      <div class="field"><label for="pfSocials">Other socials (JSON list)</label><input type="text" id="pfSocials" placeholder='["twitter: alice", "website: xyz"]' autocomplete="off"></div>
+    </div>
+    <div class="btn-row"><button class="btn" id="saveProfile" type="button">Save profile</button><button class="btn btn--ghost" id="resetProfile" type="button">Reset</button></div>
+  </div>
+  <div class="panel">
+    <h2 class="panel__title">QR code for digital identity card</h2>
+    <div class="qr" id="qrSlot"><p style="color: var(--muted); margin-bottom: 16px;">Your QR shows up here when profile is saved.</p></div>
+    <div class="card-preview" id="cardSlot"></div>
+  </div>
+  <div class="panel">
+    <h2 class="panel__title">Scan analytics</h2>
+    <div class="analytics-grid" id="analytics"></div>
+  </div>
+</div>
+<div class="flash" id="flash" role="status" aria-live="polite"></div>
+<script>
+(function () {
+  'use strict';
+  var STORE = 'dic:profile';
+  function load() { try { return JSON.parse(localStorage.getItem(STORE) || '{}'); } catch (e) { return {}; } }
+  function save(p) { try { localStorage.setItem(STORE, JSON.stringify(p)); } catch (e) {} }
+  var profile = load();
+
+  var STORE_TH = 'dic:theme';
+  function loadTheme() { try { return localStorage.getItem(STORE_TH) || 'dark'; } catch (e) { return 'dark'; } }
+  function saveTheme(t) { try { localStorage.setItem(STORE_TH, t); } catch (e) {} }
+  var themeToggle = document.getElementById('themeToggle');
+  function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); themeToggle.textContent = t === 'dark' ? '🌙 Light' : '☀ Dark'; }
+  applyTheme(loadTheme());
+  themeToggle.addEventListener('click', function () { var cur = document.documentElement.getAttribute('data-theme') || 'dark'; var next = cur === 'dark' ? 'light' : 'dark'; applyTheme(next); saveTheme(next); });
+  var flash = document.getElementById('flash'); var flashTimer = null;
+  function toast(msg) { flash.textContent = msg; flash.classList.add('is-visible'); clearTimeout(flashTimer); flashTimer = setTimeout(function () { flash.classList.remove('is-visible'); }, 2400); }
+  function populateFields() {
+    ['pfName','pfTitle','pfCompany','pfEmail','pfPhone','pfPortfolio','pfGithub','pfLinkedin','pfResume'].forEach(function (f) { document.getElementById(f).value = profile[f] || ''; });
+    document.getElementById('pfSocials').value = JSON.stringify(profile.socials || []);
+    renderCard(); renderAnalytics();
+  }
+  document.getElementById('saveProfile').addEventListener('click', function () {
+    profile.name = (document.getElementById('pfName').value || '').trim();
+    profile.title = (document.getElementById('pfTitle').value || '').trim();
+    profile.company = (document.getElementById('pfCompany').value || '').trim();
+    profile.email = (document.getElementById('pfEmail').value || '').trim();
+    profile.phone = (document.getElementById('pfPhone').value || '').trim();
+    profile.portfolio = (document.getElementById('pfPortfolio').value || '').trim();
+    profile.github = (document.getElementById('pfGithub').value || '').trim();
+    profile.linkedin = (document.getElementById('pfLinkedin').value || '').trim();
+    profile.resume = (document.getElementById('pfResume').value || '').trim();
+    try { profile.socials = JSON.parse(document.getElementById('pfSocials').value); } catch (e) { profile.socials = []; }
+    save(profile);
+    renderPdf();
+    renderAnalytics();
+    toast('Profile saved & QR generated');
+  });
+  document.getElementById('resetProfile').addEventListener('click', function () {
+    if (!confirm('Clear all profile data?')) return;
+    localStorage.removeItem(STORE);
+    profile = {};
+    populateFields();
+    renderPdf();
+    toast('Profile cleared');
+  });
+  function renderPdf() {
+    var slot = document.getElementById('cardSlot');
+    var qrSlot = document.getElementById('qrSlot');
+    if (!profile.name) { slot.innerHTML = '<p style="color: var(--muted);">Save your profile to see the ID card preview.</p>'; return; }
+    var socials = (profile.socials || []).map(function (s) { return '<span class="_tag">' + escapeHtml(s) + '</span>'; }).join('');
+    var links = [];
+    if (profile.portfolio) links.push('<a href="' + escapeHtml(profile.portfolio) + '" target="_blank" rel="noopener">Portfolio</a>');
+    if (profile.github) links.push('<a href="https://github.com/' + escapeHtml(profile.github) + '" target="_blank" rel="noopener">GitHub</a>');
+    if (profile.linkedin) links.push('<a href="https://linkedin.com/in/' + escapeHtml(profile.linkedin) + '" target="_blank" rel="noopener">LinkedIn</a>');
+    if (profile.resume) links.push('<a href="' + escapeHtml(profile.resume) + '" target="_blank" rel="noopener">Resume</a>');
+    slot.innerHTML = '' +
+      '<div style="display: flex; align-items: center; gap: 16px;">' +
+      '  <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--safelight), var(--safelight-light)); display: flex; align-items: center; justify-content: center; color: #fff; font-family: var(--font-display); font-size: 20px; font-weight: 700;">' + escapeHtml(profile.name.charAt(0).toUpperCase()) + '</div>' +
+      '  <div><h2>' + escapeHtml(profile.name) + '</h2><div style="color: var(--muted); font-size: 12.5px; font-family: var(--font-display); letter-spacing: 0.04em;">' + escapeHtml(profile.title + (profile.company ? ' at ' + profile.company : '')) + '</div></div>' +
+      '</div>' +
+      (links.length ? '<div class="_links">' + links.join(' · ') + '</div>' : '') +
+      (socials ? '<div style="margin-top: 8px;">' + socials + '</div>' : '');
+    renderQR();
+  }
+  function renderQR() {
+    var slot = document.getElementById('qrSlot');
+    if (!profile.name) { slot.innerHTML = '<p style="color: var(--muted);">QR code appears after saving.</p>'; return; }
+    var payload = JSON.stringify({
+      name: profile.name, title: profile.title, company: profile.company, email: profile.email, phone: profile.phone,
+      portfolio: profile.portfolio, github: profile.github, linkedin: profile.linkedin, resume: profile.resume, socials: profile.socials
+    });
+    var qr = qrcode(0, 'M');
+    qr.addData(payload);
+    qr.make();
+    slot.innerHTML = qr.createImgTag(5, 8);
+    // Count as a potential scan — increment local analytics counter.
+    profile.scans = (profile.scans || 0) + 1;
+    save(profile);
+    renderAnalytics();
+  }
+  function renderAnalytics() {
+    document.getElementById('analytics').innerHTML = '' +
+      '<div class="analytics-grid">' +
+      '  <div style="border:1px solid var(--panel-line); border-radius:var(--radius); padding:12px 14px; background:var(--panel);"><div style="font-size:10.5px;color:var(--muted);font-family:var(--font-display);letter-spacing:0.12em;text-transform:uppercase;">Scans generated</div><div style="font-size:26px;font-weight:700;margin-top:4px;">' + (profile.scans || 0) + '</div></div>' +
+      '  <div style="border:1px solid var(--panel-line); border-radius:var(--radius); padding:12px 14px; background:var(--panel);"><div style="font-size:10.5px;color:var(--muted);font-family:var(--font-display);letter-spacing:0.12em;text-transform:uppercase;">Field count</div><div style="font-size:26px;font-weight:700;margin-top:4px;">' + Object.keys(profile).filter(function(k){return profile[k] && k !== 'scans';}).length + '</div></div>' +
+      '  <div style="border:1px solid var(--panel-line); border-radius:var(--radius); padding:12px 14px; background:var(--panel);"><div style="font-size:10.5px;color:var(--muted);font-family:var(--font-display);letter-spacing:0.12em;text-transform:uppercase;">Short URL available</div><div style="font-size:26px;font-weight:700;margin-top:4px;">' + (profile.hostShort ? 'Yes' : '—') + '</div></div>' +
+      '</div>';
+  }
+  function escapeHtml(s) { if (s == null) return ''; return String(s).replace(/[&<>""]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function init() { populateFields(); renderPdf(); }
+  init();
+})();
+</script>
+</body>
+</html>
