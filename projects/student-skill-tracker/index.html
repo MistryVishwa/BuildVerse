@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Skill Tracker — BuildVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #11121a;
+  --panel: #1a1c2a;
+  --panel-line: #2c2f43;
+  --paper: #ece5d8;
+  --paper-dim: #cfc6b6;
+  --safelight: #7c3aed;
+  --safelight-light: #a577e8;
+  --ink: #1c1714;
+  --muted: #807a72;
+  --ok: #79946f;
+  --warn: #e0a458;
+  --bad: #d5432b;
+  --radius: 6px;
+  --font-display: "IBM Plex Mono", monospace;
+  --font-body: "IBM Plex Sans", sans-serif;
+}
+[data-theme="light"] {
+  --bg: #f3f1ec;
+  --panel: #ffffff;
+  --panel-line: #d8d3c8;
+  --paper: #1c1714;
+  --paper-dim: #4a4239;
+  --muted: #7a756c;
+  --safelight: #6a26d2;
+  --safelight-light: #8c43d6;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: radial-gradient(circle at 15% -10%, #201e2e 0%, transparent 55%), var(--bg);
+  color: var(--paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding: 40px 20px 60px; }
+
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+.masthead__mark { display: flex; align-items: center; gap: 10px; }
+.masthead__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--safelight-light), var(--safelight) 70%); box-shadow: 0 0 8px rgba(124,58,237,0.6); }
+.masthead__title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.masthead__sub { margin: 6px  0 0; color: var(--muted); font-size: 14px; }
+
+.theme-toggle { position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid var(--panel-line); color: var(--muted); padding: 6px 12px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s ease; }
+.theme-toggle:hover { color: var(--paper); border-color: var(--safelight); }
+
+.filmstrip { display: flex; justify-content: center; gap: 4px; margin-bottom: 24px; border-top: 1px dashed var(--panel-line); border-bottom: 1px dashed var(--panel-line); padding: 8px 0; flex-wrap: wrap; }
+.tab { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; background: transparent; border: 1px solid transparent; color: var(--muted); padding: 9px 20px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease; }
+.tab:hover { color: var(--paper); }
+.tab.is-active { background: var(--safelight); border-color: var(--safelight); color: #f5edff; }
+
+.view { display: none; }
+.view.is-active { display: block; }
+
+.panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px; padding: 22px; }
+.panel + .panel { margin-top: 18px; }
+.panel__title { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--safelight-light); margin: 0 0 16px; }
+
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+.field input, .field select, .field textarea {
+  width: 100%; background: #0a0d12; border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 10px 12px; color: var(--paper); font-family: var(--font-body); font-size: 13.5px;
+}
+[data-theme="light"] .field input, [data-theme="light"] .field select { background: #f6f4ef; color: var(--paper); }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--safelight); }
+.field-row { display: flex; gap: 10px; }
+.field-row > * { flex: 1; }
+
+.btn { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--safelight); border: 1px solid var(--safelight); color: #f5edff; padding: 11px 18px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s ease; }
+.btn:hover { filter: brightness(1.1); }
+.btn--ghost { background: transparent; color: var(--paper-dim); border-color: var(--panel-line); }
+.btn--ghost:hover { border-color: var(--safelight); color: var(--paper); }
+.btn--small { padding: 7px 12px; }
+.btn--bad { background: var(--bad); border-color: var(--bad); color: #fff3ef; }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { flex: 1; }
+
+.profile-card { display: grid; grid-template-columns: 80px 1fr; gap: 16px; align-items: center; }
+.avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--safelight), var(--safelight-light)); display: flex; align-items: center; justify-content: center; color: #fff; font-family: var(--font-display); font-size: 26px; font-weight: 700; }
+.profile-info h3 { font-size: 16px; margin-bottom: 4px; }
+.profile-info p { color: var(--muted); font-size: 12.5px; font-family: var(--font-display); letter-spacing: 0.04em; }
+.profile-info a { color: var(--safelight-light); }
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-family: var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; background: rgba(124,58,237,0.18); color: var(--safelight-light); margin-right: 6px; }
+.badge--ok { background: rgba(121,148,111,0.18); color: var(--ok); }
+
+/* ---- Skill graph ---- */
+.tree { margin-top: 8px; padding-left: 18px; border-left: 1px dashed var(--panel-line); }
+.tree-node { margin: 10px 0; position: relative; }
+.tree-node__head { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--panel-line); border-radius: var(--radius); }
+.tree-node__name { font-weight: 600; font-size: 14px; }
+.tree-node__depth { font-family: var(--font-display); font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+.tree-node__cert { color: var(--warn); font-size: 18px; margin-left: auto; }
+.tree-node__cert:hover { color: var(--safelight-light); cursor: pointer; }
+.tree-node__btn { font-size: 11px; background: transparent; border: 1px solid var(--panel-line); color: var(--muted); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-family: var(--font-display); }
+.tree-node__btn:hover { color: var(--paper); border-color: var(--safelight); }
+.tree-leaf { margin-top: 10px; padding-left: 18px; border-left: 1px dashed var(--panel-line); }
+
+/* ---- Leaderboard ---- */
+.lb-row { display: grid; grid-template-columns: 50px 50px 1fr auto; gap: 14px; align-items: center; padding: 12px 14px; background: var(--panel); border: 1px solid var(--panel-line); border-radius: var(--radius); margin-bottom: 8px; }
+.lb-row.is-me { border-color: var(--safelight); background: rgba(124,58,237,0.10); }
+.lb-rank { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--safelight-light); text-align: center; }
+.lb-row.is-me .lb-rank { color: var(--paper); }
+.lb-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--safelight), var(--safelight-light)); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; }
+.lb-name { font-weight: 600; font-size: 14px; }
+.lb-name ._lb-handle { color: var(--muted); margin-left: 6px; font-family: var(--font-display); font-size: 11.5px; letter-spacing: 0.04em; }
+.lb-score { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--paper-dim); }
+.lb-score small { display: block; font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+.flash { position: fixed; bottom: 24px; right: 24px; background: var(--safelight); color: #f5edff; padding: 10px 16px; border-radius: var(--radius); font-size: 13px; z-index: 999; transition: opacity 0.3s; opacity: 0; pointer-events: none; font-family: var(--font-display); letter-spacing: 0.06em; }
+.flash.is-visible { opacity: 1; }
+.empty-note { color: var(--muted); font-family: var(--font-display); font-size: 12px; letter-spacing: 0.06em; padding: 20px; text-align: center; }
+
+@media (max-width: 700px) {
+  .theme-toggle { position: static; margin-bottom: 16px; }
+  .field-row { flex-direction: column; }
+  .lb-row { grid-template-columns: 40px 1fr auto; }
+  .lb-row .lb-avatar { display: none; }
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" type="button">🌙 Light</button>
+<div class="wrap">
+  <header class="masthead">
+    <div class="masthead__mark">
+      <span class="masthead__dot" aria-hidden="true"></span>
+      <span class="masthead__title">Student Skill Tracker</span>
+    </div>
+    <p class="masthead__sub">A centralized portfolio of skills, certificates, GitHub activity, and rankings.</p>
+  </header>
+
+  <nav class="filmstrip" role="tablist">
+    <button class="tab is-active" data-tab="profile" role="tab">Profile</button>
+    <button class="tab" data-tab="skills" role="tab">Skill Graph</button>
+    <button class="tab" data-tab="leaderboard" role="tab">Leaderboard</button>
+  </nav>
+
+  <!-- ─── Profile ─── -->
+  <section class="view is-active" data-view="profile">
+    <div class="panel">
+      <h2 class="panel__title">Your profile</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="pfName">Display name</label>
+          <input type="text" id="pfName" placeholder="e.g. Adish Gupta" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="pfHandle">Handle</label>
+          <input type="text" id="pfHandle" placeholder="e.g. arcgod-design" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="pfGithub">GitHub username (for repository count)</label>
+          <input type="text" id="pfGithub" placeholder="e.g. arcgod-design" autocomplete="off">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="saveProfile" type="button">Save profile</button>
+        <button class="btn btn--ghost" id="fetchGithub" type="button">⟳ Fetch from GitHub</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel__title">Profile summary</h2>
+      <div class="profile-card" id="profileCard"></div>
+    </div>
+  </section>
+
+  <!-- ─── Skill graph ─── -->
+  <section class="view" data-view="skills">
+    <div class="panel">
+      <h2 class="panel__title">Add a skill</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="newSkillName">Skill name</label>
+          <input type="text" id="newSkillName" placeholder="e.g. React" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="newSkillParent">Parent (optional — empty for root)</label>
+          <select id="newSkillParent"><option value="">(root)</option></select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="addSkill" type="button">⊕ Add skill</button>
+        <button class="btn btn--ghost" id="clearSkills" type="button">✕ Clear all</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2 class="panel__title">Your skill graph</h2>
+      <div id="skillTree"></div>
+    </div>
+
+    <div class="panel" id="certPanel" style="display: none;">
+      <h2 class="panel__title" id="certPanelTitle">Attach certificate</h2>
+      <input type="hidden" id="certSkillId">
+      <div class="field-row">
+        <div class="field">
+          <label for="certTitle">Title</label>
+          <input type="text" id="certTitle" placeholder="e.g. Meta Front-End Developer" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="certIssuer">Issuer</label>
+          <input type="text" id="certIssuer" placeholder="e.g. Coursera" autocomplete="off">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="certDate">Date</label>
+          <input type="date" id="certDate">
+        </div>
+        <div class="field">
+          <label for="certUrl">URL (optional — adds verified badge)</label>
+          <input type="url" id="certUrl" placeholder="https://coursera.org/verify/ABC123">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="saveCert" type="button">✓ Save certificate</button>
+        <button class="btn btn--ghost" id="cancelCert" type="button">Cancel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Leaderboard ─── -->
+  <section class="view" data-view="leaderboard">
+    <div class="panel">
+      <h2 class="panel__title">Community leaderboard</h2>
+      <p style="color: var(--muted); margin-bottom: 18px; font-size: 12.5px;">Score = skills + certificates + ⌊repos / 4⌋. Friends below are pre-seeded for demo purposes — edit your profile above to climb.</p>
+      <div id="leaderboard"></div>
+    </div>
+  </section>
+</div>
+
+<div class="flash" id="flash" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // --- localStorage keys
+  var STORE_PROFILE = 'sst:profile';
+  var STORE_SKILLS = 'sst:skills';
+  var STORE_THEME = 'sst:theme';
+
+  // --- Pre-seeded "community" — known demo friends whose score never
+  // changes (no live accounts). Real production would query the
+  // backend; here it's just so the local student isn't alone at #1.
+  var SEED_FRIENDS = [
+    { name: 'Ishaan Verma',   handle: 'ishaanv',   skillsCount: 6, certsCount: 4, repos: 18, me: false },
+    { name: 'Maya Patel',     handle: 'mayap',     skillsCount: 9, certsCount: 3, repos: 14, me: false },
+    { name: 'Rohan Das',      handle: 'rohand',    skillsCount: 4, certsCount: 2, repos: 22, me: false },
+    { name: 'Sara Khan',      handle: 'sarak',     skillsCount: 11, certsCount: 7, repos: 9, me: false },
+    { name: 'Vivaan Gupta',   handle: 'vivaang',   skillsCount: 5, certsCount: 1, repos: 6, me: false }
+  ];
+
+  // --- State helpers
+  function loadProfile() {
+    try { return JSON.parse(localStorage.getItem(STORE_PROFILE) || '{}'); } catch (e) { return {}; }
+  }
+  function saveProfile(p) { try { localStorage.setItem(STORE_PROFILE, JSON.stringify(p)); } catch (e) {} }
+  function loadSkills() {
+    try { return JSON.parse(localStorage.getItem(STORE_SKILLS) || '[]'); } catch (e) { return []; }
+  }
+  function saveSkills(s) { try { localStorage.setItem(STORE_SKILLS, JSON.stringify(s)); } catch (e) {} }
+  function loadTheme() { try { return localStorage.getItem(STORE_THEME) || 'dark'; } catch (e) { return 'dark'; } }
+  function saveTheme(t) { try { localStorage.setItem(STORE_THEME, t); } catch (e) {} }
+
+  var profile = loadProfile();
+  var skills = loadSkills();
+
+  // --- Theme
+  var themeToggle = document.getElementById('themeToggle');
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themeToggle.textContent = t === 'dark' ? '🌙 Light' : '☀ Dark';
+  }
+  applyTheme(loadTheme());
+  themeToggle.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+    var next = cur === 'dark' ? 'light' : 'dark';
+    applyTheme(next); saveTheme(next);
+  });
+
+  // --- Tabs
+  function goTo(tab) {
+    document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('is-active'); });
+    document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('is-active'); });
+    document.querySelector('.tab[data-tab="' + tab + '"]').classList.add('is-active');
+    document.querySelector('.view[data-view="' + tab + '"]').classList.add('is-active');
+    if (tab === 'profile') renderProfile();
+    if (tab === 'skills') renderTree();
+    if (tab === 'leaderboard') renderLeaderboard();
+  }
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () { goTo(t.getAttribute('data-tab')); });
+  });
+
+  // --- Toast
+  var flash = document.getElementById('flash');
+  var flashTimer = null;
+  function toast(msg) {
+    flash.textContent = msg;
+    flash.classList.add('is-visible');
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { flash.classList.remove('is-visible'); }, 2500);
+  }
+
+  // --- Profile save
+  document.getElementById('saveProfile').addEventListener('click', function () {
+    var name = (document.getElementById('pfName').value || '').trim();
+    var handle = (document.getElementById('pfHandle').value || '').trim();
+    var gh = (document.getElementById('pfGithub').value || '').trim();
+    if (!name) { toast('Display name required'); return; }
+    profile.name = name;
+    profile.handle = handle || name.split(' ')[0].toLowerCase();
+    profile.github = gh;
+    saveProfile(profile);
+    renderProfile();
+    toast('Profile saved');
+  });
+
+  document.getElementById('fetchGithub').addEventListener('click', function () {
+    var gh = (document.getElementById('pfGithub').value || '').trim();
+    if (!gh) { toast('Enter GitHub username first'); return; }
+    toast('Fetching…');
+    fetch('https://api.github.com/users/' + gh, { headers: { 'Accept': 'application/vnd.github+json' } })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (data) {
+        profile.repos = data.public_repos || 0;
+        profile.avatarUrl = data.avatar_url || null;
+        profile.bio = data.bio || '';
+        saveProfile(profile);
+        renderProfile();
+        renderLeaderboard();
+        toast('GitHub data updated — ' + profile.repos + ' repos');
+      })
+      .catch(function (e) {
+        toast('GitHub fetch failed (' + e.message + ')');
+        profile.repos = null;
+        saveProfile(profile);
+        renderProfile();
+      });
+  });
+
+  function renderProfile() {
+    var slot = document.getElementById('profileCard');
+    var initial = (profile.name || '?').charAt(0).toUpperCase();
+    var score = computeScore();
+    var bundle = '' +
+      '<div class="avatar">' + escapeHtml(initial) + '</div>' +
+      '<div class="profile-info">' +
+      '  <h3>' + escapeHtml(profile.name || 'Anonymous Student') + '</h3>' +
+      '  <p>@' + escapeHtml(profile.handle || 'anonymous') + (profile.github ? ' · github.com/' + escapeHtml(profile.github) : '') + '</p>' +
+      '  <div style="margin-top: 8px;">' +
+      '    <span class="badge">Skills: ' + skills.length + '</span>' +
+      '    <span class="badge">Certs: ' + countCerts(skills) + '</span>' +
+      '    <span class="badge ' + (profile.repos != null ? 'badge--ok' : '') + '">Repos: ' + (profile.repos != null ? profile.repos : '—') + '</span>' +
+      '    <span class="badge badge--ok">Score: ' + score + '</span>' +
+      '  </div>' +
+      (profile.bio ? '<p style="margin-top: 8px;">"' + escapeHtml(profile.bio) + '"</p>' : '') +
+      '</div>';
+    slot.innerHTML = bundle;
+  }
+
+  function countCerts(list) {
+    return list.reduce(function (n, s) { return n + (s.cert ? 1 : 0); }, 0);
+  }
+  function computeScore() {
+    var skillsCount = skills.length;
+    var certsCount = countCerts(skills);
+    var repos = profile.repos || 0;
+    return skillsCount + certsCount + Math.floor(repos / 4);
+  }
+
+  // --- Skills tree
+  function buildTree(flat) {
+    var byId = {};
+    flat.forEach(function (s) { byId[s.id] = { s: s, children: [] }; });
+    var roots = [];
+    flat.forEach(function (s) {
+      if (s.parent && byId[s.parent]) byId[s.parent].children.push(byId[s.id]);
+      else roots.push(byId[s.id]);
+    });
+    return roots;
+  }
+
+  function renderTree() {
+    var slot = document.getElementById('skillTree');
+    if (skills.length === 0) {
+      slot.innerHTML = '<div class="empty-note">No skills yet — add one above to start your portfolio.</div>';
+      populateParentDropdown();
+      return;
+    }
+    var roots = buildTree(skills);
+    var html = '';
+    function walk(node, depth) {
+      var cert = node.s.cert;
+      html += '' +
+        '<div class="tree-node" style="margin-left: ' + (depth * 16) + 'px;">' +
+        '  <div class="tree-node__head">' +
+        '    <span class="tree-node__depth">L' + depth + '</span>' +
+        '    <span class="tree-node__name">' + escapeHtml(node.s.name) + '</span>' +
+        (cert ? '<span title="' + escapeHtml(cert.title) + ' (' + escapeHtml(cert.issuer) + ')" style="color: var(--warn); margin-left: 8px;">🏅</span>' : '') +
+        '    <button class="tree-node__btn" type="button" onclick="window._sstAddCert(\'' + node.s.id + '\')">' + (cert ? 'edit cert' : '+ cert') + '</button>' +
+        '    <button class="tree-node__btn" type="button" onclick="window._sstDeleteSkill(\'' + node.s.id + '\')">✕</button>' +
+        '  </div>' +
+        '</div>';
+      node.children.forEach(function (c) { walk(c, depth + 1); });
+    }
+    roots.forEach(function (r) { walk(r, 0); });
+    slot.innerHTML = html;
+    populateParentDropdown();
+  }
+
+  function populateParentDropdown() {
+    var sel = document.getElementById('newSkillParent');
+    var current = sel.value;
+    sel.innerHTML = '<option value="">(root)</option>' + skills.map(function (s) {
+      return '<option value="' + s.id + '">' + escapeHtml(s.name) + '</option>';
+    }).join('');
+    sel.value = current;
+  }
+
+  document.getElementById('addSkill').addEventListener('click', function () {
+    var name = (document.getElementById('newSkillName').value || '').trim();
+    var parent = document.getElementById('newSkillParent').value || null;
+    if (!name) { toast('Skill name required'); return; }
+    var id = 'sk_' + Date.now().toString(36);
+    skills.push({ id: id, name: name, parent: parent, cert: null });
+    saveSkills(skills);
+    document.getElementById('newSkillName').value = '';
+    document.getElementById('newSkillParent').value = '';
+    renderTree();
+    renderProfile();
+    toast('Added skill: ' + name);
+  });
+
+  document.getElementById('clearSkills').addEventListener('click', function () {
+    if (!confirm('Clear all skills and certificates?')) return;
+    skills = [];
+    saveSkills(skills);
+    renderTree();
+    renderProfile();
+    toast('Skills cleared');
+  });
+
+  window._sstDeleteSkill = function (id) {
+    var idx = skills.findIndex(function (s) { return s.id === id; });
+    if (idx < 0) return;
+    // Re-parent children to root (so deleting 'Frontend' promotes 'React' up a level).
+    skills.forEach(function (s) { if (s.parent === id) s.parent = null; });
+    skills.splice(idx, 1);
+    saveSkills(skills);
+    renderTree();
+    renderProfile();
+  };
+
+  // --- Certificate dialog
+  window._sstAddCert = function (skillId) {
+    var s = skills.find(function (x) { return x.id === skillId; });
+    if (!s) return;
+    document.getElementById('certSkillId').value = skillId;
+    document.getElementById('certPanelTitle').textContent = 'Attach certificate to "' + s.name + '"';
+    if (s.cert) {
+      document.getElementById('certTitle').value = s.cert.title;
+      document.getElementById('certIssuer').value = s.cert.issuer;
+      document.getElementById('certDate').value = s.cert.date || '';
+      document.getElementById('certUrl').value = s.cert.url || '';
+    } else {
+      document.getElementById('certTitle').value = '';
+      document.getElementById('certIssuer').value = '';
+      document.getElementById('certDate').value = '';
+      document.getElementById('certUrl').value = '';
+    }
+    document.getElementById('certPanel').style.display = 'block';
+  };
+  document.getElementById('cancelCert').addEventListener('click', function () { document.getElementById('certPanel').style.display = 'none'; });
+  document.getElementById('saveCert').addEventListener('click', function () {
+    var id = document.getElementById('certSkillId').value;
+    var s = skills.find(function (x) { return x.id === id; });
+    if (!s) return;
+    var title = (document.getElementById('certTitle').value || '').trim();
+    var issuer = (document.getElementById('certIssuer').value || '').trim();
+    var date = document.getElementById('certDate').value;
+    var url = (document.getElementById('certUrl').value || '').trim();
+    if (!title) { toast('Title required'); return; }
+    s.cert = { title: title, issuer: issuer, date: date, url: url };
+    saveSkills(skills);
+    document.getElementById('certPanel').style.display = 'none';
+    renderTree();
+    renderProfile();
+    toast('Certificate saved');
+  });
+
+  // --- Leaderboard
+  function renderLeaderboard() {
+    var slot = document.getElementById('leaderboard');
+    var me = {
+      name: profile.name || 'Anonymous Student',
+      handle: profile.handle || 'me',
+      skillsCount: skills.length,
+      certsCount: countCerts(skills),
+      repos: profile.repos || 0,
+      me: true
+    };
+    var myScore = computeScore();
+    var allFriends = SEED_FRIENDS.map(function (f) {
+      f.score = f.skillsCount + f.certsCount + Math.floor((f.repos || 0) / 4);
+      return f;
+    });
+    var meRow = { name: me.name, handle: me.handle, skillsCount: me.skillsCount, certsCount: me.certsCount, repos: me.repos, me: true, score: myScore };
+    var combined = [meRow].concat(allFriends);
+    combined.sort(function (a, b) { return b.score - a.score; });
+    slot.innerHTML = combined.map(function (f, i) {
+      var initial = (f.name || '?').charAt(0).toUpperCase();
+      return '' +
+        '<div class="lb-row' + (f.me ? ' is-me' : '') + '">' +
+        '  <span class="lb-rank">#' + (i + 1) + '</span>' +
+        '  <span class="lb-avatar">' + escapeHtml(initial) + '</span>' +
+        '  <div><span class="lb-name">' + escapeHtml(f.name) + '<span class="lb-handle">@' + escapeHtml(f.handle) + '</span></span>' +
+        '       <div style="color: var(--muted); font-size: 11.5px; font-family: var(--font-display); letter-spacing: 0.04em; margin-top: 2px;">' + f.skillsCount + ' skills · ' + f.certsCount + ' certs · ' + f.repos + ' repos</div>' +
+        '  </div>' +
+        '  <span class="lb-score"><small>Score</small>' + f.score + '</span>' +
+        '</div>';
+    }).join('');
+  }
+
+  // --- Utilities
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' }[c];
+    });
+  }
+
+  // --- Init from saved profile
+  function init() {
+    document.getElementById('pfName').value = profile.name || '';
+    document.getElementById('pfHandle').value = profile.handle || '';
+    document.getElementById('pfGithub').value = profile.github || '';
+    renderProfile();
+    renderTree();
+    renderLeaderboard();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
