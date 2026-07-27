@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Interview Preparation Platform — BuildVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1614;
+  --panel: #181f1c;
+  --panel-line: #2a3630;
+  --paper: #ece5d8;
+  --paper-dim: #cfc6b6;
+  --safelight: #0ea5a4;
+  --safelight-light: #5cc8c7;
+  --ok: #79946f;
+  --warn: #e0a458;
+  --bad: #d5432b;
+  --radius: 6px;
+  --font-display: "IBM Plex Mono", monospace;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --muted: #7a8682;
+}
+[data-theme="light"] { --bg: #f3f6f5; --panel: #ffffff; --panel-line: #d8d3c8; --paper: #1c2624; --paper-dim: #4a524e; --muted: #7a756c; --safelight: #0c8887; --safelight-light: #11a8a7; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: radial-gradient(circle at 15% -10%, #1a2825 0%, transparent 55%), var(--bg); color: var(--paper); font-family: var(--font-body); -webkit-font-smoothing: antialiased; min-height: 100vh; padding-bottom: 40px; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 40px 20px 60px; }
+
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+.masthead__mark { display: flex; align-items: center; gap: 10px; }
+.masthead__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--safelight), var(--safelight) 70%); box-shadow: 0 0 8px rgba(14,165,164,0.6); }
+.masthead__title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.masthead__sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+.theme-toggle { position: absolute; top: 20px; right: 20px; background: transparent; border: 1px solid var(--panel-line); color: var(--muted); padding: 6px 12px; border-radius: 999px; cursor: pointer; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s ease; }
+.theme-toggle:hover { color: var(--paper); border-color: var(--safelight); }
+
+.filmstrip { display: flex; justify-content: center; gap: 4px; margin-bottom: 24px; border-top: 1px dashed var(--panel-line); border-bottom: 1px dashed var(--panel-line); padding: 8px 0; flex-wrap: wrap; }
+.tab { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; background: transparent; border: 1px solid transparent; color: var(--muted); padding: 9px 20px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease; }
+.tab:hover { color: var(--paper); }
+.tab.is-active { background: var(--safelight); border-color: var(--safelight); color: #eefdfc; }
+
+.view { display: none; }
+.view.is-active { display: block; }
+
+.panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px; padding: 22px; }
+.panel + .panel { margin-top: 18px; }
+.panel__title { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--safelight); margin: 0 0 16px; }
+
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+.field input, .field textarea, .field select {
+  width: 100%; background: #0a1413; border: 1px solid var(--panel-line); border-radius: var(--radius);
+  padding: 10px 12px; color: var(--paper); font-family: var(--font-body); font-size: 13.5px;
+}
+[data-theme="light"] .field input, [data-theme="light"] .field textarea, [data-theme="light"] .field select { background: #f6f9f8; color: var(--paper); }
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--safelight); }
+.field-row { display: flex; gap: 10px; }
+.field-row>*{flex:1;}
+
+.btn { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--safelight); border: 1px solid var(--safelight); color: #eefdfc; padding: 11px 18px; border-radius: var(--radius); cursor: pointer; transition: all 0.15s ease; }
+.btn:hover { filter: brightness(1.1); }
+.btn--ghost { background: transparent; color: var(--paper-dim); border-color: var(--panel-line); }
+.btn--ghost:hover { border-color: var(--safelight); color: var(--paper); }
+.btn--bad { background: var(--bad); border-color: var(--bad); color: #fff3ef; }
+.btn--small { padding: 7px 12px; }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { flex: 1; }
+
+/* Track cards */
+.tracks { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.track-card { border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; transition: all 0.15s ease; background: transparent; }
+.track-card:hover { border-color: var(--safelight); }
+.track-card.is-active { border-color: var(--safelight); background: rgba(14,165,164,0.08); }
+.track-card__title { font-weight: 600; font-size: 14.5px; }
+.track-card__count { color: var(--muted); font-size: 12px; margin-top: 2px; font-family: var(--font-display); letter-spacing: 0.04em; }
+
+/* Progress card */
+.progress-bar { width: 100%; height: 8px; background: var(--panel-line); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+.progress-fill--ok { background: var(--ok); }
+.progress-fill--warn { background: var(--warn); }
+
+/* Interview Q&A */
+.q-card { padding: 20px 24px; background: var(--panel); border: 1px solid var(--panel-line); border-radius: 12px; margin-bottom: 16px; }
+.q-card__num { font-family: var(--font-display); font-size: 10px; color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; }
+.q-card__body { font-size: 15px; margin: 10px 0 16px; line-height: 1.5; }
+.q-card__hint { font-size: 11.5px; color: var(--muted); font-family: var(--font-display); letter-spacing: 0.06em; margin-top: 6px; }
+
+/* Scorecard */
+.scorecard { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.score-item { border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 12px 14px; }
+.score-item__label { font-size: 10.5px; color: var(--muted); font-family: var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; }
+.score-item__value { font-size: 26px; font-weight: 700; margin-top: 4px; }
+.score-item__note { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+
+.coaching-note { margin-top: 14px; padding: 12px 14px; border-left: 3px solid var(--safelight); background: rgba(14,165,164,0.08); border-radius: 4px; font-size: 13px; }
+
+/* History */
+.h-row { padding: 12px 14px; background: var(--panel); border: 1px solid var(--panel-line); border-radius: var(--radius); margin-bottom: 8px; }
+.h-row__title { font-weight: 600; font-size: 13.5px; }
+.h-row__meta { color: var(--muted); font-size: 11.5px; font-family: var(--font-display); letter-spacing: 0.04em; margin: 2px 0 4px; }
+.h-row__tags { display: flex; gap: 4px; flex-wrap: wrap; }
+
+.flash { position: fixed; bottom: 24px; right: 24px; background: var(--safelight); color: #eefdfc; padding: 10px 16px; border-radius: var(--radius); font-size: 13px; z-index: 999; transition: opacity 0.3s; opacity: 0; pointer-events: none; font-family: var(--font-display); letter-spacing: 0.06em; }
+.flash.is-visible { opacity: 1; }
+.empty-note { color: var(--muted); font-family: var(--font-display); font-size: 12px; letter-spacing: 0.06em; padding: 20px; text-align: center; }
+.stack { display: flex; flex-direction: column; gap: 8px; }
+
+@media (max-width: 700px) {
+  .theme-toggle { position: static; margin-bottom: 16px; }
+  .field-row { flex-direction: column; }
+  .q-card { padding: 14px 16px; }
+}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle" type="button">🌙 Light</button>
+<div class="wrap">
+  <header class="masthead">
+    <div class="masthead__mark">
+      <span class="masthead__dot" aria-hidden="true"></span>
+      <span class="masthead__title">AI Interview Preparation Platform</span>
+    </div>
+    <p class="masthead__sub">Mock interviews with heuristic AI feedback — coding, HR, behavioral, system design.</p>
+  </header>
+
+  <nav class="filmstrip" role="tablist">
+    <button class="tab is-active" data-tab="home" role="tab">Home</button>
+    <button class="tab" data-tab="interview" role="tab">Mock Interview</button>
+    <button class="tab" data-tab="history" role="tab">History</button>
+  </nav>
+
+  <!-- ─── Home ─── -->
+  <section class="view is-active" data-view="home">
+    <div class="panel">
+      <h2 class="panel__title">Practice tracks</h2>
+      <div class="tracks" id="trackList"></div>
+      <div class="btn-row" style="margin-top: 16px;">
+        <button class="btn" id="startInterview" type="button">▶ Start mock interview</button>
+        <button class="btn btn--ghost" id="singlePractice" type="button">Single question</button>
+      </div>
+    </div>
+    <div class="panel" id="progressPanel">
+      <h2 class="panel__title">Your progress across tracks</h2>
+      <div id="progressContent"></div>
+    </div>
+  </section>
+
+  <!-- ─── Interview ─── -->
+  <section class="view" data-view="interview">
+    <div id="interviewArea">
+      <div class="empty-note">Start an interview from the Home tab.</div>
+    </div>
+  </section>
+
+  <!-- ─── History ─── -->
+  <section class="view" data-view="history">
+    <div class="panel">
+      <h2 class="panel__title">Practice history</h2>
+      <div class="stack" id="historyList"></div>
+    </div>
+  </section>
+</div>
+
+<div class="flash" id="flash" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ─── Question bank ──────────────────────────────────────
+  var CODING_QS = [
+    { q: 'Given an array of integers, find two numbers that add up to a target value. Explain your approach.', track: 'coding', topic: 'arrays', keywords: ['hashmap', 'two pointers', 'complement', 'nearest'] },
+    { q: 'Reverse a singly-linked list iteratively, then trace with an example.', track: 'coding', topic: 'linked list', keywords: ['prev', 'next', 'head', 'tail', 'null'] },
+    { q: 'Check if a binary tree is balanced. Walk through a tree of 5 nodes.', track: 'coding', topic: 'trees', keywords: ['depth', 'balanced', 'subtree', 'height', 'leaf'] },
+    { q: 'Find the longest substring without repeating characters.', track: 'coding', topic: 'strings', keywords: ['sliding window', 'hash set', 'set', 'pointer', 'window'] },
+    { q: 'Explain a dynamic-programming solution for coin change (Minimum number of coins).', track: 'coding', topic: 'dynamic programming', keywords: ['bottom up', 'dp table', 'minimum', 'coin', 'subproblem'] },
+    { q: 'Given an array of intervals, merge overlapping intervals and return the result.', track: 'coding', topic: 'arrays', keywords: ['sort', 'start', 'end', 'overlap', 'merge'] },
+    { q: 'Count the number of set bits in an integer.', track: 'coding', topic: 'bit manipulation', keywords: ['shift', 'and', 'xor', 'mask', 'popcount'] },
+    { q: 'Detect a cycle in a linked list. Explain the slow-fast pointer approach.', track: 'coding', topic: 'linked list', keywords: ['floyd', 'tortoise', 'fast', 'cycle', 'loop'] },
+    { q: 'Implement LRU Cache with O(1) get and put.', track: 'coding', topic: 'data structures', keywords: ['doubly linked list', 'hashmap', 'eviction', 'capacity', 'head'] },
+    { q: 'Find the kth smallest element in a BST without using extra space.', track: 'coding', topic: 'trees', keywords: ['inorder', 'count', 'recursive', 'iterative', 'stack'] }
+  ];
+  var HR_QS = [
+    { q: 'Tell me about yourself.', track: 'hr', keywords: ['education', 'experience', 'skill', 'name', 'past', 'background'] },
+    { q: 'Describe a time you handled conflict at work or school.', track: 'hr', keywords: ['situation', 'action', 'result', 'solution', 'conflict', 'resolution'] },
+    { q: 'Where do you see yourself in 5 years?', track: 'hr', keywords: ['growth', 'learning', 'expected', 'position', 'future', 'plan'] },
+    { q: 'Why do you want to join this company?', track: 'hr', keywords: ['mission', 'project', 'culture', 'stack', 'interest', 'approach'] },
+    { q: 'What is your greatest strength? Back it with an example.', track: 'hr', keywords: ['example', 'strength', 'demonstrated', 'led', 'improved', 'evidence'] },
+    { q: 'What is your biggest weakness and how do you work on it?', track: 'hr', keywords: ['feedback', 'improvement', 'aware', 'plan', 'change', 'action'] },
+    { q: 'Tell me about a time you failed.', track: 'hr', keywords: ['failure', 'learn', 'recover', 'situation', 'fix', 'accountability'] },
+    { q: 'How do you prioritize tasks when everything is urgent?', track: 'hr', keywords: ['priority', 'grid', 'impact', 'block', 'context', 'deadline'] },
+    { q: 'Why did you leave (or are you leaving) your last role?', track: 'hr', keywords: ['growth', 'role', 'direction', 'challenge', 'respect', 'honest'] },
+    { q: 'Describe a time you influenced someone who disagreed with you.', track: 'hr', keywords: ['listen', 'evidence', 'conclusion', 'project', 'agree', 'align'] }
+  ];
+  var BEHAVIORAL_QS = [
+    { q: 'Describe your approach to learning a new technology.', track: 'behavioral', keywords: ['learn', 'deep', 'example', 'side project', 'achieve', 'habit'] },
+    { q: 'How do you handle impossible deadlines?', track: 'behavioral', keywords: ['scope', 'prioritize', 'communicate', 'upfront', 'manage', 'stakeholder'] }
+  ];
+  var SYS_QS = [
+    { q: 'Design a URL shortener like bit.ly.', track: 'system design', keywords: ['encode', 'base62', 'load balancer', 'redis', 'run id', 'eviction'] },
+    { q: 'Design a chat system with 100M DAU and bidirectional sync.', track: 'system design', keywords: ['connection', 'push', 'websocket', 'stream', 'shard', 'store'] }
+  ];
+
+  var ALL_QS = CODING_QS.concat(HR_QS, BEHAVIORAL_QS, SYS_QS);
+  var trackLabels = { coding: 'Coding', hr: 'HR / Behavioral', behavioral: 'Behavioral', 'system design': 'System Design' };
+
+  // ─── localStorage ────────────────────────────────────────
+  var STORE = 'intprev:logs';
+  function loadLogs() { try { return JSON.parse(localStorage.getItem(STORE) || '[]'); } catch (e) { return []; } }
+  function saveLogs(l) { try { localStorage.setItem(STORE, JSON.stringify(l)); } catch (e) {} }
+  var logs = loadLogs();
+  var state = { current: 0, batch: [], answers: [] };
+
+  var STORE_TH = 'intprev:theme';
+  function loadTheme() { try { return localStorage.getItem(STORE_TH) || 'dark'; } catch (e) { return 'dark'; } }
+  function saveTheme(t) { try { localStorage.setItem(STORE_TH, t); } catch (e) {} }
+
+  var themeToggle = document.getElementById('themeToggle');
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themeToggle.textContent = t === 'dark' ? '🌙 Light' : '☀ Dark';
+  }
+  applyTheme(loadTheme());
+  themeToggle.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+    var next = cur === 'dark' ? 'light' : 'dark';
+    applyTheme(next); saveTheme(next);
+  });
+
+  // ─── Tabs ───────────────────────────────────────────────
+  function goTo(tab) {
+    document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('is-active'); });
+    document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('is-active'); });
+    document.querySelector('.tab[data-tab="' + tab + '"]').classList.add('is-active');
+    document.querySelector('.view[data-view="' + tab + '"]').classList.add('is-active');
+    if (tab === 'home') { renderTracks(); renderProgress(); }
+    if (tab === 'history') renderHistory();
+  }
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () { goTo(t.getAttribute('data-tab')); });
+  });
+
+  // ─── Toast ──────────────────────────────────────────────
+  var flash = document.getElementById('flash');
+  var flashTimer = null;
+  function toast(msg) {
+    flash.textContent = msg;
+    flash.classList.add('is-visible');
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { flash.classList.remove('is-visible'); }, 3000);
+  }
+
+  // ─── Track selector ─────────────────────────────────────
+  var activeTrack = null;
+  function renderTracks() {
+    var slot = document.getElementById('trackList');
+    var tracks = Object.keys(trackLabels);
+    slot.innerHTML = tracks.map(function (t) {
+      return '' +
+        '<div class="track-card' + (activeTrack === t ? ' is-active' : '') + '" data-track="' + t + '">' +
+        '  <div class="track-card__name">' + escapeHtml(trackLabels[t]) + '</div>' +
+        '  <div class="track-card__count">' + ALL_QS.filter(function (q) { return q.track === t; }).length + ' questions</div>' +
+        '</div>';
+    }).join('');
+    slot.querySelectorAll('.track-card').forEach(function (el) {
+      el.addEventListener('click', function () {
+        activeTrack = el.getAttribute('data-track');
+        renderTracks();
+      });
+    });
+  }
+
+  // ─── AI feedback engine ──────────────────────────────────
+  function scoreResponse(text, question) {
+    var lower = (text || '').toLowerCase();
+    var keywordHits = (question.keywords || []).filter(function (kw) {
+      return lower.indexOf(kw.toLowerCase()) !== -1;
+    });
+    var kwScore = question.keywords ? Math.min(5, keywordHits.length) : 0;
+    var length = text.length;
+    var brevityOk = 25; var brevityMax = 250;
+    var lengthPenalty = length < brevityOk ? (length / brevityOk) : length > brevityMax ? Math.max(0, 1 - (length-brevityMax)/200) : 1.0;
+    var structure = 0;
+    if (/(first|step\s?\d|approach|begin with|next|finally)/.test(lower)) structure += 2;
+    if (/(situation).*(task).*(action).*(result)/.test(lower) || lower.indexOf('situation') !== -1) structure += 1;
+    if (/(because|root cause|complexity|big o)/.test(lower)) structure += 1;
+    var star = lower.indexOf('situation') !== -1 || lower.indexOf('example') !== -1 ? (lower.indexOf('result') !== -1 ? 3 : 1) : 0;
+    // Map out of 5
+    var depth = Math.min(5, kwScore);
+    var structureScore = Math.min(5, structure);
+    var technical = Math.min(5, kwScore + (question.track === 'coding' ? (length > 100 ? 2 : 1) : length > 40 ? 1 : 0));
+    var starScore = Math.min(5, star);
+    var total = Math.min(5, Math.round((depth + structureScore + technical + starScore) / 4));
+    var lastPass = (question.topic || '').indexOf('arrays') !== -1 && keywordHits.length >= 3 ? Math.min(5, total + 1) : total;
+    var coaching = [];
+    if (keywordHits.length < 2 && question.keywords && question.keywords.length > 0) {
+      coaching.push('Try using keywords like ' + question.keywords.slice(0, 3).join(', ') + '.');
+    }
+    if (length < 25) coaching.push('Your answer is very short. Add a past example for stronger impact.');
+    if (structureScore <= 2) coaching.push('Structure your answer: situation, action, result.');
+    if (starScore <= 1 && question.track === 'hr') coaching.push('For HR questions, aim to use the STAR method (Situation, Task, Action, Result).');
+    var note = coaching.length ? coaching.join(' ') : '';
+    return { depth: depth, structure: structureScore, technical: technical, star: starScore, total: lastPass, note: coaching.join(' ') };
+  }
+
+  // ─── Interview runner ────────────────────────────────────
+  function startInterview(mode) {
+    var qlist = activeTrack ? ALL_QS.filter(function (q) { return q.track === activeTrack; }) : ALL_QS;
+    if (qlist.length === 0) { toast('No questions for this track'); return; }
+    var shuffled = qlist.slice().sort(function () { return 0.5 - Math.random(); });
+    if (mode === 'single') { shuffled = [shuffled[0]]; }
+    state = { current: 0, batch: shuffled, answers: [] };
+    renderInterviewQuestion();
+    goTo('interview');
+  }
+
+  function renderInterviewQuestion() {
+    var q = state.batch[state.current];
+    var area = document.getElementById('interviewArea');
+    area.innerHTML = '' +
+      '<div class="panel"><h2 class="panel__title">' + (state.current + 1) + '/' + state.batch.length + ' — ' + escapeHtml(trackLabels[q.track]) + '</h2>' +
+      '  <div class="q-card__body">' + escapeHtml(q.q) + '</div>' +
+      '  <div class="q-card__hint">Keywords: ' + escapeHtml((q.keywords || []).join(', ') || '—') + '</div>' +
+      '  <div class="field" style="margin-top: 8px;">' +
+      '    <label for="answer">Your Answer</label>' +
+      '    <textarea id="answer" rows="6" placeholder=""></textarea>' +
+      '  </div>' +
+      '  <div class="btn-row" style="margin-top: 14px;">' +
+      '    <button class="btn" id="gradeAnswer" type="button">✓ Check my answer</button>' +
+      (state.current < state.batch.length - 1 ?
+        '<button class="btn btn--ghost" id="nextQuestion" type="button" style="display:none;">→ Next question</button>' :
+        '<button class="btn btn--ghost" id="finishInterview" type="button" style="display:none;">→ Finish interview</button>') +
+      '  </div>' +
+      '  <div id="gymResults"></div>' +
+      '</div>';
+    document.getElementById('gradeAnswer').addEventListener('click', function () {
+      gradeCurrentAnswer();
+      document.getElementById('gradeAnswer').style.display = 'none';
+      var q = state.batch[state.current];
+      if (state.current >= state.batch.length - 1) {
+        document.getElementById('finishInterview').style.display = '';
+      } else {
+        document.getElementById('nextQuestion').style.display = '';
+      }
+    });
+    document.getElementById('nextQuestion').addEventListener('click', function () {
+      state.current++;
+      renderInterviewQuestion();
+    });
+    document.getElementById('finishInterview').addEventListener('click', function () {
+      renderFinalScorecard();
+    });
+  }
+
+  function gradeCurrentAnswer() {
+    var text = (document.getElementById('answer').value || '').trim();
+    if (!text) { toast('Type an answer first.'); return; }
+    var q = state.batch[state.current];
+    var result = scoreResponse(text, q);
+    state.answers[state.current] = { q: q, answer: text, score: result };
+    // Log with date key.
+    logs.unshift(Object.assign({}, state.answers[state.current], { scoredAt: Date.now() }));
+    saveLogs(logs);
+    renderVerdict(result);
+  }
+
+  function renderVerdict(res) {
+    document.getElementById('gymResults').innerHTML = '' +
+      '<div class="scorecard" style="margin-top: 20px;">' +
+      '  <div class="score-item"><div class="score-item_label">Overall</div><div class="score-item_value">' + res.total + '/5</div></div>' +
+      '  <div class="score-item"><div class="score-item_label">Depth</div><div class="score-item_value">' + res.depth + '/5</div></div>' +
+      '  <div class="score-item"><div class="score-item_label">Structure</div><div class="score-item_value">' + res.structure + '/5</div></div>' +
+      '  <div class="score-item"><div class="score-item_label">Technical</div><div class="score-item_value">' + res.technical + '/5</div></div>' +
+      '  <div class="score-item"><div class="score-item_label">STAR</div><div class="score-item_value">' + res.star + '/5</div></div>' +
+      '</div>' +
+      (res.coaching ? '<div class="coaching-note">' + escapeHtml(res.coaching) + '</div>' : '');
+  }
+
+  function renderFinalScorecard() {
+    var area = document.getElementById('interviewArea');
+    var done = state.batch.map(function (q, i) {
+      var ans = state.answers[i];
+      var sc = ans ? ans.score : { total: 0 };
+      return { q: q, score: sc };
+    });
+    var avg = Math.min(5, done.reduce(function (s, d) { return s + d.score.total; }, 0) / done.length);
+    area.innerHTML = '' +
+      '<div class="panel"><h2 class="panel_title">Final Scorecard</h2>' +
+      '  <div class="scorecard">' +
+      '    <div class="score-item"><div class="score-item_label">Average</div><div class="score-item_value">' + avg.toFixed(2) + '/5</div></div>' +
+      '    <div class="score-item"><div class="score-item_label">Questions</div><div class="score-item_value">' + done.length + '</div></div>' +
+      '    <div class="score-item"><div class="score-item_label">Track</div><div class="score-item_value">' + escapeHtml(trackLabels[done[0].q.track]) + '</div></div>' +
+      '  </div>' +
+      '  <div style="margin-top: 18px;">' + done.map(function (d, i) {
+        return '' +
+          '<div class="q-card_body" style="padding: 12px 14px; background: var(--panel); border-radius: var(--radius); border: 1px solid var(--panel-line); margin-bottom: 8px;">' +
+          '  <span style="font-weight: 600;">Q' + (i + 1) + ': </span>' + escapeHtml(d.q.q) + '<br>' +
+          '  <span style="color: var(--muted); font-size: 11.5px; font-family: var(--font-display); letter-spacing: 0.04em;">Scored: ' + d.score.total + '/5</span>' +
+          '</div>';
+      }).join('') + '</div>' +
+      '</div>';
+  }
+
+  // ─── History ─────────────────────────────────────────────
+  function renderHistory() {
+    var slot = document.getElementById('historyList');
+    if (logs.length === 0) {
+      slot.innerHTML = '<div class="empty-note">No interviews yet. Start a Mock Interview to begin practicing.</div>';
+      return;
+    }
+    slot.innerHTML = logs.map(function (entry) {
+      var trackName = trackLabels[entry.q.track] || entry.q.track;
+      return '' +
+        '<div class="h-row">' +
+        '  <div class="h-row_title">' + escapeHtml(entry.q.q) + '</div>' +
+        '  <div class="h-row_meta">' + trackName + ' · Scored: ' + (entry.score.total || '?') + '/5 · ' + new Date(entry.scoredAt).toLocaleString() + '</div>' +
+        '  <div class="h-row__tags">' +
+        '    <span class="tag">depth ' + entry.score.depth + '</span>' +
+        '    <span class="tag">structure ' + entry.score.structure + '</span>' +
+        '    <span class="tag">technical ' + entry.score.technical + '</span>' +
+        '    <span class="tag">star ' + entry.score.star + '</span>' +
+        '  </div>' +
+        '</div>';
+    }).join('');
+  }
+
+  // ─── Progress ────────────────────────────────────────────
+  function renderProgress() {
+    var slot = document.getElementById('progressContent');
+    var tracks = Object.keys(trackLabels);
+    var bins = {};
+    tracks.forEach(function (t) { bins[t] = logs.filter(function (l) { return l.q.track === t; }); });
+    var bests = tracks.map(function (t) {
+      var entries = bins[t];
+      var bestTotal = entries.reduce(function (max, e) { return Math.max(max, e.score.total); }, 0);
+      var fraction = Math.min(1, entries.length / 10);
+      return '<div><strong>' + escapeHtml(trackLabels[t]) + ':</strong> ' + entries.length + ' practiced · best ' + bestTotal +
+        '<div class="progress-bar"><div class="progress-fill progress-fill--' + (fraction > 0.7 ? 'ok' : 'warn') + '" style="width:' + (fraction * 100) + '%"></div></div></div>';
+    }).join('<br>');
+    slot.innerHTML = bests || '<div class="empty-note">No progress yet. Start a Mock Interview to collect data.</div>';
+  }
+
+  // ─── Utilities ───────────────────────────────────────────
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&', '<': '<', '>': '>', '"': '"', "'": '&#39;' }[c];
+    });
+  }
+
+  // ─── Init ────────────────────────────────────────────────
+  function init() {
+    renderTracks();
+    renderProgress();
+    renderHistory();
+    document.getElementById('startInterview').addEventListener('click', function () { startInterview('full'); });
+    document.getElementById('singlePractice').addEventListener('click', function () { startInterview('single'); });
+  }
+  init();
+})();
+</script>
+</body>
+</html>
