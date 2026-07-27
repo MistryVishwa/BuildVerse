@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Management Platform — BuildVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+<style>
+:root {
+  --bg: #14100e;
+  --panel: #1c1714;
+  --panel-line: #332a23;
+  --paper: #ece5d8;
+  --paper-dim: #cfc6b6;
+  --safelight: #d5432b;
+  --safelight-light: #ee7a5c;
+  --ink: #1c1714;
+  --muted: #9a8f80;
+  --ok: #79946f;
+  --ok-light: #a7c299;
+  --warn: #d9a441;
+  --radius: 6px;
+  --font-display: "IBM Plex Mono", monospace;
+  --font-body: "IBM Plex Sans", sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(circle at 15% -10%, #241c17 0%, transparent 55%), var(--bg);
+  color: var(--paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 980px; margin: 0 auto; padding: 40px 20px 60px; }
+
+/* ---- Masthead ---- */
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+.masthead__mark { display: flex; align-items: center; gap: 10px; }
+.masthead__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--safelight-light), var(--safelight) 70%); box-shadow: 0 0 8px rgba(213,67,43,0.6); }
+.masthead__title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.masthead__sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+/* ---- Tabs (filmstrip) ---- */
+.filmstrip { display: flex; justify-content: center; gap: 4px; margin-bottom: 24px; border-top: 1px dashed var(--panel-line); border-bottom: 1px dashed var(--panel-line); padding: 8px 0; flex-wrap: wrap; }
+.tab {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  background: transparent; border: 1px solid transparent; color: var(--muted);
+  padding: 9px 18px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease;
+}
+.tab:hover { color: var(--paper); }
+.tab.is-active { background: var(--safelight); border-color: var(--safelight); color: #fff3ef; }
+
+.view { display: none; }
+.view.is-active { display: block; }
+
+/* ---- Panels ---- */
+.panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px; padding: 22px; }
+.panel + .panel { margin-top: 18px; }
+.panel__title { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--safelight-light); margin: 0 0 16px; }
+
+/* ---- Register layout ---- */
+.reg-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+.reg-grid.single-col { grid-template-columns: minmax(0, 640px); justify-content: center; }
+@media (max-width: 760px) { .reg-grid { grid-template-columns: 1fr; } }
+
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+.field input[type="text"], .field input[type="email"], .field select {
+  width: 100%; background: #100d0b; border: 1px solid var(--panel-line); border-radius: var(--radius);
+  padding: 9px 10px; color: var(--paper); font-family: var(--font-body); font-size: 13.5px;
+}
+.field input:focus, .field select:focus { outline: none; border-color: var(--safelight); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.btn {
+  font-family: var(--font-body); font-weight: 600; border-radius: var(--radius); border: 1px solid transparent;
+  cursor: pointer; transition: transform 0.1s ease, background 0.2s ease; font-size: 13px; padding: 10px 16px;
+}
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: linear-gradient(180deg, var(--safelight-light), var(--safelight)); color: #fff3ef; flex: 1; }
+.btn--ghost { background: transparent; border-color: var(--panel-line); color: var(--muted); }
+.btn--ghost:hover { color: var(--paper); border-color: var(--safelight); }
+.btn--dark { background: var(--ink); color: var(--paper); flex: 1; }
+.btn--full { width: 100%; }
+.btn--danger { background: transparent; border-color: #6b3a33; color: #d5766a; }
+.btn--danger:hover { background: #3a201c; }
+.btn--ok { background: linear-gradient(180deg, var(--ok-light), var(--ok)); color: #10210b; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ---- Ticket stub (signature element) ---- */
+.ticket {
+  position: relative; background: var(--paper); color: var(--ink); border-radius: 10px;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.ticket__main { padding: 18px 18px 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.ticket__qr canvas { border-radius: 4px; max-width: 100%; }
+.ticket__name { font-family: var(--font-display); font-weight: 600; font-size: 15px; text-align: center; }
+.ticket__event { font-size: 12.5px; color: #5a5147; text-align: center; }
+.ticket__perf {
+  position: relative; height: 0; border-top: 2px dashed #b9ae9c;
+}
+.ticket__perf::before, .ticket__perf::after {
+  content: ""; position: absolute; top: -9px; width: 18px; height: 18px; border-radius: 50%; background: var(--bg);
+}
+.ticket__perf::before { left: -9px; }
+.ticket__perf::after { right: -9px; }
+.ticket__stub { padding: 12px 18px 16px; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.04em; color: #5a5147; }
+.ticket__stub b { color: var(--ink); font-size: 12px; }
+.ticket__actions { display: flex; gap: 8px; width: 100%; margin-top: 4px; }
+
+/* ---- Attendance ---- */
+.att-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 760px) { .att-grid { grid-template-columns: 1fr; } }
+.scan-video-wrap { position: relative; width: 100%; max-width: 360px; aspect-ratio: 1; background: #0c0a08; border-radius: 10px; overflow: hidden; border: 1px solid var(--panel-line); margin: 0 auto; }
+.scan-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scan-reticle { position: absolute; inset: 12%; border: 2px solid var(--safelight-light); border-radius: 10px; opacity: 0.7; pointer-events: none; }
+.scan-controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+.scan-status { font-size: 12.5px; color: var(--muted); text-align: center; margin-top: 8px; }
+
+.status-card { border-radius: var(--radius); padding: 14px; font-family: var(--font-display); font-size: 13px; margin-top: 12px; display: none; }
+.status-card.is-visible { display: block; }
+.status-card.is-ok { background: rgba(121,148,111,0.16); border: 1px solid var(--ok); color: var(--ok-light); }
+.status-card.is-warn { background: rgba(217,164,65,0.14); border: 1px solid var(--warn); color: var(--warn); }
+.status-card.is-err { background: rgba(213,67,43,0.14); border: 1px solid var(--safelight); color: var(--safelight-light); }
+
+.search-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.search-row input { flex: 1; }
+
+/* ---- Lists (tickets / attendance rows) ---- */
+.list { display: flex; flex-direction: column; gap: 10px; }
+.row { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; padding: 10px; border: 1px solid var(--panel-line); border-radius: var(--radius); }
+.row canvas { border-radius: 3px; background: var(--paper); }
+.row__meta { overflow: hidden; }
+.row__event { font-family: var(--font-display); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--safelight-light); }
+.row__name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row__time { font-size: 11px; color: var(--muted); }
+.row__actions { display: flex; gap: 6px; align-items: center; }
+.badge { font-family: var(--font-display); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
+.badge.is-in { background: rgba(121,148,111,0.18); color: var(--ok-light); border: 1px solid var(--ok); }
+.badge.is-out { background: rgba(154,143,128,0.14); color: var(--muted); border: 1px solid var(--panel-line); }
+.row__del { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; }
+.row__del:hover { color: var(--safelight-light); }
+.empty-note { font-size: 13px; color: var(--muted); }
+
+/* ---- Analytics ---- */
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+@media (max-width: 640px) { .stat-grid { grid-template-columns: 1fr; } }
+.stat-card { background: #100d0b; border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 16px; text-align: center; }
+.stat-card__value { font-family: var(--font-display); font-size: 28px; font-weight: 600; color: var(--safelight-light); }
+.stat-card__label { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.chart-wrap { background: #100d0b; border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 16px; }
+canvas#analyticsChart { width: 100%; height: auto; }
+
+.colophon { text-align: center; margin-top: 32px; font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="masthead__mark">
+      <span class="masthead__dot"></span>
+      <span class="masthead__title">Event Management Platform</span>
+    </div>
+    <p class="masthead__sub">Register attendees, issue QR tickets, check people in, and watch the numbers live.</p>
+  </header>
+
+  <nav class="filmstrip">
+    <button class="tab is-active" data-view="register">Register</button>
+    <button class="tab" data-view="tickets">Tickets</button>
+    <button class="tab" data-view="attendance">Attendance</button>
+    <button class="tab" data-view="analytics">Analytics</button>
+  </nav>
+
+  <!-- ============ REGISTER ============ -->
+  <section class="view is-active" id="view-register">
+    <div class="reg-grid single-col" id="regGrid">
+      <div class="panel">
+        <h2 class="panel__title">Attendee details</h2>
+
+        <div class="field"><label for="regName">Full name</label>
+          <input type="text" id="regName" placeholder="Jane Doe">
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="regEmail">Email</label>
+            <input type="email" id="regEmail" placeholder="jane@example.com">
+          </div>
+          <div class="field"><label for="regEvent">Event</label>
+            <input type="text" id="regEvent" list="eventList" placeholder="Select or type an event" value="TechConf 2026">
+            <datalist id="eventList">
+              <option value="TechConf 2026">
+              <option value="Design Meetup">
+              <option value="Hack Night">
+              <option value="Alumni Reunion">
+            </datalist>
+          </div>
+        </div>
+
+        <button class="btn btn--primary btn--full" id="registerBtn" style="margin-top:8px">Generate ticket</button>
+        <p class="scan-status" id="registerStatus"></p>
+      </div>
+
+      <div class="ticket" id="ticketPreview" style="display:none">
+        <div class="ticket__main">
+          <div class="ticket__qr"><canvas id="ticketCanvas" width="220" height="220"></canvas></div>
+          <div class="ticket__name" id="ticketName">—</div>
+          <div class="ticket__event" id="ticketEvent">—</div>
+        </div>
+        <div class="ticket__perf"></div>
+        <div class="ticket__stub">
+          <span>Ticket ID</span>
+          <b id="ticketIdLabel">—</b>
+        </div>
+        <div class="ticket__actions" style="padding:0 18px 16px">
+          <button class="btn btn--dark" id="downloadTicketBtn">Download PNG</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TICKETS ============ -->
+  <section class="view" id="view-tickets">
+    <div class="panel">
+      <h2 class="panel__title">Issued tickets</h2>
+      <div class="list" id="ticketsList"></div>
+      <p class="empty-note" id="ticketsEmptyNote">No tickets yet — register someone to issue the first one.</p>
+    </div>
+  </section>
+
+  <!-- ============ ATTENDANCE ============ -->
+  <section class="view" id="view-attendance">
+    <div class="att-grid">
+      <div class="panel">
+        <h2 class="panel__title">Scan a ticket</h2>
+        <div class="scan-video-wrap">
+          <video id="scanVideo" playsinline muted></video>
+          <div class="scan-reticle"></div>
+        </div>
+        <div class="scan-controls">
+          <button class="btn btn--primary" id="startScanBtn">Start camera</button>
+          <button class="btn btn--ghost" id="stopScanBtn" style="display:none">Stop camera</button>
+          <label class="btn btn--ghost" style="cursor:pointer">
+            Upload image
+            <input type="file" id="scanFileInput" accept="image/*" style="display:none">
+          </label>
+        </div>
+        <p class="scan-status" id="scanStatus">Camera is off.</p>
+        <div class="status-card" id="scanResultCard"></div>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel__title">Or check in manually</h2>
+        <div class="search-row">
+          <input type="text" id="manualSearch" placeholder="Search by name or ticket ID">
+        </div>
+        <div class="list" id="manualList"></div>
+        <p class="empty-note" id="manualEmptyNote">No attendees registered yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ANALYTICS ============ -->
+  <section class="view" id="view-analytics">
+    <div class="panel">
+      <h2 class="panel__title">Overview</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-card__value" id="statTotal">0</div><div class="stat-card__label">Registered</div></div>
+        <div class="stat-card"><div class="stat-card__value" id="statCheckedIn">0</div><div class="stat-card__label">Checked in</div></div>
+        <div class="stat-card"><div class="stat-card__value" id="statRate">0%</div><div class="stat-card__label">Attendance rate</div></div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="analyticsChart" width="900" height="280"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <h2 class="panel__title">Recent check-ins</h2>
+      <div class="list" id="recentList"></div>
+      <p class="empty-note" id="recentEmptyNote">Nobody has checked in yet.</p>
+    </div>
+  </section>
+
+  <footer class="colophon">Built for BuildVerse</footer>
+</div>
+
+<canvas id="hiddenCanvas" style="display:none"></canvas>
+
+<script>
+(() => {
+  'use strict';
+
+  const KEY = 'bv_evt_attendees';
+  const load = (k, f) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : f; } catch { return f; } };
+  const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+  let attendees = load(KEY, []);
+
+  /* ---------------- Tabs ---------------- */
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('is-active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      document.getElementById('view-' + tab.dataset.view).classList.add('is-active');
+      if (tab.dataset.view === 'tickets') renderTickets();
+      if (tab.dataset.view === 'attendance') renderManualList();
+      if (tab.dataset.view === 'analytics') renderAnalytics();
+      if (tab.dataset.view !== 'attendance') stopCamera();
+    });
+  });
+
+  /* ---------------- QR helpers ---------------- */
+  function makeQR(text, ecLevel) {
+    let qr;
+    for (let type = 0; type <= 40; type++) {
+      try {
+        qr = qrcode(type, ecLevel);
+        qr.addData(text);
+        qr.make();
+        return qr;
+      } catch (e) {
+        if (type === 40) throw e;
+      }
+    }
+  }
+
+  function drawQRToCanvas(canvas, text, opts) {
+    const { fg = '#1c1714', bg = '#ece5d8', size } = opts;
+    const qr = makeQR(text, 'M');
+    const count = qr.getModuleCount();
+    const cell = size / count;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = fg;
+    for (let r = 0; r < count; r++) {
+      for (let c = 0; c < count; c++) {
+        if (qr.isDark(r, c)) ctx.fillRect(c * cell, r * cell, cell + 0.5, cell + 0.5);
+      }
+    }
+  }
+
+  function makeTicketId() {
+    return 'EVT-' + Date.now().toString(36).toUpperCase().slice(-5) + '-' + Math.random().toString(36).toUpperCase().slice(2, 5);
+  }
+
+  /* ---------------- Register ---------------- */
+  const ticketCanvas = document.getElementById('ticketCanvas');
+  const regGrid = document.getElementById('regGrid');
+  let lastTicket = null;
+
+  document.getElementById('registerBtn').addEventListener('click', () => {
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const event = document.getElementById('regEvent').value.trim();
+    const statusEl = document.getElementById('registerStatus');
+
+    if (!name || !event) {
+      statusEl.textContent = 'Name and event are required.';
+      return;
+    }
+
+    const id = makeTicketId();
+    const entry = { id, name, email, event, ts: Date.now(), checkedIn: false, checkedInAt: null };
+    attendees.unshift(entry);
+    save(KEY, attendees);
+
+    const payload = JSON.stringify({ id, name, event });
+    drawQRToCanvas(ticketCanvas, payload, { size: 440 });
+    document.getElementById('ticketName').textContent = name;
+    document.getElementById('ticketEvent').textContent = event;
+    document.getElementById('ticketIdLabel').textContent = id;
+    document.getElementById('ticketPreview').style.display = 'flex';
+    regGrid.classList.remove('single-col');
+    lastTicket = entry;
+
+    statusEl.textContent = `Ticket ${id} issued.`;
+    document.getElementById('regName').value = '';
+    document.getElementById('regEmail').value = '';
+  });
+
+  document.getElementById('downloadTicketBtn').addEventListener('click', () => {
+    if (!lastTicket) return;
+    const a = document.createElement('a');
+    a.download = `${lastTicket.id}.png`;
+    a.href = ticketCanvas.toDataURL('image/png');
+    a.click();
+  });
+
+  /* ---------------- Tickets list ---------------- */
+  function renderTickets() {
+    const list = document.getElementById('ticketsList');
+    const emptyNote = document.getElementById('ticketsEmptyNote');
+    list.innerHTML = '';
+    emptyNote.style.display = attendees.length ? 'none' : 'block';
+
+    attendees.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const thumb = document.createElement('canvas');
+      try { drawQRToCanvas(thumb, JSON.stringify({ id: a.id, name: a.name, event: a.event }), { size: 56 }); } catch {}
+      const meta = document.createElement('div');
+      meta.className = 'row__meta';
+      const time = new Date(a.ts).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      meta.innerHTML = `
+        <div class="row__event">${a.event}</div>
+        <div class="row__name"></div>
+        <div class="row__time">${a.id} · ${time}</div>
+      `;
+      meta.querySelector('.row__name').textContent = a.name;
+      const actions = document.createElement('div');
+      actions.className = 'row__actions';
+      const badge = document.createElement('span');
+      badge.className = 'badge ' + (a.checkedIn ? 'is-in' : 'is-out');
+      badge.textContent = a.checkedIn ? 'Checked in' : 'Not checked in';
+      const del = document.createElement('button');
+      del.className = 'row__del';
+      del.textContent = '×';
+      del.addEventListener('click', () => {
+        attendees = attendees.filter(x => x.id !== a.id);
+        save(KEY, attendees);
+        renderTickets();
+      });
+      actions.appendChild(badge);
+      actions.appendChild(del);
+      row.appendChild(thumb);
+      row.appendChild(meta);
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+  }
+
+  /* ---------------- Attendance: check-in core ---------------- */
+  function checkInById(id) {
+    const a = attendees.find(x => x.id === id);
+    const card = document.getElementById('scanResultCard');
+    card.classList.add('is-visible');
+    card.classList.remove('is-ok', 'is-warn', 'is-err');
+
+    if (!a) {
+      card.classList.add('is-err');
+      card.textContent = `Ticket ${id} not found.`;
+      return;
+    }
+    if (a.checkedIn) {
+      card.classList.add('is-warn');
+      const t = new Date(a.checkedInAt).toLocaleTimeString();
+      card.textContent = `${a.name} already checked in at ${t}.`;
+      return;
+    }
+    a.checkedIn = true;
+    a.checkedInAt = Date.now();
+    save(KEY, attendees);
+    card.classList.add('is-ok');
+    card.textContent = `Checked in: ${a.name} — ${a.event}`;
+    renderManualList();
+  }
+
+  function parseTicketPayload(text) {
+    try {
+      const obj = JSON.parse(text);
+      if (obj && obj.id) return obj.id;
+    } catch {}
+    return text.trim();
+  }
+
+  /* ---------------- Manual check-in list ---------------- */
+  function renderManualList() {
+    const query = (document.getElementById('manualSearch').value || '').toLowerCase();
+    const list = document.getElementById('manualList');
+    const emptyNote = document.getElementById('manualEmptyNote');
+    list.innerHTML = '';
+
+    const filtered = attendees.filter(a =>
+      !query || a.name.toLowerCase().includes(query) || a.id.toLowerCase().includes(query)
+    );
+    emptyNote.style.display = attendees.length ? 'none' : 'block';
+
+    filtered.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.style.gridTemplateColumns = '1fr auto';
+      const meta = document.createElement('div');
+      meta.className = 'row__meta';
+      meta.innerHTML = `
+        <div class="row__event">${a.event}</div>
+        <div class="row__name"></div>
+        <div class="row__time">${a.id}</div>
+      `;
+      meta.querySelector('.row__name').textContent = a.name;
+      const actions = document.createElement('div');
+      actions.className = 'row__actions';
+      if (a.checkedIn) {
+        const badge = document.createElement('span');
+        badge.className = 'badge is-in';
+        badge.textContent = 'Checked in';
+        actions.appendChild(badge);
+      } else {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn--ok';
+        btn.textContent = 'Check in';
+        btn.addEventListener('click', () => {
+          a.checkedIn = true;
+          a.checkedInAt = Date.now();
+          save(KEY, attendees);
+          renderManualList();
+        });
+        actions.appendChild(btn);
+      }
+      row.appendChild(meta);
+      row.appendChild(actions);
+      list.appendChild(row);
+    });
+  }
+  document.getElementById('manualSearch').addEventListener('input', renderManualList);
+
+  /* ---------------- Camera scanning ---------------- */
+  const video = document.getElementById('scanVideo');
+  const hiddenCanvas = document.getElementById('hiddenCanvas');
+  const hiddenCtx = hiddenCanvas.getContext('2d', { willReadFrequently: true });
+  let stream = null;
+  let scanLoopHandle = null;
+
+  function setScanStatus(msg) { document.getElementById('scanStatus').textContent = msg; }
+
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      video.srcObject = stream;
+      await video.play();
+      document.getElementById('startScanBtn').style.display = 'none';
+      document.getElementById('stopScanBtn').style.display = 'inline-block';
+      setScanStatus('Point the camera at a ticket QR code…');
+      scanLoop();
+    } catch (e) {
+      setScanStatus('Could not access camera — try uploading an image instead.');
+    }
+  }
+
+  function stopCamera() {
+    if (scanLoopHandle) cancelAnimationFrame(scanLoopHandle);
+    scanLoopHandle = null;
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    document.getElementById('startScanBtn').style.display = 'inline-block';
+    document.getElementById('stopScanBtn').style.display = 'none';
+    setScanStatus('Camera is off.');
+  }
+
+  let lastScannedId = null;
+  let lastScanTs = 0;
+
+  function scanLoop() {
+    if (!stream) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      hiddenCanvas.width = video.videoWidth;
+      hiddenCanvas.height = video.videoHeight;
+      hiddenCtx.drawImage(video, 0, 0, hiddenCanvas.width, hiddenCanvas.height);
+      const imageData = hiddenCtx.getImageData(0, 0, hiddenCanvas.width, hiddenCanvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if (code && code.data) {
+        const id = parseTicketPayload(code.data);
+        const now = Date.now();
+        if (id !== lastScannedId || now - lastScanTs > 4000) {
+          lastScannedId = id;
+          lastScanTs = now;
+          checkInById(id);
+        }
+        setScanStatus('Code found!');
+      }
+    }
+    scanLoopHandle = requestAnimationFrame(scanLoop);
+  }
+
+  document.getElementById('startScanBtn').addEventListener('click', startCamera);
+  document.getElementById('stopScanBtn').addEventListener('click', stopCamera);
+
+  document.getElementById('scanFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => {
+      hiddenCanvas.width = img.width;
+      hiddenCanvas.height = img.height;
+      hiddenCtx.drawImage(img, 0, 0);
+      const imageData = hiddenCtx.getImageData(0, 0, img.width, img.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+      if (code && code.data) {
+        checkInById(parseTicketPayload(code.data));
+        setScanStatus('Code found in image.');
+      } else {
+        setScanStatus('No QR code found in that image.');
+      }
+    };
+    img.src = URL.createObjectURL(file);
+  });
+
+  /* ---------------- Analytics ---------------- */
+  function renderAnalytics() {
+    const total = attendees.length;
+    const checkedIn = attendees.filter(a => a.checkedIn).length;
+    const rate = total ? Math.round((checkedIn / total) * 100) : 0;
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statCheckedIn').textContent = checkedIn;
+    document.getElementById('statRate').textContent = rate + '%';
+
+    // Per-event breakdown bar chart
+    const byEvent = {};
+    attendees.forEach(a => {
+      byEvent[a.event] = byEvent[a.event] || { registered: 0, checkedIn: 0 };
+      byEvent[a.event].registered++;
+      if (a.checkedIn) byEvent[a.event].checkedIn++;
+    });
+    const events = Object.keys(byEvent);
+
+    const canvas = document.getElementById('analyticsChart');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    if (!events.length) {
+      ctx.fillStyle = '#9a8f80';
+      ctx.font = '13px IBM Plex Sans, sans-serif';
+      ctx.fillText('No registrations yet.', 16, 24);
+      renderRecent();
+      return;
+    }
+
+    const maxVal = Math.max(...events.map(e => byEvent[e].registered), 1);
+    const padding = 40;
+    const chartW = w - padding * 2;
+    const chartH = h - padding * 1.5;
+    const groupW = chartW / events.length;
+    const barW = Math.min(46, groupW / 3);
+
+    ctx.strokeStyle = '#332a23';
+    ctx.beginPath();
+    ctx.moveTo(padding, h - padding);
+    ctx.lineTo(w - padding / 2, h - padding);
+    ctx.stroke();
+
+    events.forEach((ev, i) => {
+      const groupX = padding + i * groupW + groupW / 2;
+      const reg = byEvent[ev].registered;
+      const chk = byEvent[ev].checkedIn;
+      const regH = (reg / maxVal) * chartH;
+      const chkH = (chk / maxVal) * chartH;
+
+      ctx.fillStyle = '#ee7a5c';
+      ctx.fillRect(groupX - barW - 4, h - padding - regH, barW, regH);
+      ctx.fillStyle = '#79946f';
+      ctx.fillRect(groupX + 4, h - padding - chkH, barW, chkH);
+
+      ctx.fillStyle = '#ece5d8';
+      ctx.font = '11px IBM Plex Mono, monospace';
+      ctx.textAlign = 'center';
+      const label = ev.length > 14 ? ev.slice(0, 13) + '…' : ev;
+      ctx.fillText(label, groupX, h - padding + 16);
+    });
+    ctx.textAlign = 'left';
+
+    // legend
+    ctx.fillStyle = '#ee7a5c';
+    ctx.fillRect(padding, 10, 10, 10);
+    ctx.fillStyle = '#cfc6b6';
+    ctx.font = '11px IBM Plex Sans, sans-serif';
+    ctx.fillText('Registered', padding + 16, 19);
+    ctx.fillStyle = '#79946f';
+    ctx.fillRect(padding + 100, 10, 10, 10);
+    ctx.fillStyle = '#cfc6b6';
+    ctx.fillText('Checked in', padding + 116, 19);
+
+    renderRecent();
+  }
+
+  function renderRecent() {
+    const list = document.getElementById('recentList');
+    const emptyNote = document.getElementById('recentEmptyNote');
+    list.innerHTML = '';
+    const recent = attendees.filter(a => a.checkedIn).sort((a, b) => b.checkedInAt - a.checkedInAt).slice(0, 10);
+    emptyNote.style.display = recent.length ? 'none' : 'block';
+
+    recent.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.style.gridTemplateColumns = '1fr auto';
+      const meta = document.createElement('div');
+      meta.className = 'row__meta';
+      const time = new Date(a.checkedInAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      meta.innerHTML = `
+        <div class="row__event">${a.event}</div>
+        <div class="row__name"></div>
+        <div class="row__time">${time}</div>
+      `;
+      meta.querySelector('.row__name').textContent = a.name;
+      const badge = document.createElement('span');
+      badge.className = 'badge is-in';
+      badge.textContent = 'In';
+      row.appendChild(meta);
+      row.appendChild(badge);
+      list.appendChild(row);
+    });
+  }
+
+  /* ---------------- Init ---------------- */
+  renderTickets();
+  renderManualList();
+  renderAnalytics();
+})();
+</script>
+</body>
+</html>

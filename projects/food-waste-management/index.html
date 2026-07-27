@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Waste Management — BuildVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f130f;
+  --panel: #171d16;
+  --panel-line: #2a3327;
+  --paper: #ece5d8;
+  --paper-dim: #cfc6b6;
+  --leaf: #4d8b3a;
+  --leaf-light: #7cbf5f;
+  --ink: #1c1714;
+  --muted: #8fa088;
+  --ok: #4d8b3a;
+  --ok-light: #7cbf5f;
+  --warn: #d9a441;
+  --danger: #d5432b;
+  --danger-light: #ee7a5c;
+  --blue: #4a90c2;
+  --blue-light: #7db8e0;
+  --radius: 6px;
+  --font-display: "IBM Plex Mono", monospace;
+  --font-body: "IBM Plex Sans", sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(circle at 15% -10%, #1a2417 0%, transparent 55%), var(--bg);
+  color: var(--paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding: 40px 20px 60px; }
+
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+.masthead__mark { display: flex; align-items: center; gap: 10px; }
+.masthead__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--leaf-light), var(--leaf) 70%); box-shadow: 0 0 8px rgba(77,139,58,0.6); }
+.masthead__title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.masthead__sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+.filmstrip { display: flex; justify-content: center; gap: 4px; margin-bottom: 24px; border-top: 1px dashed var(--panel-line); border-bottom: 1px dashed var(--panel-line); padding: 8px 0; flex-wrap: wrap; }
+.tab {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  background: transparent; border: 1px solid transparent; color: var(--muted);
+  padding: 9px 18px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.tab:hover { color: var(--paper); }
+.tab.is-active { background: var(--leaf); border-color: var(--leaf); color: #f4fbf1; }
+.tab-badge { background: var(--danger); color: #fff; font-size: 10px; font-weight: 700; min-width: 15px; height: 15px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
+
+.view { display: none; }
+.view.is-active { display: block; }
+
+.panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px; padding: 22px; }
+.panel + .panel { margin-top: 18px; }
+.panel__title { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--leaf-light); margin: 0 0 16px; }
+
+.reg-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+.reg-grid.single-col { grid-template-columns: minmax(0, 640px); justify-content: center; }
+@media (max-width: 760px) { .reg-grid { grid-template-columns: 1fr; } }
+
+.role-toggle { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px dashed var(--panel-line); padding-bottom: 14px; }
+.role-toggle .tab { background: #100d0b; }
+
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+.field input[type="text"], .field input[type="email"], .field input[type="tel"], .field input[type="number"], .field input[type="datetime-local"], .field select, .field textarea {
+  width: 100%; background: #100d0b; border: 1px solid var(--panel-line); border-radius: var(--radius);
+  padding: 9px 10px; color: var(--paper); font-family: var(--font-body); font-size: 13.5px;
+}
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--leaf); }
+.field textarea { resize: vertical; min-height: 56px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 520px) { .field-row { grid-template-columns: 1fr; } }
+
+.btn {
+  font-family: var(--font-body); font-weight: 600; border-radius: var(--radius); border: 1px solid transparent;
+  cursor: pointer; transition: transform 0.1s ease, background 0.2s ease; font-size: 13px; padding: 10px 16px;
+}
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: linear-gradient(180deg, var(--leaf-light), var(--leaf)); color: #0d1a0a; flex: 1; }
+.btn--ghost { background: transparent; border-color: var(--panel-line); color: var(--muted); }
+.btn--ghost:hover { color: var(--paper); border-color: var(--leaf); }
+.btn--dark { background: var(--ink); color: var(--paper); flex: 1; }
+.btn--full { width: 100%; }
+.btn--ok { background: linear-gradient(180deg, var(--blue-light), var(--blue)); color: #06131c; }
+.btn--warn { background: linear-gradient(180deg, #f0c675, var(--warn)); color: #1c1200; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+.actor-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.actor-bar label { font-size: 12px; color: var(--muted); letter-spacing: 0.02em; white-space: nowrap; }
+.actor-bar select { flex: 1; min-width: 200px; background: #100d0b; border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 9px 10px; color: var(--paper); font-size: 13.5px; }
+
+/* ---- Partner card (mirrors the ticket stub motif) ---- */
+.card {
+  position: relative; background: var(--paper); color: var(--ink); border-radius: 10px;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.card__main { padding: 18px 18px 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.card__type { font-family: var(--font-display); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--leaf); color: #f4fbf1; padding: 3px 10px; border-radius: 999px; }
+.card__name { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+.card__meta { font-size: 12.5px; color: #5a5147; }
+.card__perf { position: relative; height: 0; border-top: 2px dashed #b9ae9c; }
+.card__perf::before, .card__perf::after { content: ""; position: absolute; top: -9px; width: 18px; height: 18px; border-radius: 50%; background: var(--bg); }
+.card__perf::before { left: -9px; }
+.card__perf::after { right: -9px; }
+.card__stub { padding: 12px 18px 16px; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.04em; color: #5a5147; }
+.card__stub b { color: var(--ink); font-size: 12px; }
+
+/* ---- Donation ticket ---- */
+.donation-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+.dticket {
+  background: var(--paper); color: var(--ink); border-radius: 10px; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.dticket__main { padding: 16px 16px 12px; }
+.dticket__food { font-family: var(--font-display); font-weight: 600; font-size: 15px; }
+.dticket__sub { font-size: 12px; color: #5a5147; margin-top: 3px; }
+.dticket__tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.dtag { font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: #ded5c2; color: #5a5147; text-transform: uppercase; letter-spacing: 0.03em; }
+.dtag--nearby { background: var(--leaf); color: #f4fbf1; }
+.dticket__perf { position: relative; height: 0; border-top: 2px dashed #b9ae9c; }
+.dticket__perf::before, .dticket__perf::after { content: ""; position: absolute; top: -9px; width: 18px; height: 18px; border-radius: 50%; background: var(--bg); }
+.dticket__perf::before { left: -9px; }
+.dticket__perf::after { right: -9px; }
+.dticket__stub { padding: 11px 16px 13px; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.03em; color: #5a5147; display: flex; flex-direction: column; gap: 5px; }
+.dticket__actions { padding: 0 16px 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+.dticket__actions .btn { flex: 1; min-width: 120px; }
+
+.status-pill { font-family: var(--font-display); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; display: inline-block; white-space: nowrap; }
+.status-pill--available { background: rgba(77,139,58,0.16); color: var(--ok); }
+.status-pill--claimed { background: rgba(74,144,194,0.18); color: var(--blue); }
+.status-pill--scheduled { background: rgba(217,164,65,0.2); color: var(--warn); }
+.status-pill--picked_up { background: rgba(168,85,247,0.18); color: #a855f7; }
+.status-pill--delivered { background: rgba(77,139,58,0.28); color: var(--ok); }
+.status-pill--expired { background: rgba(213,67,43,0.18); color: var(--danger); }
+
+.stepper { display: flex; align-items: center; gap: 3px; margin-top: 8px; }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: #ded5c2; flex-shrink: 0; }
+.step-dot.is-done { background: var(--leaf); }
+.step-line { flex: 1; height: 2px; background: #ded5c2; }
+.step-line.is-done { background: var(--leaf); }
+
+/* ---- Attendance / pickup layout ---- */
+.att-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 760px) { .att-grid { grid-template-columns: 1fr; } }
+.search-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.search-row input, .search-row select { flex: 1; }
+
+.status-card { border-radius: var(--radius); padding: 14px; font-family: var(--font-display); font-size: 13px; margin-top: 12px; display: none; }
+.status-card.is-visible { display: block; }
+.status-card.is-ok { background: rgba(77,139,58,0.16); border: 1px solid var(--ok); color: var(--ok-light); }
+.status-card.is-warn { background: rgba(217,164,65,0.14); border: 1px solid var(--warn); color: var(--warn); }
+.status-card.is-err { background: rgba(213,67,43,0.14); border: 1px solid var(--danger); color: var(--danger-light); }
+
+.list { display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--panel-line); border-radius: var(--radius); }
+.row__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.row__meta { overflow: hidden; }
+.row__event { font-family: var(--font-display); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--leaf-light); }
+.row__name { font-size: 13.5px; font-weight: 600; }
+.row__time { font-size: 11px; color: var(--muted); }
+.row__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.row__actions .btn { padding: 7px 12px; font-size: 12px; }
+.row__actions input { background: #100d0b; border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 7px 9px; font-size: 12px; color: var(--paper); flex: 1; min-width: 150px; }
+.empty-note { font-size: 13px; color: var(--muted); }
+
+/* ---- Notifications ---- */
+.notif-item { display: flex; gap: 12px; padding: 12px 14px; border-radius: var(--radius); background: #100d0b; border: 1px solid var(--panel-line); }
+.notif-item.is-unread { border-color: var(--leaf); background: rgba(77,139,58,0.08); }
+.notif-ic { width: 30px; height: 30px; border-radius: 8px; background: var(--panel); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.notif-text { font-size: 13px; line-height: 1.45; }
+.notif-time { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+/* ---- Analytics ---- */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+@media (max-width: 700px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-card { background: #100d0b; border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 16px; text-align: center; }
+.stat-card__value { font-family: var(--font-display); font-size: 26px; font-weight: 600; color: var(--leaf-light); }
+.stat-card__label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.chart-wrap { background: #100d0b; border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 16px; }
+canvas#analyticsChart { width: 100%; height: auto; }
+
+.colophon { text-align: center; margin-top: 32px; font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="masthead__mark">
+      <span class="masthead__dot"></span>
+      <span class="masthead__title">Food Waste Management</span>
+    </div>
+    <p class="masthead__sub">Restaurants post surplus food, NGOs claim and pick it up, and everyone stays in sync.</p>
+  </header>
+
+  <nav class="filmstrip">
+    <button class="tab is-active" data-view="register">Register</button>
+    <button class="tab" data-view="donations">Donations</button>
+    <button class="tab" data-view="pickups">Pickups</button>
+    <button class="tab" data-view="notifications">Notifications<span class="tab-badge" id="notifBadge" style="display:none">0</span></button>
+    <button class="tab" data-view="analytics">Analytics</button>
+  </nav>
+
+  <!-- ============ REGISTER ============ -->
+  <section class="view is-active" id="view-register">
+    <div class="panel" style="margin-bottom:18px">
+      <h2 class="panel__title">Act as</h2>
+      <div class="actor-bar">
+        <label for="actorSelect">Currently acting as</label>
+        <select id="actorSelect">
+          <option value="">— none selected —</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="reg-grid single-col" id="regGrid">
+      <div class="panel">
+        <div class="role-toggle">
+          <button type="button" class="tab is-active" data-role="restaurant">Restaurant</button>
+          <button type="button" class="tab" data-role="ngo">NGO</button>
+        </div>
+
+        <form id="restaurantForm">
+          <h2 class="panel__title">Register a restaurant</h2>
+          <div class="field"><label for="rName">Restaurant name</label><input type="text" id="rName" placeholder="e.g. Green Leaf Kitchen"></div>
+          <div class="field-row">
+            <div class="field"><label for="rCity">City</label>
+              <select id="rCity">
+                <option value="">Select city</option>
+                <option>Delhi</option>
+                <option>Chennai</option>
+                <option>Bengaluru</option>
+                <option>Mumbai</option>
+              </select>
+            </div>
+            <div class="field"><label for="rPhone">Phone</label><input type="tel" id="rPhone" placeholder="10-digit number"></div>
+          </div>
+          <div class="field"><label for="rAddress">Full address</label><input type="text" id="rAddress" placeholder="Street, area, landmark"></div>
+          <div class="field-row">
+            <div class="field"><label for="rEmail">Email</label><input type="email" id="rEmail" placeholder="contact@restaurant.com"></div>
+            <div class="field"><label for="rCuisine">Cuisine type</label>
+              <select id="rCuisine">
+                <option>North Indian</option><option>South Indian</option><option>Chinese</option>
+                <option>Bakery</option><option>Multi-cuisine</option><option>Fast Food</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">Register restaurant</button>
+        </form>
+
+        <form id="ngoForm" style="display:none">
+          <h2 class="panel__title">Register an NGO</h2>
+          <div class="field"><label for="nName">NGO name</label><input type="text" id="nName" placeholder="e.g. Hope Foundation"></div>
+          <div class="field-row">
+            <div class="field"><label for="nArea">Area served (city)</label>
+              <select id="nArea">
+                <option value="">Select city</option>
+                <option>Delhi</option>
+                <option>Chennai</option>
+                <option>Bengaluru</option>
+                <option>Mumbai</option>
+              </select>
+            </div>
+            <div class="field"><label for="nPhone">Phone</label><input type="tel" id="nPhone" placeholder="10-digit number"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="nCapacity">Daily capacity (servings)</label><input type="number" id="nCapacity" min="1" placeholder="e.g. 100"></div>
+            <div class="field"><label for="nEmail">Email</label><input type="email" id="nEmail" placeholder="contact@ngo.org"></div>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">Register NGO</button>
+        </form>
+        <p class="status-card is-visible" id="registerStatus" style="display:none"></p>
+      </div>
+
+      <div class="card" id="partnerCard" style="display:none">
+        <div class="card__main">
+          <span class="card__type" id="cardType">Restaurant</span>
+          <div class="card__name" id="cardName">—</div>
+          <div class="card__meta" id="cardMeta">—</div>
+          <div class="card__meta" id="cardContact">—</div>
+        </div>
+        <div class="card__perf"></div>
+        <div class="card__stub">
+          <span>Partner ID</span>
+          <b id="cardId">—</b>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DONATIONS ============ -->
+  <section class="view" id="view-donations">
+    <div class="panel" id="donationFormPanel" style="margin-bottom:18px">
+      <div id="donationLocked" class="empty-note" style="display:none">Select or register an active restaurant on the Register tab to post a donation.</div>
+      <form id="donationForm" style="display:none">
+        <h2 class="panel__title">Post a food donation</h2>
+        <div class="field-row">
+          <div class="field"><label for="dFood">Food item</label><input type="text" id="dFood" placeholder="e.g. Vegetable Biryani"></div>
+          <div class="field"><label for="dCategory">Category</label>
+            <select id="dCategory"><option>Veg</option><option>Non-Veg</option><option>Mixed</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="dQty">Quantity (servings)</label><input type="number" id="dQty" min="1" placeholder="e.g. 40"></div>
+          <div class="field"><label for="dWindow">Pickup window</label>
+            <select id="dWindow"><option value="1">1 hour</option><option value="2" selected>2 hours</option><option value="4">4 hours</option><option value="6">6 hours</option></select>
+          </div>
+        </div>
+        <div class="field"><label for="dAddress">Pickup address</label><input type="text" id="dAddress"></div>
+        <div class="field"><label for="dNotes">Notes (optional)</label><textarea id="dNotes" placeholder="Packaging, allergens, best-before info..."></textarea></div>
+        <button type="submit" class="btn btn--primary btn--full">Post donation</button>
+      </form>
+    </div>
+
+    <div class="panel" style="margin-bottom:14px">
+      <h2 class="panel__title">All donations</h2>
+      <div class="search-row">
+        <select id="filterStatus">
+          <option value="">All statuses</option>
+          <option value="available">Available</option>
+          <option value="claimed">Claimed</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="picked_up">Picked Up</option>
+          <option value="delivered">Delivered</option>
+          <option value="expired">Expired</option>
+        </select>
+        <select id="filterCity">
+          <option value="">All cities</option>
+          <option>Delhi</option>
+          <option>Chennai</option>
+          <option>Bengaluru</option>
+          <option>Mumbai</option>
+        </select>
+      </div>
+    </div>
+    <div class="donation-grid" id="allDonations"></div>
+  </section>
+
+  <!-- ============ PICKUPS ============ -->
+  <section class="view" id="view-pickups">
+    <div class="att-grid">
+      <div class="panel">
+        <h2 class="panel__title">Claim a donation</h2>
+        <div id="claimLocked" class="empty-note" style="display:none">Select or register an active NGO on the Register tab to claim donations.</div>
+        <div class="list" id="claimList"></div>
+        <p class="empty-note" id="claimEmptyNote" style="display:none">No available donations right now — check back soon.</p>
+      </div>
+
+      <div class="panel">
+        <h2 class="panel__title">Your claimed pickups</h2>
+        <div id="pickupLocked" class="empty-note" style="display:none">Select or register an active NGO on the Register tab to manage pickups.</div>
+        <div class="list" id="pickupList"></div>
+        <p class="empty-note" id="pickupEmptyNote" style="display:none">Nothing claimed yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NOTIFICATIONS ============ -->
+  <section class="view" id="view-notifications">
+    <div class="panel">
+      <div style="display:flex; justify-content:flex-end; margin-bottom:14px;">
+        <button class="btn btn--ghost" id="markAllRead">Mark all as read</button>
+      </div>
+      <div class="list" id="notifList"></div>
+      <p class="empty-note" id="notifEmptyNote" style="display:none">No notifications yet.</p>
+    </div>
+  </section>
+
+  <!-- ============ ANALYTICS ============ -->
+  <section class="view" id="view-analytics">
+    <div class="panel">
+      <h2 class="panel__title">Overview</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-card__value" id="statDonations">0</div><div class="stat-card__label">Donations posted</div></div>
+        <div class="stat-card"><div class="stat-card__value" id="statMeals">0</div><div class="stat-card__label">Meals saved</div></div>
+        <div class="stat-card"><div class="stat-card__value" id="statNgos">0</div><div class="stat-card__label">Active NGOs</div></div>
+        <div class="stat-card"><div class="stat-card__value" id="statPending">0</div><div class="stat-card__label">Pending pickups</div></div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="analyticsChart" width="900" height="260"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <h2 class="panel__title">Recent activity</h2>
+      <div class="list" id="recentList"></div>
+      <p class="empty-note" id="recentEmptyNote" style="display:none">No activity yet.</p>
+    </div>
+  </section>
+
+  <footer class="colophon">Built for BuildVerse</footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const KEY = 'bv_fwm_v2';
+  const load = (k, f) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : f; } catch { return f; } };
+  const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+  const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
+
+  const NOTIF_ICONS = {
+    restaurant_registered: '🏬', ngo_registered: '🤝', donation_posted: '🍱',
+    donation_claimed: '🤲', pickup_scheduled: '🗓️', donation_picked_up: '🚚',
+    donation_delivered: '✅', donation_expired: '⏰',
+  };
+
+  function seed() {
+    return { restaurants: [], ngos: [], donations: [], notifications: [], session: { type: null, id: null } };
+  }
+
+  let state = load(KEY, null) || seed();
+  if (!state.session) state.session = { type: null, id: null };
+  save(KEY, state);
+
+  function activeRestaurant() { return state.restaurants.find(r => r.id === state.session.id && state.session.type === 'restaurant') || null; }
+  function activeNgo() { return state.ngos.find(n => n.id === state.session.id && state.session.type === 'ngo') || null; }
+
+  function pushNotif(type, message) {
+    state.notifications.unshift({ id: uid(), type, message, ts: Date.now(), read: false });
+    state.notifications = state.notifications.slice(0, 200);
+  }
+
+  function timeAgo(ts) {
+    const diff = Math.max(0, Date.now() - ts);
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  }
+
+  function timeUntil(ts) {
+    const diff = ts - Date.now();
+    if (diff <= 0) return 'expired';
+    const m = Math.floor(diff / 60000);
+    if (m < 60) return `${m}m left`;
+    return `${Math.floor(m / 60)}h ${m % 60}m left`;
+  }
+
+  function statusLabel(s) {
+    return { available: 'Available', claimed: 'Claimed', scheduled: 'Scheduled', picked_up: 'Picked Up', delivered: 'Delivered', expired: 'Expired' }[s] || s;
+  }
+
+  const STEP_ORDER = ['available', 'claimed', 'scheduled', 'picked_up', 'delivered'];
+
+  function stepperHtml(status) {
+    if (status === 'expired') return '';
+    const idx = STEP_ORDER.indexOf(status);
+    let html = '<div class="stepper">';
+    STEP_ORDER.forEach((s, i) => {
+      html += `<span class="step-dot ${i <= idx ? 'is-done' : ''}"></span>`;
+      if (i < STEP_ORDER.length - 1) html += `<span class="step-line ${i < idx ? 'is-done' : ''}"></span>`;
+    });
+    html += '</div>';
+    return html;
+  }
+
+  /* ---------------- Tabs ---------------- */
+  document.querySelectorAll('.filmstrip .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.filmstrip .tab').forEach(t => t.classList.remove('is-active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      document.getElementById('view-' + tab.dataset.view).classList.add('is-active');
+      if (tab.dataset.view === 'notifications') {
+        state.notifications.forEach(n => n.read = true);
+        save(KEY, state);
+      }
+      renderAll();
+    });
+  });
+
+  /* ---------------- Register: role toggle ---------------- */
+  document.querySelectorAll('.role-toggle .tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.role-toggle .tab').forEach(t => t.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      document.getElementById('restaurantForm').style.display = btn.dataset.role === 'restaurant' ? 'block' : 'none';
+      document.getElementById('ngoForm').style.display = btn.dataset.role === 'ngo' ? 'block' : 'none';
+    });
+  });
+
+  /* ---------------- Register: forms ---------------- */
+  document.getElementById('restaurantForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('rName').value.trim();
+    const city = document.getElementById('rCity').value.trim();
+    if (!name || !city) { showRegisterStatus('Restaurant name and city are required.', 'is-err'); return; }
+    const r = {
+      id: uid(), type: 'restaurant', name, city,
+      phone: document.getElementById('rPhone').value.trim(),
+      address: document.getElementById('rAddress').value.trim(),
+      email: document.getElementById('rEmail').value.trim(),
+      cuisine: document.getElementById('rCuisine').value,
+      createdAt: Date.now(),
+    };
+    state.restaurants.push(r);
+    state.session = { type: 'restaurant', id: r.id };
+    pushNotif('restaurant_registered', `${r.name} joined as a restaurant partner.`);
+    save(KEY, state);
+    e.target.reset();
+    showRegisterStatus(`${r.name} registered — now acting as this restaurant.`, 'is-ok');
+    renderAll();
+  });
+
+  document.getElementById('ngoForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = document.getElementById('nName').value.trim();
+    const area = document.getElementById('nArea').value.trim();
+    if (!name || !area) { showRegisterStatus('NGO name and area are required.', 'is-err'); return; }
+    const n = {
+      id: uid(), type: 'ngo', name, area,
+      phone: document.getElementById('nPhone').value.trim(),
+      capacity: Number(document.getElementById('nCapacity').value) || 0,
+      email: document.getElementById('nEmail').value.trim(),
+      createdAt: Date.now(),
+    };
+    state.ngos.push(n);
+    state.session = { type: 'ngo', id: n.id };
+    pushNotif('ngo_registered', `${n.name} joined as an NGO partner.`);
+    save(KEY, state);
+    e.target.reset();
+    showRegisterStatus(`${n.name} registered — now acting as this NGO.`, 'is-ok');
+    renderAll();
+  });
+
+  function showRegisterStatus(msg, cls) {
+    const el = document.getElementById('registerStatus');
+    el.textContent = msg;
+    el.className = 'status-card is-visible ' + cls;
+    el.style.display = 'block';
+  }
+
+  document.getElementById('actorSelect').addEventListener('change', e => {
+    const val = e.target.value;
+    if (!val) { state.session = { type: null, id: null }; }
+    else {
+      const [type, id] = val.split('::');
+      state.session = { type, id };
+    }
+    save(KEY, state);
+    renderAll();
+  });
+
+  /* ---------------- Donations: post ---------------- */
+  document.getElementById('donationForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const r = activeRestaurant();
+    if (!r) return;
+    const windowHrs = Number(document.getElementById('dWindow').value);
+    const d = {
+      id: uid(), restaurantId: r.id,
+      food: document.getElementById('dFood').value.trim(),
+      category: document.getElementById('dCategory').value,
+      qty: Number(document.getElementById('dQty').value) || 0,
+      address: document.getElementById('dAddress').value.trim() || r.address,
+      notes: document.getElementById('dNotes').value.trim(),
+      status: 'available', ngoId: null, pickupTime: null,
+      createdAt: Date.now(), expiresAt: Date.now() + windowHrs * 3600000,
+    };
+    if (!d.food || !d.qty) return;
+    state.donations.unshift(d);
+    pushNotif('donation_posted', `${r.name} posted a new donation: ${d.food} (${d.qty} servings).`);
+    save(KEY, state);
+    e.target.reset();
+    document.getElementById('dAddress').value = r.address;
+    renderAll();
+  });
+
+  document.getElementById('filterStatus').addEventListener('change', renderDonationsList);
+  document.getElementById('filterCity').addEventListener('change', renderDonationsList);
+  document.getElementById('markAllRead').addEventListener('click', () => {
+    state.notifications.forEach(n => n.read = true);
+    save(KEY, state);
+    renderAll();
+  });
+
+  /* ---------------- Expiry ---------------- */
+  function refreshExpiry() {
+    let changed = false;
+    state.donations.forEach(d => {
+      if (['available', 'claimed', 'scheduled'].includes(d.status) && Date.now() > d.expiresAt) {
+        d.status = 'expired';
+        pushNotif('donation_expired', `${d.food} expired before pickup.`);
+        changed = true;
+      }
+    });
+    if (changed) save(KEY, state);
+  }
+
+  /* ---------------- Renderers ---------------- */
+  function renderActorSelect() {
+    const sel = document.getElementById('actorSelect');
+    const current = state.session.type && state.session.id ? `${state.session.type}::${state.session.id}` : '';
+    sel.innerHTML = '<option value="">— none selected —</option>';
+    state.restaurants.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = `restaurant::${r.id}`;
+      opt.textContent = `🏬 ${r.name} (${r.city})`;
+      sel.appendChild(opt);
+    });
+    state.ngos.forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = `ngo::${n.id}`;
+      opt.textContent = `🤝 ${n.name} (${n.area})`;
+      sel.appendChild(opt);
+    });
+    sel.value = current;
+  }
+
+  function renderPartnerCard() {
+    const r = activeRestaurant();
+    const n = activeNgo();
+    const card = document.getElementById('partnerCard');
+    const regGrid = document.getElementById('regGrid');
+    if (!r && !n) {
+      card.style.display = 'none';
+      regGrid.classList.add('single-col');
+      return;
+    }
+    regGrid.classList.remove('single-col');
+    card.style.display = 'flex';
+    if (r) {
+      document.getElementById('cardType').textContent = 'Restaurant';
+      document.getElementById('cardName').textContent = r.name;
+      document.getElementById('cardMeta').textContent = `${r.city} · ${r.cuisine}`;
+      document.getElementById('cardContact').textContent = `${r.phone} · ${r.email}`;
+      document.getElementById('cardId').textContent = r.id.slice(0, 8).toUpperCase();
+    } else {
+      document.getElementById('cardType').textContent = 'NGO';
+      document.getElementById('cardName').textContent = n.name;
+      document.getElementById('cardMeta').textContent = `${n.area} · ${n.capacity} servings/day`;
+      document.getElementById('cardContact').textContent = `${n.phone} · ${n.email}`;
+      document.getElementById('cardId').textContent = n.id.slice(0, 8).toUpperCase();
+    }
+  }
+
+  function dticketHtml(d, opts = {}) {
+    const r = state.restaurants.find(x => x.id === d.restaurantId);
+    const ngo = state.ngos.find(x => x.id === d.ngoId);
+    const an = activeNgo();
+    const isNearby = an && r && an.area.trim().toLowerCase() === r.city.trim().toLowerCase();
+    const expiryLine = ['available', 'claimed', 'scheduled'].includes(d.status)
+      ? `⏳ ${timeUntil(d.expiresAt)}`
+      : d.pickupTime ? `🗓️ Pickup: ${new Date(d.pickupTime).toLocaleString()}` : '';
+
+    return `
+      <div class="dticket">
+        <div class="dticket__main">
+          <div class="dticket__food"></div>
+          <div class="dticket__sub"></div>
+          <div class="dticket__tags">
+            <span class="dtag">${escapeHtml(d.category)}</span>
+            <span class="dtag">${d.qty} servings</span>
+            ${isNearby ? '<span class="dtag dtag--nearby">Nearby</span>' : ''}
+          </div>
+          ${stepperHtml(d.status)}
+        </div>
+        <div class="dticket__perf"></div>
+        <div class="dticket__stub">
+          <span><span class="status-pill status-pill--${d.status}">${statusLabel(d.status)}</span></span>
+          <span>📍 ${escapeHtml(d.address)}</span>
+          ${ngo ? `<span>Claimed by ${escapeHtml(ngo.name)}</span>` : ''}
+          ${expiryLine ? `<span>${expiryLine}</span>` : ''}
+        </div>
+        ${opts.actionsHtml || ''}
+      </div>`;
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function fillTicketText(el, d) {
+    const r = state.restaurants.find(x => x.id === d.restaurantId);
+    el.querySelector('.dticket__food').textContent = d.food;
+    el.querySelector('.dticket__sub').textContent = `${r ? r.name : 'Unknown'} · ${r ? r.city : ''}`;
+  }
+
+  function renderDonationsList() {
+    const statusFilter = document.getElementById('filterStatus').value;
+    const cityFilter = document.getElementById('filterCity').value.trim().toLowerCase();
+    let list = state.donations.slice();
+    if (statusFilter) list = list.filter(d => d.status === statusFilter);
+    if (cityFilter) list = list.filter(d => {
+      const r = state.restaurants.find(x => x.id === d.restaurantId);
+      return r && r.city.toLowerCase().includes(cityFilter);
+    });
+    const grid = document.getElementById('allDonations');
+    grid.innerHTML = '';
+    if (!list.length) {
+      grid.innerHTML = '<p class="empty-note">No donations match these filters.</p>';
+      return;
+    }
+    list.forEach(d => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = dticketHtml(d);
+      const el = wrap.firstElementChild;
+      fillTicketText(el, d);
+      grid.appendChild(el);
+    });
+  }
+
+  function renderDonationForm() {
+    const r = activeRestaurant();
+    document.getElementById('donationLocked').style.display = r ? 'none' : 'block';
+    document.getElementById('donationForm').style.display = r ? 'block' : 'none';
+    if (r && !document.getElementById('dAddress').value) document.getElementById('dAddress').value = r.address;
+  }
+
+  function renderClaimList() {
+    const n = activeNgo();
+    const wrap = document.getElementById('claimList');
+    const locked = document.getElementById('claimLocked');
+    const emptyNote = document.getElementById('claimEmptyNote');
+    wrap.innerHTML = '';
+    locked.style.display = n ? 'none' : 'block';
+    if (!n) { emptyNote.style.display = 'none'; return; }
+
+    let available = state.donations.filter(d => d.status === 'available');
+    available = available.slice().sort((a, b) => {
+      const ra = state.restaurants.find(x => x.id === a.restaurantId);
+      const rb = state.restaurants.find(x => x.id === b.restaurantId);
+      const nearA = ra && ra.city.trim().toLowerCase() === n.area.trim().toLowerCase() ? 0 : 1;
+      const nearB = rb && rb.city.trim().toLowerCase() === n.area.trim().toLowerCase() ? 0 : 1;
+      return nearA - nearB;
+    });
+
+    emptyNote.style.display = available.length ? 'none' : 'block';
+
+    available.forEach(d => {
+      const r = state.restaurants.find(x => x.id === d.restaurantId);
+      const isNearby = r && n.area.trim().toLowerCase() === r.city.trim().toLowerCase();
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.innerHTML = `
+        <div class="row__top">
+          <div class="row__meta">
+            <div class="row__event">${r ? escapeHtml(r.city) : ''} ${isNearby ? '· Nearby' : ''}</div>
+            <div class="row__name"></div>
+            <div class="row__time">${d.qty} servings · ${escapeHtml(d.category)} · ${timeUntil(d.expiresAt)}</div>
+          </div>
+        </div>
+        <div class="row__actions"><button class="btn btn--primary">Claim this donation</button></div>
+      `;
+      row.querySelector('.row__name').textContent = `${d.food} — ${r ? r.name : 'Unknown'}`;
+      row.querySelector('button').addEventListener('click', () => {
+        d.status = 'claimed';
+        d.ngoId = n.id;
+        pushNotif('donation_claimed', `${n.name} claimed ${d.food} from ${r ? r.name : 'a restaurant'}.`);
+        save(KEY, state);
+        renderAll();
+      });
+      wrap.appendChild(row);
+    });
+  }
+
+  function renderPickupList() {
+    const n = activeNgo();
+    const wrap = document.getElementById('pickupList');
+    const locked = document.getElementById('pickupLocked');
+    const emptyNote = document.getElementById('pickupEmptyNote');
+    wrap.innerHTML = '';
+    locked.style.display = n ? 'none' : 'block';
+    if (!n) { emptyNote.style.display = 'none'; return; }
+
+    const mine = state.donations.filter(d => d.ngoId === n.id && d.status !== 'available');
+    emptyNote.style.display = mine.length ? 'none' : 'block';
+
+    mine.forEach(d => {
+      const r = state.restaurants.find(x => x.id === d.restaurantId);
+      const row = document.createElement('div');
+      row.className = 'row';
+      let actionsHtml = '';
+      if (d.status === 'claimed') {
+        actionsHtml = `<div class="row__actions"><input type="datetime-local"><button class="btn btn--warn">Schedule pickup</button></div>`;
+      } else if (d.status === 'scheduled') {
+        actionsHtml = `<div class="row__actions"><button class="btn btn--ok">Mark picked up</button></div>`;
+      } else if (d.status === 'picked_up') {
+        actionsHtml = `<div class="row__actions"><button class="btn btn--primary">Confirm delivered</button></div>`;
+      }
+      row.innerHTML = `
+        <div class="row__top">
+          <div class="row__meta">
+            <div class="row__event"><span class="status-pill status-pill--${d.status}">${statusLabel(d.status)}</span></div>
+            <div class="row__name"></div>
+            <div class="row__time">${r ? r.name : 'Unknown'} · ${d.qty} servings</div>
+          </div>
+        </div>
+        ${actionsHtml}
+      `;
+      row.querySelector('.row__name').textContent = d.food;
+
+      if (d.status === 'claimed') {
+        const input = row.querySelector('input[type="datetime-local"]');
+        row.querySelector('button').addEventListener('click', () => {
+          if (!input.value) return;
+          d.status = 'scheduled';
+          d.pickupTime = new Date(input.value).getTime();
+          pushNotif('pickup_scheduled', `${n.name} scheduled pickup for ${d.food}.`);
+          save(KEY, state);
+          renderAll();
+        });
+      } else if (d.status === 'scheduled') {
+        row.querySelector('button').addEventListener('click', () => {
+          d.status = 'picked_up';
+          pushNotif('donation_picked_up', `${d.food} was picked up by ${n.name} and is on its way.`);
+          save(KEY, state);
+          renderAll();
+        });
+      } else if (d.status === 'picked_up') {
+        row.querySelector('button').addEventListener('click', () => {
+          d.status = 'delivered';
+          pushNotif('donation_delivered', `${d.food} was delivered to beneficiaries. ${d.qty} meals saved!`);
+          save(KEY, state);
+          renderAll();
+        });
+      }
+      wrap.appendChild(row);
+    });
+  }
+
+  function notifItemHtml(n) {
+    return `
+      <div class="notif-item ${n.read ? '' : 'is-unread'}">
+        <div class="notif-ic">${NOTIF_ICONS[n.type] || '🔔'}</div>
+        <div>
+          <div class="notif-text"></div>
+          <div class="notif-time">${timeAgo(n.ts)}</div>
+        </div>
+      </div>`;
+  }
+
+  function renderNotifTab() {
+    const list = document.getElementById('notifList');
+    const emptyNote = document.getElementById('notifEmptyNote');
+    list.innerHTML = '';
+    emptyNote.style.display = state.notifications.length ? 'none' : 'block';
+    state.notifications.forEach(n => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = notifItemHtml(n);
+      const el = wrap.firstElementChild;
+      el.querySelector('.notif-text').textContent = n.message;
+      list.appendChild(el);
+    });
+
+    const unread = state.notifications.filter(n => !n.read).length;
+    const badge = document.getElementById('notifBadge');
+    badge.style.display = unread ? 'inline-flex' : 'none';
+    badge.textContent = unread;
+  }
+
+  function renderAnalytics() {
+    const delivered = state.donations.filter(d => d.status === 'delivered');
+    const meals = delivered.reduce((sum, d) => sum + (d.qty || 0), 0);
+    const pending = state.donations.filter(d => ['claimed', 'scheduled', 'picked_up'].includes(d.status)).length;
+
+    document.getElementById('statDonations').textContent = state.donations.length;
+    document.getElementById('statMeals').textContent = meals;
+    document.getElementById('statNgos').textContent = state.ngos.length;
+    document.getElementById('statPending').textContent = pending;
+
+    const counts = { available: 0, claimed: 0, scheduled: 0, picked_up: 0, delivered: 0, expired: 0 };
+    state.donations.forEach(d => { if (counts[d.status] !== undefined) counts[d.status]++; });
+
+    const canvas = document.getElementById('analyticsChart');
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const labels = Object.keys(counts);
+    const maxVal = Math.max(...labels.map(k => counts[k]), 1);
+    const padding = 40;
+    const chartW = w - padding * 2;
+    const chartH = h - padding * 1.5;
+    const groupW = chartW / labels.length;
+    const barW = Math.min(50, groupW * 0.5);
+
+    ctx.strokeStyle = '#2a3327';
+    ctx.beginPath();
+    ctx.moveTo(padding, h - padding);
+    ctx.lineTo(w - padding / 2, h - padding);
+    ctx.stroke();
+
+    const colorMap = { available: '#4d8b3a', claimed: '#4a90c2', scheduled: '#d9a441', picked_up: '#a855f7', delivered: '#7cbf5f', expired: '#d5432b' };
+
+    labels.forEach((k, i) => {
+      const groupX = padding + i * groupW + groupW / 2;
+      const val = counts[k];
+      const barH = (val / maxVal) * chartH;
+      ctx.fillStyle = colorMap[k];
+      ctx.fillRect(groupX - barW / 2, h - padding - barH, barW, barH);
+
+      ctx.fillStyle = '#ece5d8';
+      ctx.font = '11px IBM Plex Mono, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(statusLabel(k), groupX, h - padding + 16);
+      ctx.fillText(String(val), groupX, h - padding - barH - 6);
+    });
+    ctx.textAlign = 'left';
+
+    const list = document.getElementById('recentList');
+    const emptyNote = document.getElementById('recentEmptyNote');
+    list.innerHTML = '';
+    const recent = state.notifications.slice(0, 8);
+    emptyNote.style.display = recent.length ? 'none' : 'block';
+    recent.forEach(n => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = notifItemHtml(n);
+      const el = wrap.firstElementChild;
+      el.querySelector('.notif-text').textContent = n.message;
+      list.appendChild(el);
+    });
+  }
+
+  function renderAll() {
+    refreshExpiry();
+    renderActorSelect();
+    renderPartnerCard();
+    renderDonationForm();
+    renderDonationsList();
+    renderClaimList();
+    renderPickupList();
+    renderNotifTab();
+    renderAnalytics();
+  }
+
+  renderAll();
+  setInterval(renderAll, 30000);
+})();
+</script>
+</body>
+</html>
