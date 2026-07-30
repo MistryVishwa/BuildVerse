@@ -1,0 +1,14 @@
+{
+  "title": "Lost & Found Exchange",
+  "description": "Report lost or found items, get nearby/keyword-based match suggestions, verify claims with QR codes, and message the other party — all in the browser.",
+  "author": {
+    "name": "Mehwish",
+    "github": "MEHWISH310"
+  },
+  "tags": [
+    "JavaScript",
+    "QR Code",
+    "Geolocation",
+    "Utility"
+  ]
+}
