@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Portfolio Builder - Create, Customize & Export</title>
+  <meta name="description" content="Build your professional developer portfolio with real-time preview, theme customizer, and client-side code export.">
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts for the Dashboard and Templates -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <div class="logo-icon">
+          <i data-lucide="sparkles"></i>
+        </div>
+        <div>
+          <h1>AI Portfolio Builder</h1>
+          <p class="subtitle">Build your premium developer presence in minutes</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="reset-btn" class="btn btn-secondary" title="Reset all data to default" aria-label="Reset all data">
+          <i data-lucide="rotate-ccw"></i> Reset
+        </button>
+        <button id="theme-toggle-btn" class="btn btn-icon" title="Toggle Dashboard Theme" aria-label="Toggle Dashboard Light/Dark Mode">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+      <!-- Left Panel: Form & Customizer -->
+      <section class="editor-panel scrollbar-styled" aria-label="Portfolio Builder Controls">
+        
+        <!-- Accordion Section 1: Template Selection -->
+        <div class="accordion-item active">
+          <button class="accordion-header" aria-expanded="true">
+            <span class="accordion-title"><i data-lucide="layout"></i> Select Template</span>
+            <i data-lucide="chevron-down" class="accordion-chevron"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="template-grid">
+              <label class="template-card">
+                <input type="radio" name="portfolio-template" value="modern" checked>
+                <div class="template-preview-box modern-preview">
+                  <div class="mock-hero"></div>
+                  <div class="mock-grid"><div></div><div></div></div>
+                </div>
+                <span class="template-name">Modern</span>
+              </label>
+              
+              <label class="template-card">
+                <input type="radio" name="portfolio-template" value="minimal">
+                <div class="template-preview-box minimal-preview">
+                  <div class="mock-line"></div>
+                  <div class="mock-text"></div>
+                  <div class="mock-text"></div>
+                </div>
+                <span class="template-name">Minimal</span>
+              </label>
+              
+              <label class="template-card">
+                <input type="radio" name="portfolio-template" value="creative">
+                <div class="template-preview-box creative-preview">
+                  <div class="mock-circle"></div>
+                  <div class="mock-timeline"></div>
+                </div>
+                <span class="template-name">Creative</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accordion Section 2: Personal Information -->
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="accordion-title"><i data-lucide="user"></i> Personal Info</span>
+            <i data-lucide="chevron-down" class="accordion-chevron"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="form-grid">
+              <div class="form-group col-span-2">
+                <label for="p-name">Full Name <span class="required">*</span></label>
+                <input type="text" id="p-name" placeholder="John Doe" required>
+              </div>
+              <div class="form-group col-span-2">
+                <label for="p-title">Professional Title <span class="required">*</span></label>
+                <input type="text" id="p-title" placeholder="Full Stack Software Engineer" required>
+              </div>
+              <div class="form-group col-span-2">
+                <label for="p-photo">Profile Photo URL</label>
+                <input type="url" id="p-photo" placeholder="https://images.unsplash.com/photo-...">
+              </div>
+              <div class="form-group col-span-2">
+                <label for="p-bio">Short Bio <span class="required">*</span></label>
+                <textarea id="p-bio" rows="3" placeholder="Passionate developer specializing in building scalable web architectures and beautiful interactive user experiences..." required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="p-email">Email <span class="required">*</span></label>
+                <input type="email" id="p-email" placeholder="john.doe@example.com" required>
+              </div>
+              <div class="form-group">
+                <label for="p-phone">Phone</label>
+                <input type="tel" id="p-phone" placeholder="+1 (555) 000-0000">
+              </div>
+              <div class="form-group">
+                <label for="p-location">Location</label>
+                <input type="text" id="p-location" placeholder="San Francisco, CA">
+              </div>
+              <div class="form-group">
+                <label for="p-website">Personal Website</label>
+                <input type="url" id="p-website" placeholder="https://johndoe.dev">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accordion Section 3: Social Links -->
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="accordion-title"><i data-lucide="share-2"></i> Social Links</span>
+            <i data-lucide="chevron-down" class="accordion-chevron"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="s-github"><i data-lucide="github" class="inline-icon"></i> GitHub</label>
+                <input type="url" id="s-github" placeholder="https://github.com/johndoe">
+              </div>
+              <div class="form-group">
+                <label for="s-linkedin"><i data-lucide="linkedin" class="inline-icon"></i> LinkedIn</label>
+                <input type="url" id="s-linkedin" placeholder="https://linkedin.com/in/johndoe">
+              </div>
+              <div class="form-group">
+                <label for="s-twitter"><i data-lucide="twitter" class="inline-icon"></i> Twitter / X</label>
+                <input type="url" id="s-twitter" placeholder="https://twitter.com/johndoe">
+              </div>
+              <div class="form-group">
+                <label for="s-youtube"><i data-lucide="youtube" class="inline-icon"></i> YouTube</label>
+                <input type="url" id="s-youtube" placeholder="https://youtube.com/@johndoe">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accordion Section 4: Skills -->
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="accordion-title"><i data-lucide="code"></i> Skills</span>
+            <i data-lucide="chevron-down" class="accordion-chevron"></i>
+          </button>
+          <div class="accordion-content">
+            <div id="skills-list" class="dynamic-list-container">
+              <!-- Dynamically populated skills -->
+            </div>
+            <button type="button" id="add-skill-btn" class="btn btn-secondary btn-sm btn-add">
+              <i data-lucide="plus"></i> Add Skill
+            </button>
+          </div>
+        </div>
+
+        <!-- Accordion Section 5: Experience -->
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="accordion-title"><i data-lucide="briefcase"></i> Experience</span>
+            <i data-lucide="chevron-down" class="accordion-chevron"></i>
+          </button>
+          <div class="accordion-content">
+            <div id="experience-list" class="dynamic-list-container">
+              <!-- Dynamically populated experience -->
+            </div>
+            <button type="button" id="add-experience-btn" class="btn btn-secondary btn-sm btn-add">
+              <i data-lucide="plus"></i> Add Experience
+            </button>
+          </div>
+        </div>
+
+        <!-- Accordion Section 6: Education -->
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="accordion-title"><i data-lucide="graduation-cap"></i> Education</span>
+            <i data-lucide="chevron-down" class="accordion-chevron"></i>
+          </button>
+          <div class="accordion-content">
+            <div id="education-list" class="dynamic-list-container">
+              <!-- Dynamically populated education -->
+            </div>
+            <button type="button" id="add-education-btn" class="btn btn-secondary btn-sm btn-add">
+              <i data-lucide="plus"></i> Add Education
+            </button>
+          </div>
+        </div>
+
+        <!-- Accordion Section 7: Projects -->
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="accordion-title"><i data-lucide="folder-git-2"></i> Projects</span>
+            <i data-lucide="chevron-down" class="accordion-chevron"></i>
+          </button>
+          <div class="accordion-content">
+            <div id="projects-list" class="dynamic-list-container">
+              <!-- Dynamically populated projects -->
+            </div>
+            <button type="button" id="add-project-btn" class="btn btn-secondary btn-sm btn-add">
+              <i data-lucide="plus"></i> Add Project
+            </button>
+          </div>
+        </div>
+
+        <!-- Accordion Section 8: Certifications (Optional) -->
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="accordion-title"><i data-lucide="award"></i> Certifications <span class="badge-optional">Optional</span></span>
+            <i data-lucide="chevron-down" class="accordion-chevron"></i>
+          </button>
+          <div class="accordion-content">
+            <div id="certifications-list" class="dynamic-list-container">
+              <!-- Dynamically populated certifications -->
+            </div>
+            <button type="button" id="add-certification-btn" class="btn btn-secondary btn-sm btn-add">
+              <i data-lucide="plus"></i> Add Certification
+            </button>
+          </div>
+        </div>
+
+        <!-- Accordion Section 9: Achievements (Optional) -->
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="accordion-title"><i data-lucide="trophy"></i> Achievements <span class="badge-optional">Optional</span></span>
+            <i data-lucide="chevron-down" class="accordion-chevron"></i>
+          </button>
+          <div class="accordion-content">
+            <div id="achievements-list" class="dynamic-list-container">
+              <!-- Dynamically populated achievements -->
+            </div>
+            <button type="button" id="add-achievement-btn" class="btn btn-secondary btn-sm btn-add">
+              <i data-lucide="plus"></i> Add Achievement
+            </button>
+          </div>
+        </div>
+
+        <!-- Accordion Section 10: Theme Customizer -->
+        <div class="accordion-item">
+          <button class="accordion-header" aria-expanded="false">
+            <span class="accordion-title"><i data-lucide="sliders"></i> Theme Customizer</span>
+            <i data-lucide="chevron-down" class="accordion-chevron"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="form-grid">
+              
+              <!-- Color Presets -->
+              <div class="form-group col-span-2">
+                <label>Theme Preset</label>
+                <div class="preset-theme-selector">
+                  <button type="button" class="preset-btn" data-primary="#4f46e5" data-accent="#06b6d4" data-font="Outfit" data-radius="12px" title="Indigo Cyber">
+                    <span class="dot" style="background: linear-gradient(135deg, #4f46e5, #06b6d4);"></span> Indigo Cyber
+                  </button>
+                  <button type="button" class="preset-btn" data-primary="#10b981" data-accent="#3b82f6" data-font="Inter" data-radius="8px" title="Emerald Breeze">
+                    <span class="dot" style="background: linear-gradient(135deg, #10b981, #3b82f6);"></span> Emerald Breeze
+                  </button>
+                  <button type="button" class="preset-btn" data-primary="#ec4899" data-accent="#f43f5e" data-font="Space Grotesk" data-radius="16px" title="Creative Fusion">
+                    <span class="dot" style="background: linear-gradient(135deg, #ec4899, #f43f5e);"></span> Creative Fusion
+                  </button>
+                  <button type="button" class="preset-btn" data-primary="#d97706" data-accent="#dc2626" data-font="Playfair Display" data-radius="4px" title="Classic Warmth">
+                    <span class="dot" style="background: linear-gradient(135deg, #d97706, #dc2626);"></span> Vintage Warmth
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="theme-primary">Primary Color</label>
+                <div class="color-picker-wrapper">
+                  <input type="color" id="theme-primary" value="#4f46e5">
+                  <span id="primary-hex" class="hex-display">#4f46e5</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="theme-accent">Accent Color</label>
+                <div class="color-picker-wrapper">
+                  <input type="color" id="theme-accent" value="#06b6d4">
+                  <span id="accent-hex" class="hex-display">#06b6d4</span>
+                </div>
+              </div>
+
+              <div class="form-group col-span-2">
+                <label for="theme-font">Font Family</label>
+                <select id="theme-font">
+                  <option value="Inter">Inter (Clean / Modern)</option>
+                  <option value="Outfit">Outfit (Geometric / Premium)</option>
+                  <option value="Space Grotesk">Space Grotesk (Tech / Creative)</option>
+                  <option value="Playfair Display">Playfair Display (Elegant / Classic Serif)</option>
+                  <option value="JetBrains Mono">JetBrains Mono (Developer Console / Minimal)</option>
+                </select>
+              </div>
+
+              <div class="form-group col-span-2">
+                <label for="theme-radius">Border Radius: <span id="radius-val">12px</span></label>
+                <input type="range" id="theme-radius" min="0" max="24" value="12" step="2">
+              </div>
+
+              <!-- Portfolio Target Theme (Dark/Light mode of the generated output) -->
+              <div class="form-group col-span-2">
+                <label>Portfolio Mode</label>
+                <div class="portfolio-theme-toggle">
+                  <label class="toggle-control">
+                    <input type="checkbox" id="portfolio-dark-mode" checked>
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">Dark Mode Portfolio Output</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Section Visibility Toggles -->
+              <div class="form-group col-span-2">
+                <label>Section Visibility</label>
+                <div class="visibility-checkbox-grid">
+                  <label class="checkbox-control">
+                    <input type="checkbox" id="vis-skills" checked>
+                    <span>Skills</span>
+                  </label>
+                  <label class="checkbox-control">
+                    <input type="checkbox" id="vis-experience" checked>
+                    <span>Experience</span>
+                  </label>
+                  <label class="checkbox-control">
+                    <input type="checkbox" id="vis-education" checked>
+                    <span>Education</span>
+                  </label>
+                  <label class="checkbox-control">
+                    <input type="checkbox" id="vis-projects" checked>
+                    <span>Projects</span>
+                  </label>
+                  <label class="checkbox-control">
+                    <input type="checkbox" id="vis-certifications" checked>
+                    <span>Certifications</span>
+                  </label>
+                  <label class="checkbox-control">
+                    <input type="checkbox" id="vis-achievements" checked>
+                    <span>Achievements</span>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Export Buttons Section -->
+        <div class="export-actions-card">
+          <h3><i data-lucide="download"></i> Export Portfolio</h3>
+          <p class="export-desc">Generate production-ready files instantly. No backend or subscriptions.</p>
+          <div class="export-btn-grid">
+            <button id="export-html-btn" class="btn btn-primary-gradient">
+              <i data-lucide="file-code"></i> HTML Only
+            </button>
+            <button id="export-css-btn" class="btn btn-primary-gradient">
+              <i data-lucide="css3" class="custom-css-icon">CSS Only</i>
+            </button>
+            <button id="export-zip-btn" class="btn btn-indigo">
+              <i data-lucide="archive"></i> Complete ZIP
+            </button>
+            <button id="print-pdf-btn" class="btn btn-secondary">
+              <i data-lucide="printer"></i> Print PDF
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Right Panel: Live Preview -->
+      <section class="preview-panel" aria-label="Portfolio Real-time Live Preview">
+        <div class="preview-header">
+          <div class="preview-title">
+            <span class="live-dot"></span> Live Preview
+          </div>
+          <!-- Device Sizer -->
+          <div class="device-switcher" role="radiogroup" aria-label="Select device preview size">
+            <button class="device-btn active" data-device="desktop" title="Desktop View" aria-label="Desktop screen size">
+              <i data-lucide="monitor"></i>
+            </button>
+            <button class="device-btn" data-device="tablet" title="Tablet View" aria-label="Tablet screen size">
+              <i data-lucide="tablet"></i>
+            </button>
+            <button class="device-btn" data-device="mobile" title="Mobile View" aria-label="Mobile screen size">
+              <i data-lucide="smartphone"></i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="preview-container">
+          <!-- The isolated iframe container for live viewing -->
+          <div class="iframe-wrapper device-desktop" id="iframe-wrapper">
+            <iframe id="portfolio-preview" title="Developer Portfolio Live Preview"></iframe>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>&copy; 2026 BuildVerse. Built with pure HTML, CSS, and Vanilla JS. Apache 2.0 Licensed.</p>
+    </footer>
+  </div>
+
+  <!-- Exporter dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- Icon system -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.435.0/dist/umd/lucide.min.js"></script>
+  <!-- Application script -->
+  <script src="script.js"></script>
+</body>
+</html>

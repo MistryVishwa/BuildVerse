@@ -1,0 +1,24 @@
+{
+  "title": "AI Portfolio Builder",
+  "description": "A modern static web application that enables users to create a professional developer portfolio through an interactive form, customize templates, preview in real time, and export the generated portfolio as a static website.",
+  "author": {
+    "name": "Kola Sailaja",
+    "github": "KolaSailaja"
+  },
+  "githubUsername": "KolaSailaja",
+  "tags": [
+    "Portfolio",
+    "Website Builder",
+    "Interactive",
+    "Utility",
+    "Glassmorphism"
+  ],
+  "technologies": [
+    "HTML5",
+    "CSS3",
+    "JavaScript"
+  ],
+  "category": "Developer Tools / Portfolio",
+  "responsive": true,
+  "version": "1.0.0"
+}
