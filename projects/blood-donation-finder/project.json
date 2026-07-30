@@ -1,0 +1,14 @@
+{
+  "title": "Blood Donation Finder",
+  "description": "Register as a blood donor, search the registry by blood group with compatibility and distance filtering, raise emergency blood requests, and browse nearby hospitals/blood banks.",
+  "author": {
+    "name": "Mehwish",
+    "github": "MEHWISH310"
+  },
+  "tags": [
+    "JavaScript",
+    "Healthcare",
+    "Geolocation",
+    "Utility"
+  ]
+}
