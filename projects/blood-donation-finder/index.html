@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blood Donation Finder — BuildVerse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #14100e;
+  --panel: #1c1714;
+  --panel-line: #332a23;
+  --paper: #ece5d8;
+  --paper-dim: #cfc6b6;
+  --safelight: #d5432b;
+  --safelight-light: #ee7a5c;
+  --ink: #1c1714;
+  --muted: #9a8f80;
+  --ok: #79946f;
+  --warn: #c9a24b;
+  --radius: 6px;
+  --font-display: "IBM Plex Mono", monospace;
+  --font-body: "IBM Plex Sans", sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(circle at 15% -10%, #241c17 0%, transparent 55%), var(--bg);
+  color: var(--paper);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding: 40px 20px 60px; }
+
+/* ---- Masthead ---- */
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 28px; }
+.masthead__mark { display: flex; align-items: center; gap: 10px; }
+.masthead__dot { width: 10px; height: 10px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, var(--safelight-light), var(--safelight) 70%); box-shadow: 0 0 8px rgba(213,67,43,0.6); }
+.masthead__title { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+.masthead__sub { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+
+/* ---- Tabs (filmstrip) ---- */
+.filmstrip { display: flex; justify-content: center; gap: 4px; margin-bottom: 24px; border-top: 1px dashed var(--panel-line); border-bottom: 1px dashed var(--panel-line); padding: 8px 0; flex-wrap: wrap; }
+.tab {
+  font-family: var(--font-display); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  background: transparent; border: 1px solid transparent; color: var(--muted);
+  padding: 9px 20px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease;
+}
+.tab:hover { color: var(--paper); }
+.tab.is-active { background: var(--safelight); border-color: var(--safelight); color: #fff3ef; }
+
+.view { display: none; }
+.view.is-active { display: block; }
+
+/* ---- Panels ---- */
+.panel { background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px; padding: 22px; }
+.panel + .panel { margin-top: 18px; }
+.panel__title { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--safelight-light); margin: 0 0 16px; }
+
+/* ---- Layout grids ---- */
+.gen-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+.gen-grid.has-side { grid-template-columns: 1fr 320px; }
+@media (max-width: 760px) { .gen-grid.has-side { grid-template-columns: 1fr; } }
+
+/* ---- Chips ---- */
+.type-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.type-chip {
+  font-family: var(--font-display); font-size: 11.5px; letter-spacing: 0.04em;
+  background: transparent; border: 1px solid var(--panel-line); color: var(--muted);
+  padding: 7px 14px; border-radius: 999px; cursor: pointer; transition: all 0.15s ease;
+}
+.type-chip:hover { border-color: var(--safelight); color: var(--paper); }
+.type-chip.is-active { background: var(--safelight); border-color: var(--safelight); color: #fff3ef; }
+
+/* ---- Fields ---- */
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; letter-spacing: 0.02em; }
+.field input[type="text"], .field input[type="date"], .field input[type="tel"], .field input[type="number"], .field textarea, .field select {
+  width: 100%; background: #100d0b; border: 1px solid var(--panel-line); border-radius: var(--radius);
+  padding: 9px 10px; color: var(--paper); font-family: var(--font-body); font-size: 13.5px;
+}
+.field textarea { min-height: 64px; resize: vertical; }
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--safelight); }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field-note { font-size: 11.5px; color: var(--muted); margin-top: -6px; margin-bottom: 12px; }
+.checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); margin-bottom: 14px; }
+.checkbox-row input { accent-color: var(--safelight); }
+
+/* ---- Buttons ---- */
+.btn {
+  font-family: var(--font-body); font-weight: 600; border-radius: var(--radius); border: 1px solid transparent;
+  cursor: pointer; transition: transform 0.1s ease, background 0.2s ease; font-size: 13px; padding: 10px 16px;
+}
+.btn:active { transform: translateY(1px); }
+.btn--primary { background: linear-gradient(180deg, var(--safelight-light), var(--safelight)); color: #fff3ef; flex: 1; }
+.btn--ghost { background: transparent; border-color: var(--panel-line); color: var(--muted); }
+.btn--ghost:hover { color: var(--paper); border-color: var(--safelight); }
+.btn--ghost.is-active { background: var(--safelight); border-color: var(--safelight); color: #fff3ef; }
+.btn--dark { background: var(--ink); color: var(--paper); flex: 1; }
+.btn--full { width: 100%; }
+
+/* ---- Ticket-stub cards ---- */
+.item-card {
+  position: relative; display: grid; grid-template-columns: 1fr auto; gap: 10px;
+  background: var(--paper); color: var(--ink); border-radius: var(--radius); padding: 14px 16px;
+  margin-bottom: 12px; border: 1px dashed var(--paper-dim);
+}
+.item-card::before, .item-card::after {
+  content: ""; position: absolute; top: 50%; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--bg); transform: translateY(-50%);
+}
+.item-card::before { left: -8px; }
+.item-card::after { right: -8px; }
+.item-card__top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.badge {
+  font-family: var(--font-display); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px; color: #fff3ef;
+}
+.badge--group { background: var(--safelight); }
+.badge--available { background: var(--ok); }
+.badge--unavailable { background: var(--muted); }
+.badge--critical { background: var(--safelight); }
+.badge--urgent { background: var(--warn); color: var(--ink); }
+.badge--routine { background: var(--ok); }
+.badge--fulfilled { background: var(--muted); }
+.item-card__name { font-weight: 600; font-size: 15px; }
+.item-card__desc { font-size: 13px; color: #4a4139; margin: 6px 0; }
+.item-card__meta { font-size: 11.5px; color: #6b6153; display: flex; gap: 12px; flex-wrap: wrap; }
+.item-card__actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; justify-content: center; }
+.item-card__actions .btn { font-size: 11.5px; padding: 6px 10px; }
+
+.filter-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+.filter-bar select { background: #100d0b; border: 1px solid var(--panel-line); color: var(--paper); border-radius: var(--radius); padding: 8px 10px; font-family: var(--font-body); font-size: 13px; }
+.empty-note { font-size: 13px; color: var(--muted); }
+
+/* ---- Compatibility side panel ---- */
+.compat-box { background: var(--paper); color: var(--ink); border-radius: 10px; padding: 18px; }
+.compat-box h3 { font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 10px; }
+.compat-groups { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.compat-groups .badge { background: var(--ink); }
+
+/* ---- Hospital cards ---- */
+.hospital-card { background: var(--panel); border: 1px solid var(--panel-line); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; }
+.hospital-card__name { font-weight: 600; font-size: 14.5px; }
+.hospital-card__meta { font-size: 12.5px; color: var(--muted); margin: 6px 0; }
+.hospital-card__tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.hospital-card a { color: var(--safelight-light); text-decoration: none; font-size: 12.5px; }
+.hospital-card a:hover { text-decoration: underline; }
+
+.colophon { text-align: center; margin-top: 32px; font-size: 11px; color: var(--muted); letter-spacing: 0.06em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="masthead__mark">
+      <span class="masthead__dot"></span>
+      <span class="masthead__title">Blood Donation Finder</span>
+    </div>
+    <p class="masthead__sub">Find donors, raise emergency requests, and know which hospital to call.</p>
+  </header>
+
+  <nav class="filmstrip">
+    <button class="tab is-active" data-view="find">Find Donors</button>
+    <button class="tab" data-view="register">Register as Donor</button>
+    <button class="tab" data-view="emergency">Emergency Request</button>
+    <button class="tab" data-view="hospitals">Hospitals</button>
+  </nav>
+
+  <!-- ============ FIND DONORS ============ -->
+  <section class="view is-active" id="view-find">
+    <div class="panel">
+      <h2 class="panel__title">Search donor registry</h2>
+      <div class="filter-bar">
+        <select id="findGroupFilter">
+          <option value="all">Any blood group</option>
+          <option value="O-">O-</option>
+          <option value="O+">O+</option>
+          <option value="A-">A-</option>
+          <option value="A+">A+</option>
+          <option value="B-">B-</option>
+          <option value="B+">B+</option>
+          <option value="AB-">AB-</option>
+          <option value="AB+">AB+</option>
+        </select>
+        <button class="btn btn--ghost" id="findCompatOnlyBtn" type="button">Compatible donors only</button>
+        <select id="findAvailFilter">
+          <option value="all">Any availability</option>
+          <option value="available">Available now</option>
+        </select>
+        <select id="findSortFilter">
+          <option value="recent">Sort: most recent</option>
+          <option value="distance">Sort: nearest to me</option>
+        </select>
+        <button class="btn btn--ghost" id="findUseLocationBtn" type="button">📍 Enable distance sort</button>
+      </div>
+      <div id="donorList"></div>
+      <p class="empty-note" id="donorListEmpty">No donors registered yet — ask people to register under "Register as Donor".</p>
+    </div>
+  </section>
+
+  <!-- ============ REGISTER AS DONOR ============ -->
+  <section class="view" id="view-register">
+    <div class="panel">
+      <h2 class="panel__title">Register as a donor</h2>
+      <div class="field-row">
+        <div class="field"><label for="donorName">Full name</label>
+          <input type="text" id="donorName" placeholder="Jane Doe">
+        </div>
+        <div class="field"><label for="donorGroup">Blood group</label>
+          <select id="donorGroup">
+            <option value="O-">O-</option>
+            <option value="O+">O+</option>
+            <option value="A-">A-</option>
+            <option value="A+">A+</option>
+            <option value="B-">B-</option>
+            <option value="B+">B+</option>
+            <option value="AB-">AB-</option>
+            <option value="AB+">AB+</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label for="donorPhone">Phone</label>
+          <input type="tel" id="donorPhone" placeholder="+91 90000 00000">
+        </div>
+        <div class="field"><label for="donorLastDonated">Last donated (optional)</label>
+          <input type="date" id="donorLastDonated">
+        </div>
+      </div>
+      <div class="field"><label for="donorLocation">City / area</label>
+        <input type="text" id="donorLocation" placeholder="e.g. your city / locality">
+      </div>
+      <div class="field">
+        <button class="btn btn--ghost" type="button" id="donorUseLocationBtn">📍 Use my current location</button>
+        <p class="field-note" id="donorLocationStatus">Optional — improves nearby matching for emergency requests.</p>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="donorAvailable" checked>
+        <label for="donorAvailable">I'm currently available to donate</label>
+      </div>
+      <button class="btn btn--primary btn--full" id="submitDonorBtn">Register</button>
+    </div>
+  </section>
+
+  <!-- ============ EMERGENCY REQUEST ============ -->
+  <section class="view" id="view-emergency">
+    <div class="gen-grid has-side">
+      <div class="panel">
+        <h2 class="panel__title">Raise an emergency request</h2>
+        <div class="field-row">
+          <div class="field"><label for="reqPatient">Patient / requester name</label>
+            <input type="text" id="reqPatient" placeholder="Who needs blood?">
+          </div>
+          <div class="field"><label for="reqGroup">Blood group needed</label>
+            <select id="reqGroup">
+              <option value="O-">O-</option>
+              <option value="O+">O+</option>
+              <option value="A-">A-</option>
+              <option value="A+">A+</option>
+              <option value="B-">B-</option>
+              <option value="B+">B+</option>
+              <option value="AB-">AB-</option>
+              <option value="AB+">AB+</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="reqUnits">Units needed</label>
+            <input type="number" id="reqUnits" min="1" value="1">
+          </div>
+          <div class="field"><label for="reqUrgency">Urgency</label>
+            <select id="reqUrgency">
+              <option value="critical">Critical (within hours)</option>
+              <option value="urgent">Urgent (within a day)</option>
+              <option value="routine">Routine (planned surgery)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label for="reqHospital">Hospital / location</label>
+          <input type="text" id="reqHospital" placeholder="e.g. hospital name, ward/floor">
+        </div>
+        <div class="field">
+          <button class="btn btn--ghost" type="button" id="reqUseLocationBtn">📍 Use my current location</button>
+          <p class="field-note" id="reqLocationStatus">Optional — lets nearby compatible donors be sorted by distance.</p>
+        </div>
+        <div class="field"><label for="reqContact">Contact phone</label>
+          <input type="tel" id="reqContact" placeholder="+91 90000 00000">
+        </div>
+        <div class="field"><label for="reqNotes">Notes (optional)</label>
+          <textarea id="reqNotes" placeholder="Any additional context…"></textarea>
+        </div>
+        <button class="btn btn--primary btn--full" id="submitRequestBtn">Post emergency request</button>
+      </div>
+
+      <div class="compat-box">
+        <h3>Who can donate to this group?</h3>
+        <p style="font-size:12.5px;margin:0;color:#4a4139">Compatible donor blood groups for <strong id="compatTargetGroup">O-</strong>:</p>
+        <div class="compat-groups" id="compatGroupsList"></div>
+        <p style="font-size:11.5px;margin-top:12px;color:#6b6153">This updates live as you change "Blood group needed" above.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 class="panel__title">Open requests</h2>
+      <div class="filter-bar">
+        <select id="reqSortFilter">
+          <option value="recent">Sort: most recent</option>
+          <option value="distance">Sort: nearest to me</option>
+        </select>
+        <button class="btn btn--ghost" id="reqUseLocationBtn2" type="button">📍 Enable distance sort</button>
+      </div>
+      <div id="requestList"></div>
+      <p class="empty-note" id="requestListEmpty">No emergency requests yet.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOSPITALS ============ -->
+  <section class="view" id="view-hospitals">
+    <div class="panel">
+      <h2 class="panel__title">Nearby hospitals &amp; blood banks</h2>
+      <p class="field-note" style="margin-top:0">Sample directory — swap in real hospital / blood bank data for your city.</p>
+      <div id="hospitalList"></div>
+    </div>
+  </section>
+
+  <footer class="colophon">Built for BuildVerse</footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const KEY_DONORS = 'bd_donors';
+  const KEY_REQUESTS = 'bd_requests';
+
+  const load = (k, f) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : f; } catch { return f; } };
+  const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+  let donors = load(KEY_DONORS, []);
+  let requests = load(KEY_REQUESTS, []);
+  let userLoc = null;
+  let findCompatGroup = null; // when set, "compatible donors only" is active for this group
+  let findCompatOnly = false;
+
+  const RECIPIENT_COMPATIBLE_DONORS = {
+    'O-':  ['O-'],
+    'O+':  ['O+', 'O-'],
+    'A-':  ['A-', 'O-'],
+    'A+':  ['A+', 'A-', 'O+', 'O-'],
+    'B-':  ['B-', 'O-'],
+    'B+':  ['B+', 'B-', 'O+', 'O-'],
+    'AB-': ['AB-', 'A-', 'B-', 'O-'],
+    'AB+': ['AB+', 'AB-', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-']
+  };
+
+  const HOSPITALS = [
+    { name: 'AIIMS Blood Bank, New Delhi', address: 'Ansari Nagar, New Delhi', phone: '+91 11 2658 8500', tags: ['24x7', 'All groups', 'Trauma center'] },
+    { name: 'KEM Hospital Blood Bank, Mumbai', address: 'Parel, Mumbai, Maharashtra', phone: '+91 22 2410 7000', tags: ['24x7', 'Govt.'] },
+    { name: 'Red Cross Blood Bank, Bengaluru', address: 'Rajbhavan Road, Bengaluru, Karnataka', phone: '+91 80 2226 3435', tags: ['Voluntary donation', 'Camps'] },
+    { name: 'Apollo Hospitals Blood Bank, Chennai', address: 'Greams Road, Chennai, Tamil Nadu', phone: '+91 44 2829 3333', tags: ['Private', 'All groups'] },
+    { name: 'SSKM Hospital Blood Bank, Kolkata', address: '244 AJC Bose Road, Kolkata, West Bengal', phone: '+91 33 2204 3000', tags: ['24x7', 'Govt.'] }
+  ];
+
+  /* ---------------- Tabs ---------------- */
+  document.querySelectorAll('.filmstrip .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.filmstrip .tab').forEach(t => t.classList.remove('is-active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      document.getElementById('view-' + tab.dataset.view).classList.add('is-active');
+      if (tab.dataset.view === 'find') renderDonorList();
+      if (tab.dataset.view === 'emergency') { renderCompatBox(); renderRequestList(); }
+      if (tab.dataset.view === 'hospitals') renderHospitalList();
+    });
+  });
+
+  /* ---------------- Distance helper (haversine, km) ---------------- */
+  function distanceKm(a, b) {
+    if (!a || !b) return null;
+    const R = 6371;
+    const dLat = (b.lat - a.lat) * Math.PI / 180;
+    const dLng = (b.lng - a.lng) * Math.PI / 180;
+    const s = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+  }
+  function escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function mapsLink(query) {
+    return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
+  }
+
+  /* ---------------- Register donor ---------------- */
+  let donorLoc = null;
+  document.getElementById('donorUseLocationBtn').addEventListener('click', () => {
+    const status = document.getElementById('donorLocationStatus');
+    if (!navigator.geolocation) { status.textContent = 'Geolocation not supported in this browser.'; return; }
+    status.textContent = 'Locating…';
+    navigator.geolocation.getCurrentPosition(
+      pos => { donorLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude }; status.textContent = 'Location captured ✓'; },
+      () => { status.textContent = 'Could not get location — you can still register without it.'; }
+    );
+  });
+
+  document.getElementById('submitDonorBtn').addEventListener('click', () => {
+    const name = document.getElementById('donorName').value.trim();
+    const phone = document.getElementById('donorPhone').value.trim();
+    if (!name || !phone) { alert('Please enter your name and phone number.'); return; }
+    const donor = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name,
+      group: document.getElementById('donorGroup').value,
+      phone,
+      lastDonated: document.getElementById('donorLastDonated').value || null,
+      location: document.getElementById('donorLocation').value.trim(),
+      lat: donorLoc ? donorLoc.lat : null,
+      lng: donorLoc ? donorLoc.lng : null,
+      available: document.getElementById('donorAvailable').checked,
+      ts: Date.now()
+    };
+    donors.unshift(donor);
+    save(KEY_DONORS, donors);
+    alert('Thank you, ' + name + '! You\'re now on the donor registry.');
+    document.getElementById('donorName').value = '';
+    document.getElementById('donorPhone').value = '';
+    document.getElementById('donorLocation').value = '';
+    document.getElementById('donorLastDonated').value = '';
+    donorLoc = null;
+    document.getElementById('donorLocationStatus').textContent = 'Optional — improves nearby matching for emergency requests.';
+  });
+
+  /* ---------------- Find donors ---------------- */
+  document.getElementById('findGroupFilter').addEventListener('change', renderDonorList);
+  document.getElementById('findAvailFilter').addEventListener('change', renderDonorList);
+  document.getElementById('findSortFilter').addEventListener('change', renderDonorList);
+  document.getElementById('findCompatOnlyBtn').addEventListener('click', (e) => {
+    findCompatOnly = !findCompatOnly;
+    e.target.classList.toggle('is-active', findCompatOnly);
+    renderDonorList();
+  });
+  document.getElementById('findUseLocationBtn').addEventListener('click', () => {
+    if (!navigator.geolocation) { alert('Geolocation not supported in this browser.'); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => { userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude }; renderDonorList(); },
+      () => alert('Could not get your location.')
+    );
+  });
+
+  function renderDonorList() {
+    const list = document.getElementById('donorList');
+    const empty = document.getElementById('donorListEmpty');
+    const groupFilter = document.getElementById('findGroupFilter').value;
+    const availFilter = document.getElementById('findAvailFilter').value;
+    const sortBy = document.getElementById('findSortFilter').value;
+
+    let rows = donors.slice();
+
+    if (findCompatOnly && groupFilter !== 'all') {
+      const compatible = new Set(RECIPIENT_COMPATIBLE_DONORS[groupFilter] || []);
+      rows = rows.filter(d => compatible.has(d.group));
+    } else if (groupFilter !== 'all') {
+      rows = rows.filter(d => d.group === groupFilter);
+    }
+    if (availFilter === 'available') rows = rows.filter(d => d.available);
+
+    if (sortBy === 'distance' && userLoc) {
+      rows.sort((a, b) => {
+        const da = (a.lat != null) ? distanceKm(userLoc, { lat: a.lat, lng: a.lng }) : Infinity;
+        const db = (b.lat != null) ? distanceKm(userLoc, { lat: b.lat, lng: b.lng }) : Infinity;
+        return da - db;
+      });
+    } else {
+      rows.sort((a, b) => b.ts - a.ts);
+    }
+
+    list.innerHTML = '';
+    empty.style.display = rows.length ? 'none' : 'block';
+
+    rows.forEach(d => {
+      const dist = (userLoc && d.lat != null) ? distanceKm(userLoc, { lat: d.lat, lng: d.lng }) : null;
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      const left = document.createElement('div');
+      left.innerHTML = `
+        <div class="item-card__top">
+          <span class="badge badge--group"></span>
+          <span class="badge ${d.available ? 'badge--available' : 'badge--unavailable'}">${d.available ? 'Available' : 'Not available'}</span>
+        </div>
+        <div class="item-card__name"></div>
+        <div class="item-card__meta">
+          <span>📍 ${d.location ? escapeHtml(d.location) : 'No location given'}</span>
+          ${d.lastDonated ? `<span>🩸 Last donated: ${d.lastDonated}</span>` : ''}
+          ${dist != null ? `<span>📏 ${dist.toFixed(1)} km away</span>` : ''}
+        </div>
+      `;
+      left.querySelector('.badge--group').textContent = d.group;
+      left.querySelector('.item-card__name').textContent = d.name;
+
+      const right = document.createElement('div');
+      right.className = 'item-card__actions';
+      right.innerHTML = `<a class="btn btn--dark" style="text-decoration:none;text-align:center" href="tel:${d.phone}">Call ${escapeHtml(d.phone)}</a>`;
+
+      card.appendChild(left);
+      card.appendChild(right);
+      list.appendChild(card);
+    });
+  }
+
+  /* ---------------- Emergency request ---------------- */
+  function renderCompatBox() {
+    const group = document.getElementById('reqGroup').value;
+    document.getElementById('compatTargetGroup').textContent = group;
+    const compatible = RECIPIENT_COMPATIBLE_DONORS[group] || [];
+    const box = document.getElementById('compatGroupsList');
+    box.innerHTML = '';
+    compatible.forEach(g => {
+      const b = document.createElement('span');
+      b.className = 'badge';
+      b.textContent = g;
+      box.appendChild(b);
+    });
+  }
+  document.getElementById('reqGroup').addEventListener('change', renderCompatBox);
+
+  let reqLoc = null;
+  document.getElementById('reqUseLocationBtn').addEventListener('click', () => {
+    const status = document.getElementById('reqLocationStatus');
+    if (!navigator.geolocation) { status.textContent = 'Geolocation not supported in this browser.'; return; }
+    status.textContent = 'Locating…';
+    navigator.geolocation.getCurrentPosition(
+      pos => { reqLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude }; status.textContent = 'Location captured ✓'; },
+      () => { status.textContent = 'Could not get location — you can still post without it.'; }
+    );
+  });
+  document.getElementById('reqUseLocationBtn2').addEventListener('click', () => {
+    if (!navigator.geolocation) { alert('Geolocation not supported in this browser.'); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => { userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude }; renderRequestList(); },
+      () => alert('Could not get your location.')
+    );
+  });
+  document.getElementById('reqSortFilter').addEventListener('change', renderRequestList);
+
+  document.getElementById('submitRequestBtn').addEventListener('click', () => {
+    const patient = document.getElementById('reqPatient').value.trim();
+    const contact = document.getElementById('reqContact').value.trim();
+    if (!patient || !contact) { alert('Please enter a name and contact phone.'); return; }
+    const req = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      patient,
+      group: document.getElementById('reqGroup').value,
+      units: Number(document.getElementById('reqUnits').value) || 1,
+      urgency: document.getElementById('reqUrgency').value,
+      hospital: document.getElementById('reqHospital').value.trim(),
+      lat: reqLoc ? reqLoc.lat : null,
+      lng: reqLoc ? reqLoc.lng : null,
+      contact,
+      notes: document.getElementById('reqNotes').value.trim(),
+      status: 'open',
+      ts: Date.now()
+    };
+    requests.unshift(req);
+    save(KEY_REQUESTS, requests);
+    renderRequestList();
+
+    document.getElementById('reqPatient').value = '';
+    document.getElementById('reqHospital').value = '';
+    document.getElementById('reqContact').value = '';
+    document.getElementById('reqNotes').value = '';
+    document.getElementById('reqUnits').value = '1';
+    reqLoc = null;
+    document.getElementById('reqLocationStatus').textContent = 'Optional — lets nearby compatible donors be sorted by distance.';
+
+    const compatible = new Set(RECIPIENT_COMPATIBLE_DONORS[req.group] || []);
+    const matchCount = donors.filter(d => compatible.has(d.group) && d.available).length;
+    alert(`Request posted. ${matchCount} compatible available donor(s) found in the registry — check "Find Donors" (Compatible donors only) to contact them.`);
+  });
+
+  function renderRequestList() {
+    const list = document.getElementById('requestList');
+    const empty = document.getElementById('requestListEmpty');
+    const sortBy = document.getElementById('reqSortFilter').value;
+
+    let rows = requests.slice();
+    if (sortBy === 'distance' && userLoc) {
+      rows.sort((a, b) => {
+        const da = (a.lat != null) ? distanceKm(userLoc, { lat: a.lat, lng: a.lng }) : Infinity;
+        const db = (b.lat != null) ? distanceKm(userLoc, { lat: b.lat, lng: b.lng }) : Infinity;
+        return da - db;
+      });
+    } else {
+      rows.sort((a, b) => b.ts - a.ts);
+    }
+
+    list.innerHTML = '';
+    empty.style.display = rows.length ? 'none' : 'block';
+
+    rows.forEach(r => {
+      const dist = (userLoc && r.lat != null) ? distanceKm(userLoc, { lat: r.lat, lng: r.lng }) : null;
+      const compatible = new Set(RECIPIENT_COMPATIBLE_DONORS[r.group] || []);
+      const matchCount = donors.filter(d => compatible.has(d.group) && d.available).length;
+
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      const left = document.createElement('div');
+      left.innerHTML = `
+        <div class="item-card__top">
+          <span class="badge badge--group"></span>
+          <span class="badge badge--${r.urgency}"></span>
+          ${r.status === 'fulfilled' ? '<span class="badge badge--fulfilled">Fulfilled</span>' : ''}
+          <span class="badge" style="background:var(--paper-dim);color:var(--ink)">${matchCount} compatible donor${matchCount === 1 ? '' : 's'}</span>
+        </div>
+        <div class="item-card__name"></div>
+        <div class="item-card__desc"></div>
+        <div class="item-card__meta">
+          <span>🏥 ${r.hospital ? escapeHtml(r.hospital) : 'No location given'}</span>
+          <span>🩸 ${r.units} unit${r.units === 1 ? '' : 's'} needed</span>
+          ${dist != null ? `<span>📏 ${dist.toFixed(1)} km away</span>` : ''}
+        </div>
+      `;
+      left.querySelector('.badge--group').textContent = r.group;
+      const urgencyLabel = { critical: 'Critical', urgent: 'Urgent', routine: 'Routine' }[r.urgency] || r.urgency;
+      left.querySelector('.badge--' + r.urgency).textContent = urgencyLabel;
+      left.querySelector('.item-card__name').textContent = 'Needed for ' + r.patient;
+      left.querySelector('.item-card__desc').textContent = r.notes || 'No additional notes.';
+
+      const right = document.createElement('div');
+      right.className = 'item-card__actions';
+      right.innerHTML = `
+        <a class="btn btn--dark" style="text-decoration:none;text-align:center" href="tel:${r.contact}">Call ${escapeHtml(r.contact)}</a>
+        ${r.status === 'open' ? `<button class="btn btn--ghost" data-fulfill-id="${r.id}">Mark fulfilled</button>` : ''}
+      `;
+
+      card.appendChild(left);
+      card.appendChild(right);
+      list.appendChild(card);
+    });
+
+    list.querySelectorAll('[data-fulfill-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const r = requests.find(x => x.id === btn.dataset.fulfillId);
+        if (r) { r.status = 'fulfilled'; save(KEY_REQUESTS, requests); renderRequestList(); }
+      });
+    });
+  }
+
+  /* ---------------- Hospitals ---------------- */
+  function renderHospitalList() {
+    const list = document.getElementById('hospitalList');
+    list.innerHTML = '';
+    HOSPITALS.forEach(h => {
+      const card = document.createElement('div');
+      card.className = 'hospital-card';
+      card.innerHTML = `
+        <div class="hospital-card__name"></div>
+        <div class="hospital-card__meta"></div>
+        <div class="hospital-card__tags"></div>
+        <a target="_blank" rel="noopener"></a>
+        &nbsp;·&nbsp;
+        <a href="tel:${h.phone}"></a>
+      `;
+      card.querySelector('.hospital-card__name').textContent = h.name;
+      card.querySelector('.hospital-card__meta').textContent = h.address;
+      const tags = card.querySelector('.hospital-card__tags');
+      h.tags.forEach(t => {
+        const b = document.createElement('span');
+        b.className = 'badge';
+        b.style.background = 'var(--panel-line)';
+        b.style.color = 'var(--paper)';
+        b.textContent = t;
+        tags.appendChild(b);
+      });
+      const links = card.querySelectorAll('a');
+      links[0].href = mapsLink(h.name + ', ' + h.address);
+      links[0].textContent = 'Get directions';
+      links[1].textContent = 'Call ' + h.phone;
+      list.appendChild(card);
+    });
+  }
+
+  /* ---------------- Init ---------------- */
+  renderDonorList();
+  renderCompatBox();
+})();
+</script>
+</body>
+</html>
