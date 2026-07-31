@@ -1,0 +1,24 @@
+{
+  "title": "AI Travel Itinerary Planner",
+  "description": "A premium, feature-rich web application that helps users plan their custom travel itineraries with AI-inspired recommendations, budget visualizations, saved trips, checklists, and responsive designs.",
+  "author": {
+    "name": "Kola Sailaja",
+    "github": "KolaSailaja"
+  },
+  "githubUsername": "KolaSailaja",
+  "tags": [
+    "Travel",
+    "AI",
+    "Itinerary",
+    "Planner",
+    "Utility"
+  ],
+  "technologies": [
+    "HTML5",
+    "CSS3",
+    "JavaScript"
+  ],
+  "category": "Travel / Utility",
+  "responsive": true,
+  "version": "1.0.0"
+}
