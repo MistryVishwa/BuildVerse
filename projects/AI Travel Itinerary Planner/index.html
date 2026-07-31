@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vagabond &mdash; AI Travel Itinerary Planner</title>
+  <meta name="description" content="Generate highly personalized, budget-friendly travel itineraries with our AI-inspired vacation planner. Check attractions, budget utilization, packing lists, and save your trips.">
+  
+  <!-- Preconnect to Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.435.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+  
+  <!-- Screen reader skip links -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Header Section -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <div class="logo-icon" aria-hidden="true">
+          <i data-lucide="compass"></i>
+        </div>
+        <div>
+          <h1>Vagabond</h1>
+          <p class="subtitle">AI Travel Itinerary Planner</p>
+        </div>
+      </div>
+      
+      <div class="header-controls">
+        <div class="slogan-badge" id="slogan-badge" aria-live="polite">
+          "Your journey, perfectly planned."
+        </div>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle light and dark theme" title="Toggle color theme">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main id="main-content" class="app-container">
+    
+    <!-- Hero / Introduction Section -->
+    <section class="hero-section glass-panel" aria-labelledby="hero-title">
+      <div class="hero-content">
+        <h2 id="hero-title">Wander Smart. Plan Effortlessly.</h2>
+        <p>Craft your perfect getaway with AI-inspired recommendations. Select your target destination, set your budget, define your travel preferences, and instantly receive a curated day-by-day plan complete with activities, weather tips, packing checklists, and local secrets.</p>
+      </div>
+      <div class="hero-quick-stats">
+        <div class="quick-stat-item">
+          <span class="qs-val" id="qs-trips-saved">0</span>
+          <span class="qs-label">Trips Saved</span>
+        </div>
+        <div class="quick-stat-item">
+          <span class="qs-val" id="qs-destinations-count">8+</span>
+          <span class="qs-label">Curated Cities</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard Main Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Left Column: Trip Planner Form -->
+      <section class="planner-panel glass-panel" aria-labelledby="planner-section-title">
+        <h2 id="planner-section-title" class="section-title">
+          <i data-lucide="map-pin"></i>
+          Create New Itinerary
+        </h2>
+        
+        <form id="itinerary-form" novalidate>
+          <div class="form-group">
+            <label for="select-destination">Target Destination</label>
+            <div class="select-wrapper">
+              <select id="select-destination" name="destination" required>
+                <option value="" disabled selected>Select a city...</option>
+                <option value="Paris">Paris, France</option>
+                <option value="Tokyo">Tokyo, Japan</option>
+                <option value="New York">New York, USA</option>
+                <option value="London">London, UK</option>
+                <option value="Dubai">Dubai, UAE</option>
+                <option value="Singapore">Singapore</option>
+                <option value="Bali">Bali, Indonesia</option>
+                <option value="Goa">Goa, India</option>
+                <option value="custom">-- Custom Destination --</option>
+              </select>
+              <i data-lucide="chevron-down" class="select-arrow"></i>
+            </div>
+          </div>
+
+          <!-- Hidden Input for Custom Destination -->
+          <div class="form-group" id="custom-destination-group" style="display: none;">
+            <label for="input-custom-destination">Custom Destination Name</label>
+            <input type="text" id="input-custom-destination" name="customDestination" placeholder="Enter city name..." aria-describedby="custom-dest-help">
+            <span id="custom-dest-help" class="input-help">We'll generate a custom itinerary layout for this location.</span>
+          </div>
+
+          <div class="form-group-row">
+            <div class="form-group">
+              <label for="input-duration">Duration (Days)</label>
+              <input type="number" id="input-duration" name="duration" min="1" max="30" placeholder="e.g. 5" required aria-describedby="duration-help">
+              <span id="duration-help" class="input-help">Up to 30 days.</span>
+            </div>
+            
+            <div class="form-group">
+              <label for="input-start-date">Start Date</label>
+              <input type="date" id="input-start-date" name="startDate" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="input-budget">Overall Trip Budget ($)</label>
+            <div class="input-wrapper">
+              <span class="input-prefix">$</span>
+              <input type="number" id="input-budget" name="budget" min="1" placeholder="e.g. 2000" required aria-describedby="budget-help">
+            </div>
+            <span id="budget-help" class="input-help">Total amount in USD.</span>
+          </div>
+
+          <div class="form-group-row">
+            <div class="form-group">
+              <label for="select-style">Travel Style</label>
+              <div class="select-wrapper">
+                <select id="select-style" name="travelStyle" required>
+                  <option value="Solo">Solo Traveler</option>
+                  <option value="Couple">Couple / Romantic</option>
+                  <option value="Family">Family Friendly</option>
+                  <option value="Friends">Friends Group</option>
+                  <option value="Business">Business Trip</option>
+                </select>
+                <i data-lucide="chevron-down" class="select-arrow"></i>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="select-transport">Transport Preference</label>
+              <div class="select-wrapper">
+                <select id="select-transport" name="transport" required>
+                  <option value="Flight">Flights</option>
+                  <option value="Train">Trains</option>
+                  <option value="Car Rental">Rental Car</option>
+                  <option value="Public Transit">Public Transit</option>
+                </select>
+                <i data-lucide="chevron-down" class="select-arrow"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="select-accommodation">Accommodation Type</label>
+            <div class="select-wrapper">
+              <select id="select-accommodation" name="accommodation" required>
+                <option value="Hostel">Hostel / Backpacker ($)</option>
+                <option value="Budget">Budget Hotel ($$)</option>
+                <option value="Mid-range" selected>Mid-range Hotel ($$$)</option>
+                <option value="Luxury">Luxury Resort ($$$$)</option>
+              </select>
+              <i data-lucide="chevron-down" class="select-arrow"></i>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <fieldset class="interests-fieldset">
+              <legend>Interests (Select all that apply)</legend>
+              <div class="interests-grid">
+                <label class="checkbox-label">
+                  <input type="checkbox" name="interests" value="Nature">
+                  <span><i data-lucide="trees" class="checkbox-icon"></i> Nature</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="interests" value="Adventure">
+                  <span><i data-lucide="mountain" class="checkbox-icon"></i> Adventure</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="interests" value="Food">
+                  <span><i data-lucide="utensils" class="checkbox-icon"></i> Food & Dining</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="interests" value="History">
+                  <span><i data-lucide="landmark" class="checkbox-icon"></i> History</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="interests" value="Museums">
+                  <span><i data-lucide="library" class="checkbox-icon"></i> Museums</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="interests" value="Beaches">
+                  <span><i data-lucide="sun" class="checkbox-icon"></i> Beaches</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="interests" value="Shopping">
+                  <span><i data-lucide="shopping-bag" class="checkbox-icon"></i> Shopping</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="interests" value="Nightlife">
+                  <span><i data-lucide="beer" class="checkbox-icon"></i> Nightlife</span>
+                </label>
+                <label class="checkbox-label">
+                  <input type="checkbox" name="interests" value="Photography">
+                  <span><i data-lucide="camera" class="checkbox-icon"></i> Photography</span>
+                </label>
+              </div>
+            </fieldset>
+          </div>
+
+          <!-- Error Alert Banner -->
+          <div id="validation-alert" class="validation-banner" role="alert" style="display: none;">
+            Please correct the validation errors in the fields above.
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="btn-generate" class="btn btn-primary">
+              <i data-lucide="sparkles"></i>
+              Generate Itinerary
+            </button>
+            <button type="button" id="btn-save-trip" class="btn btn-secondary" disabled>
+              <i data-lucide="bookmark"></i>
+              Save Itinerary
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Right Column: Results & Analytics (Initially Placeholder, then populated) -->
+      <div class="results-dashboard-column">
+        
+        <!-- Placeholder Empty State -->
+        <div id="results-placeholder" class="glass-panel empty-state-panel">
+          <div class="empty-state-icon">
+            <i data-lucide="map"></i>
+          </div>
+          <h3>Your Itinerary Awaits</h3>
+          <p>Fill out the trip planner form on the left with your destination, budget, and styles to generate an AI-inspired, tailored travel itinerary with interactive dashboards.</p>
+        </div>
+
+        <!-- Generated Dashboard Containers (Hidden by default) -->
+        <div id="results-content" style="display: none;" class="results-content-wrapper">
+          
+          <!-- Section 1: Dashboard Cards (Stats Overview) -->
+          <section aria-label="Trip Statistics Summary" class="dashboard-stats-grid">
+            
+            <div class="stat-card glass-panel">
+              <div class="stat-icon-wrapper blue">
+                <i data-lucide="plane-takeoff"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Destination</span>
+                <span class="stat-value text-truncate" id="stat-dest-name">-</span>
+              </div>
+            </div>
+
+            <div class="stat-card glass-panel">
+              <div class="stat-icon-wrapper orange">
+                <i data-lucide="calendar"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Total Days</span>
+                <span class="stat-value" id="stat-total-days">0</span>
+              </div>
+            </div>
+
+            <div class="stat-card glass-panel">
+              <div class="stat-icon-wrapper green">
+                <i data-lucide="wallet"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Trip Budget</span>
+                <span class="stat-value" id="stat-trip-budget">$0</span>
+              </div>
+            </div>
+
+            <div class="stat-card glass-panel">
+              <div class="stat-icon-wrapper purple">
+                <i data-lucide="dollar-sign"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Estimated Cost</span>
+                <span class="stat-value" id="stat-estimated-cost">$0</span>
+              </div>
+            </div>
+
+            <div class="stat-card glass-panel">
+              <div class="stat-icon-wrapper teal">
+                <i data-lucide="piggy-bank"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label" id="stat-savings-label">Savings Remaining</span>
+                <span class="stat-value" id="stat-savings-cost">$0</span>
+              </div>
+            </div>
+
+            <div class="stat-card glass-panel">
+              <div class="stat-icon-wrapper pink">
+                <i data-lucide="milestone"></i>
+              </div>
+              <div class="stat-info">
+                <span class="stat-label">Activities Planned</span>
+                <span class="stat-value" id="stat-activities-count">0</span>
+              </div>
+            </div>
+            
+          </section>
+
+          <!-- Section 2: Budget Utilization Circular Gauge & Detail bars -->
+          <section class="budget-dashboard glass-panel" aria-labelledby="budget-dashboard-title">
+            <h3 id="budget-dashboard-title" class="card-subtitle-small">
+              <i data-lucide="pie-chart"></i> Budget Dashboard
+            </h3>
+            
+            <div class="budget-split-layout">
+              <!-- Circular Progress Gauge -->
+              <div class="gauge-card">
+                <div class="progress-ring-container">
+                  <svg class="progress-ring" width="160" height="160" aria-hidden="true">
+                    <circle class="progress-ring-bg" stroke="rgba(255, 255, 255, 0.05)" stroke-width="12" fill="transparent" r="70" cx="80" cy="80"/>
+                    <circle class="progress-ring-fill" id="budget-ring-indicator" stroke="var(--primary-glow)" stroke-width="12" stroke-linecap="round" fill="transparent" r="70" cx="80" cy="80" stroke-dasharray="439.8" stroke-dashoffset="439.8" transform="rotate(-90, 80, 80)"/>
+                  </svg>
+                  <div class="progress-text-container">
+                    <span class="score-number" id="budget-pct-val">0%</span>
+                    <span class="score-grade" id="budget-utilization-status">Under Budget</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cost breakdown progress bars -->
+              <div class="budget-bars-list">
+                <div class="budget-bar-item">
+                  <div class="bar-info">
+                    <span class="bar-label"><i data-lucide="hotel"></i> Accommodation</span>
+                    <span class="bar-cost" id="breakdown-hotel-cost">$0</span>
+                  </div>
+                  <div class="bar-progress-bg">
+                    <div class="bar-progress-fill purple" id="breakdown-hotel-fill" style="width: 0%;"></div>
+                  </div>
+                </div>
+
+                <div class="budget-bar-item">
+                  <div class="bar-info">
+                    <span class="bar-label"><i data-lucide="utensils-crosses"></i> Food & Dining</span>
+                    <span class="bar-cost" id="breakdown-food-cost">$0</span>
+                  </div>
+                  <div class="bar-progress-bg">
+                    <div class="bar-progress-fill orange" id="breakdown-food-fill" style="width: 0%;"></div>
+                  </div>
+                </div>
+
+                <div class="budget-bar-item">
+                  <div class="bar-info">
+                    <span class="bar-label"><i data-lucide="car"></i> Transportation</span>
+                    <span class="bar-cost" id="breakdown-transport-cost">$0</span>
+                  </div>
+                  <div class="bar-progress-bg">
+                    <div class="bar-progress-fill blue" id="breakdown-transport-fill" style="width: 0%;"></div>
+                  </div>
+                </div>
+
+                <div class="budget-bar-item">
+                  <div class="bar-info">
+                    <span class="bar-label"><i data-lucide="ticket"></i> Activities</span>
+                    <span class="bar-cost" id="breakdown-activities-cost">$0</span>
+                  </div>
+                  <div class="bar-progress-bg">
+                    <div class="bar-progress-fill pink" id="breakdown-activities-fill" style="width: 0%;"></div>
+                  </div>
+                </div>
+
+                <div class="budget-bar-item">
+                  <div class="bar-info">
+                    <span class="bar-label"><i data-lucide="gift"></i> Miscellaneous</span>
+                    <span class="bar-cost" id="breakdown-misc-cost">$0</span>
+                  </div>
+                  <div class="bar-progress-bg">
+                    <div class="bar-progress-fill teal" id="breakdown-misc-fill" style="width: 0%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Section 3: Weather Card & Attractions Database Recommendation -->
+          <div class="weather-attractions-row">
+            
+            <!-- Weather Card -->
+            <section class="weather-card glass-panel" aria-labelledby="weather-title">
+              <h3 id="weather-title" class="card-subtitle-small">
+                <i data-lucide="cloud-sun"></i> Weather Forecast
+              </h3>
+              <div class="weather-body">
+                <div class="weather-main">
+                  <div class="weather-icon-lg" id="weather-main-icon">
+                    <i data-lucide="sun"></i>
+                  </div>
+                  <div>
+                    <span class="weather-temp" id="weather-temp-val">24°C</span>
+                    <span class="weather-desc" id="weather-description">Sunny & Clear</span>
+                  </div>
+                </div>
+                <div class="weather-details">
+                  <div class="weather-detail-item">
+                    <span class="w-label">Season</span>
+                    <span class="w-val" id="weather-season-val">Summer</span>
+                  </div>
+                  <div class="weather-detail-item">
+                    <span class="w-label">Best Advice</span>
+                    <span class="w-val" id="weather-advice-val">Light clothes & sunscreen.</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Curated Destination Recommendation -->
+            <section class="attractions-card glass-panel" aria-labelledby="attractions-title">
+              <h3 id="attractions-title" class="card-subtitle-small">
+                <i data-lucide="sparkles"></i> Famous Attractions
+              </h3>
+              <div id="attractions-list-container">
+                <!-- Dynamically populated -->
+              </div>
+            </section>
+          </div>
+
+          <!-- Section 4: Daily Itinerary Timeline -->
+          <section class="itinerary-section glass-panel" aria-labelledby="itinerary-title">
+            <div class="itinerary-header">
+              <h3 id="itinerary-title" class="section-title">
+                <i data-lucide="calendar-range"></i>
+                Daily Timeline Itinerary
+              </h3>
+              <button class="btn btn-secondary btn-sm" id="btn-toggle-all-days">
+                Collapse All
+              </button>
+            </div>
+            
+            <div class="timeline-container" id="itinerary-timeline-container">
+              <!-- Day nodes will be injected here dynamically -->
+            </div>
+          </section>
+
+          <!-- Section 5: Packing Checklist -->
+          <section class="checklist-section glass-panel" aria-labelledby="checklist-title">
+            <div class="checklist-header">
+              <h3 id="checklist-title" class="section-title">
+                <i data-lucide="baggage-claim"></i>
+                Dynamic Packing Checklist
+              </h3>
+              <span class="checklist-count" id="checklist-progress-text">0 / 0 Completed</span>
+            </div>
+            
+            <div class="checklist-progress-bar-bg">
+              <div class="checklist-progress-bar-fill" id="checklist-progress-fill" style="width: 0%;"></div>
+            </div>
+
+            <div class="checklist-categories" id="checklist-container">
+              <!-- Populated dynamically -->
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Saved Trips Directory -->
+    <section class="saved-trips-section glass-panel" aria-labelledby="saved-trips-title">
+      <div class="saved-trips-header">
+        <h2 id="saved-trips-title" class="section-title">
+          <i data-lucide="archive"></i>
+          My Saved Itineraries
+        </h2>
+        <div class="saved-trips-actions">
+          <button id="btn-clear-all" class="btn btn-danger btn-sm" aria-label="Delete all saved trip planners">
+            Clear All Trips
+          </button>
+        </div>
+      </div>
+
+      <div class="saved-trips-grid-wrapper" id="saved-trips-container">
+        <!-- Render cards for saved trips here -->
+        <p class="empty-saved-note">No saved itineraries found. Generate and click "Save Itinerary" to store your vacation details.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>&copy; 2026 Vagabond. Created with &hearts; by <a href="https://github.com/KolaSailaja" target="_blank" rel="noopener noreferrer">Kola Sailaja</a> for BuildVerse.</p>
+      <p class="footer-note">All itineraries, checklists, and estimates are generated clientside using localized historical algorithms. Real-world bookings may vary.</p>
+    </div>
+  </footer>
+
+  <!-- Script File -->
+  <script src="script.js"></script>
+</body>
+</html>
