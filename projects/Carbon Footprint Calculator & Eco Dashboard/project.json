@@ -1,0 +1,25 @@
+{
+  "title": "Carbon Footprint Calculator & Eco Dashboard",
+  "description": "A modern carbon footprint calculator and eco dashboard to track, visualize, and improve your carbon footprint using realistic calculations and interactive charts.",
+  "author": {
+    "name": "Kola Sailaja",
+    "github": "KolaSailaja"
+  },
+  "githubUsername": "KolaSailaja",
+  "tags": [
+    "Sustainability",
+    "Eco",
+    "Calculator",
+    "Dashboard",
+    "Green"
+  ],
+  "technologies": [
+    "HTML5",
+    "CSS3",
+    "JavaScript",
+    "Chart.js"
+  ],
+  "category": "Education / Utility",
+  "responsive": true,
+  "version": "1.0.0"
+}
