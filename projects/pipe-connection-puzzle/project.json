@@ -1,0 +1,15 @@
+{
+  "title": "Pipe Connection Puzzle",
+  "description": "Rotate pipe pieces to connect all numbered endpoints into a complete network with no leaks. A clean, single-file vanilla HTML/CSS/JS puzzle game.",
+  "author": {
+    "name": "Archit Adish Gupta",
+    "github": "arcgod-design"
+  },
+  "tags": [
+    "JavaScript",
+    "Puzzle",
+    "HTML",
+    "CSS",
+    "Game"
+  ]
+}
