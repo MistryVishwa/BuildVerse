@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Waste Management Platform</title>
+  <style>
+    :root {
+      --g50: #f0fdf4; --g100: #dcfce7; --g200: #bbf7d0; --g500: #22c55e;
+      --g600: #16a34a; --g700: #15803d; --g800: #166534; --g900: #14532d;
+      --a400: #fbbf24; --a500: #f59e0b; --a100: #fef3c7;
+      --r400: #f87171; --r500: #ef4444; --r100: #fee2e2;
+      --b600: #2563eb; --b100: #dbeafe;
+      --s50: #f8fafc; --s100: #f1f5f9; --s200: #e2e8f0; --s300: #cbd5e1;
+      --s400: #94a3b8; --s500: #64748b; --s600: #475569; --s700: #334155;
+      --s800: #1e293b; --s900: #0f172a;
+      --radius: 12px; --shadow: 0 1px 3px rgba(0,0,0,.08);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--s50);color:var(--s900);min-height:100vh}
+    header{background:var(--g700);color:white;padding:1rem clamp(1rem,4vw,2rem);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;box-shadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:50}
+    header .logo{font-size:1.3rem;font-weight:700;display:flex;align-items:center;gap:.5rem}
+    header nav{display:flex;gap:.25rem;flex-wrap:wrap}
+    header nav button{background:transparent;color:rgba(255,255,255,.75);border:1px solid transparent;padding:.45rem 1rem;border-radius:8px;cursor:pointer;font-weight:500;font-size:.875rem;transition:.15s}
+    header nav button:hover,header nav button.active{background:rgba(255,255,255,.12);color:white;border-color:rgba(255,255,255,.25)}
+    main{max-width:1160px;margin:0 auto;padding:clamp(1rem,3vw,2rem);display:flex;flex-direction:column;gap:1.5rem}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+    .stat-card{background:white;border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:.25rem;border-left:4px solid var(--g600);transition:.15s}
+    .stat-card:hover{box-shadow:var(--shadow-lg)}
+    .stat-card .label{font-size:.8rem;color:var(--s500);text-transform:uppercase;letter-spacing:.5px}
+    .stat-card .value{font-size:1.8rem;font-weight:700;color:var(--s800)}
+    .stat-card .secondary{font-size:.8rem;color:var(--s400)}
+    .stat-card.warn{border-left-color:var(--a500)}
+    .stat-card.danger{border-left-color:var(--r400)}
+    .panel{background:white;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .panel-h{padding:.875rem 1.25rem;border-bottom:1px solid var(--s200);font-weight:600;font-size:.95rem;display:flex;justify-content:space-between;align-items:center}
+    .panel-b{padding:1.25rem;overflow-x:auto}
+    .form-group{display:flex;flex-direction:column;gap:.35rem;margin-bottom:1rem}
+    .form-group label{font-size:.85rem;font-weight:600;color:var(--s700)}
+    .form-group input,.form-group textarea,.form-group select{padding:.55rem .75rem;border:1px solid var(--s300);border-radius:8px;font-size:.9rem;outline:none;font-family:inherit;transition:.15s}
+    .form-group input:focus,.form-group textarea:focus{border-color:var(--g600);box-shadow:0 0 0 3px var(--g100)}
+    .btn{padding:.55rem 1.2rem;border-radius:8px;font-weight:600;cursor:pointer;font-size:.85rem;border:none;transition:.15s;display:inline-flex;align-items:center;gap:.4rem}
+    .btn-p{background:var(--g600);color:white}
+    .btn-p:hover{background:var(--g700)}
+    .btn-d{background:var(--r400);color:white}
+    .btn-d:hover{opacity:.85}
+    .btn-sm{padding:.4rem .9rem;font-size:.8rem}
+    .badge{display:inline-flex;padding:.15rem .55rem;border-radius:6px;font-size:.75rem;font-weight:600}
+    .badge-open{background:var(--a100);color:var(--s800)}
+    .badge-resolved{background:var(--g100);color:var(--g800)}
+    table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:560px}
+    th{text-align:left;padding:.6rem .75rem;color:var(--s500);font-weight:600;font-size:.75rem;text-transform:uppercase;border-bottom:2px solid var(--s200)}
+    td{padding:.6rem .75rem;border-bottom:1px solid var(--s100)}
+    tr:hover td{background:var(--g50)}
+    .bar-chart{display:flex;align-items:flex-end;gap:.75rem;height:140px;padding-top:.5rem}
+    .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:.3rem}
+    .bar-inner{width:100%;max-width:48px;border-radius:6px 6px 0 0;background:var(--g600);transition:.15s;min-height:4px}
+    .bar-inner:hover{background:var(--g500)}
+    .bar-label{font-size:.65rem;color:var(--s500);text-align:center}
+    .bar-value{font-size:.7rem;font-weight:600;color:var(--s700)}
+    .empty{text-align:center;padding:2rem;color:var(--s400)}
+    .flex{display:flex}
+    .gap-050{gap:.5rem}
+    .flex-wrap{flex-wrap:wrap}
+    .mt-1{margin-top:.5rem}
+    @media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">&#x1F5D1;&#xFE0F; Waste Manager</div>
+  <nav>
+    <button class="active" data-tab="dashboard">Dashboard</button>
+    <button data-tab="complaints">Complaints</button>
+    <button data-tab="report">Report Issue</button>
+    <button data-tab="schedule">Schedule</button>
+  </nav>
+</header>
+<main id="app"></main>
+
+<script>
+(function(){
+var LS = 'waste_platform';
+function load() {
+  try { var r = localStorage.getItem(LS); return r ? JSON.parse(r) : initSeed(); }
+  catch (e) { return initSeed(); }
+}
+function initSeed() { return { complaints: (localStorage.getItem(LS+'.seeded') ? [] : [seed('Overflowing Bins','Central Market'),
+  seed('Illegal Dumping','River Bank Road'),seed('Missed Collection','Sunset Apartments')]) }; }
+function Seed(com particular,loc) { return { id: ''+Date.now()+Math.random(), type, location, description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit.', status:'open', date:Date.now() }; }
+function save(d) { localStorage.setItem(LS, JSON.stringify(d)); localStorage.setItem(LS+'.seeded','1'); }
+var DATA = load();
+function persist() { save(DATA); }
+
+var currentTab = 'dashboard';
+var app = document.getElementById('app');
+
+function id() { return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function fmtTime(ts) { return new Date(ts).toLocaleString(); }
+
+function statusBadge(s) {
+  if (s==='resolved') return '<span class="badge badge-resolved">Resolved</span>';
+  return '<span class="badge badge-open">Open</span>';
+}
+
+// chart
+function complaintChart() {
+  var types = {};
+  for (var i=0;i<DATA.complaints.length;i++) { var t = DATA.complaints[i].type; types[t] = (types[t]||0)+1; }
+  var entries = Object.entries(types);
+  if (!entries.length) return '<div class="empty">No data</div>';
+  var max = Math.max.apply(null, entries.map(function(e){return e[1]})) || 1;
+  return '<div class="bar-chart">'+entries.map(function(e){
+    return '<div class="bar-col"><span class="bar-value">'+e[1]+'</span><div class="bar-inner" style="height:'+Math.max((e[1]/max)*140,8)+'px"></div><span class="bar-label">'+e[0]+'</span></div>';
+  }).join('')+'</div>';
+}
+
+function tableHtml(comps) {
+  return '<table><thead><tr><th>Status</th><th>Type</th><th>Location</th><th>Description</th><th>Date</th><th>Actions</th></tr></thead><tbody>'+
+    comps.map(function(c){
+      return '<tr><td>'+statusBadge(c.status)+'</td><td><strong>'+c.type+'</strong></td><td>'+c.location+'</td><td>'+
+        c.description.slice(0,60)+(c.description.length>60?'&hellip;':'')+'</td><td>'+fmtTime(c.date)+'</td><td>'+
+        (c.status!=='resolved'? '<button class="btn btn-sm btn-p" onclick="ResolveC(\''+c.id+'\')">Resolve</button> ':'<small style="color:var(--s400)">Resolved</small> ')+
+        '<button class="btn btn-sm btn-d" onclick="DeleteC(\''+c.id+'\')">Delete</button></td></tr>';
+    }).join('')+'</tbody></table>';
+}
+
+// ════════ RESOLVE / DELETE ════════
+window.ResolveC = function(id) {
+  var idx = DATA.complaints.findIndex(function(c){return c.id===id;});
+  if (idx===-1) return;
+  DATA.complaints[idx].status = 'resolved';
+  persist(); render();
+};
+window.DeleteC = function(id) {
+  DATA.complaints = DATA.complaints.filter(function(c){return c.id!==id});
+  persist(); render();
+};
+
+// ═══════ DASHBOARD ════════
+function renderDashboard() {
+  var open = DATA.complaints.filter(function(c){return c.status!=='resolved'}).length;
+  var resolved = DATA.complaints.filter(function(c){return c.status==='resolved'}).length;
+  app.innerHTML =
+    '<div class="stats-grid">'+
+      '<div class="stat-card"><span class="label">Open Complaints</span><span class="value">'+open+'</span><span class="secondary">Requires attention</span></div>'+
+      '<div class="stat-card"><span class="label">Resolved</span><span class="value">'+resolved+'</span><span class="secondary">All time</span></div>'+
+      '<div class="stat-card warn"><span class="label">Reports Today</span><span class="value">'+DATA.complaints.filter(function(c){var d=new Date(c.date); var t=new Date(); return d.toDateString()===t.toDateString()}).length+'</span><span class="secondary">'+new Date().toLocaleDateString()+'</span></div>'+
+      '<div class="stat-card"><span class="label">Total Reports</span><span class="value">'+DATA.complaints.length+'</span><span class="secondary">All time summary</span></div>'+
+    '</div>'+
+    '<div class="panel"><div class="panel-h"><span>Complaints by Type</span></div><div class="panel-b">'+complaintChart()+'</div></div>'+
+    '<div class="panel"><div class="panel-h"><span>Recent Complaints</span></div><div class="panel-b">'+
+      (DATA.complaints.length===0?'<div class="empty">No complaints yet</div>':tableHtml(DATA.complaints.slice(-5).reverse()))+
+    '</div></div>';
+}
+
+// ═══════ COMPLAINTS ════════
+function renderComplaints() {
+  var comps = DATA.complaints.slice().reverse();
+  app.innerHTML =
+    '<div class="panel"><div class="panel-h"><span>All Complaints ('+comps.length+')</span></div><div class="panel-b">'+
+      (comps.length===0?'<div class="empty">No complaints yet.</div>':tableHtml(comps))+
+    '</div></div>';
+}
+
+// ═══════ REPORT FORM ════════
+function renderReport() {
+  app.innerHTML =
+    '<div class="panel" style="max-width:600px">'+
+      '<div class="panel-h"><span>Report a Waste Issue</span></div><div class="panel-b">'+
+        '<div class="form-group"><label>Issue Type</label><select id="repType"><option>Overflowing Bins</option><option>Illegal Dumping</option><option>Missed Collection</option><option>Recycling Issue</option><option>Other</option></select></div>'+
+        '<div class="form-group"><label>Location</label><input id="repLoc" placeholder="Street or landmark" required></div>'+
+        '<div class="form-group"><label>Description</label><textarea id="repDesc" rows="3" placeholder="Describe the issue..."></textarea></div>'+
+        '<button class="btn btn-p" onclick="SubmitReport()">Submit Report</button>'+
+        '<div id="repMsg" class="mt-1" style="font-size:.85rem"></div>'+
+      '</div></div>';
+}
+window.SubmitReport = function() {
+  var type = document.getElementById('repType').value;
+  var loc = document.getElementById('repLoc').value;
+  var desc = document.getElementById('repDesc').value;
+  if (!loc.trim()) { document.getElementById('repMsg').innerHTML='<span style="color:var(--r500)">Location is required.</span>'; return; }
+  DATA.complaints.push({ id: id(), type: type, location: loc.trim(), description: desc.trim(), status: 'open', date: Date.now() });
+  persist();
+  document.getElementById('repMsg').innerHTML='<span style="color:var(--g700)">Report submitted successfully.</span>';
+  document.getElementById('repLoc').value='';
+  document.getElementById('repDesc').value='';
+};
+
+// ═══════ SCHEDULE ════════
+function renderSchedule() {
+  var zones = ['Zone A &mdash; Downtown', 'Zone B &mdash; Residential', 'Zone C &mdash; Industrial'];
+  app.innerHTML =
+    '<div class="panel"><div class="panel-h"><span>Weekly Collection Schedule</span></div><div class="panel-b">'+
+      zones.map(function(z,i){
+        return '<div style="padding:.6rem 0;border-bottom:1px solid var(--s200);display:flex;justify-content:space-between;align-items:center;">'+
+          '<div><strong>'+z+'</strong><br><small style="color:var(--s500);">Mon / Wed / Fri 7 AM</small></div>'+
+          '<span class="badge badge-resolved">Scheduled</span></div>';
+      }).join('')+
+    '</div></div>';
+}
+
+// ═══════ ROUTER ════════
+var pages = {
+  dashboard: renderDashboard,
+  complaints: renderComplaints,
+  report: renderReport,
+  schedule: renderSchedule
+};
+
+function render() {
+  var fn = pages[currentTab] || renderDashboard;
+  fn();
+}
+
+document.querySelector('header nav').addEventListener('click', function(e){
+  if (e.target.tagName==='BUTTON' && e.target.dataset.tab) {
+    var active = document.querySelector('header nav button.active');
+    if (active) active.classList.remove('active');
+    e.target.classList.add('active');
+    currentTab = e.target.dataset.tab;
+    render();
+  }
+});
+
+render();
+})();
+</script>
+</body>
+</html>
