@@ -1,0 +1,16 @@
+{
+  "title": "Recruitment & Applicant Tracking System (ATS)",
+  "description": "A standalone, single-file Applicant Tracking System for recruiters. Manage job postings, candidate applications, interview pipeline stages (Applied → Screening → Interview → Offer → Hired), and recruitment analytics. Data is persisted in localStorage so the app works offline after first load.",
+  "author": {
+    "name": "Archit Adish Gupta",
+    "github": "arcgod-design"
+  },
+  "tags": [
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "HR",
+    "Recruitment",
+    "ATS"
+  ]
+}
