@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recruitment ATS</title>
+<style>
+:root {
+  --c50: #eff6ff; --c100: #dbeafe; --c600: #2563eb; --c700: #1d4ed8;
+  --g50: #f0fdf4; --g100: #dcfce7; --g600: #16a34a; --g700: #15803d;
+  --y50: #fefce8; --y100: #fef9c3; --y500: #eab308; --y700: #a16207;
+  --r50: #fef2f2; --r100: #fee2e2; --r600: #dc2626;
+  --s50: #f8fafc; --s100: #f1f5f9; --s200: #e2e8f0; --s300: #cbd5e1;
+  --s400: #94a3b8; --s500: #64748b; --s600: #475569; --s700: #334155;
+  --s800: #1e293b; --s900: #0f172a;
+  --rad: 12px; --sh: 0 1px 3px rgba(0,0,0,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--s50);color:var(--s900);min-height:100vh}
+header{background:var(--c700);color:white;padding:1rem clamp(1rem,4vw,2rem);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;box-shadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:50}
+header .logo{font-size:1.3rem;font-weight:700}
+header nav{display:flex;gap:.25rem;flex-wrap:wrap}
+header nav button{background:transparent;color:rgba(255,255,255,.75);border:1px solid transparent;padding:.45rem 1rem;border-radius:8px;cursor:pointer;font-weight:500;font-size:.875rem;transition:.15s}
+header nav button:hover,header nav button.active{background:rgba(255,255,255,.12);color:white;border-color:rgba(255,255,255,.25)}
+main{max-width:1100px;margin:0 auto;padding:clamp(1rem,3vw,2rem);display:flex;flex-direction:column;gap:1.5rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem}
+.stat{background:white;border-radius:var(--rad);padding:1rem 1.25rem;box-shadow:var(--sh);border-left:4px solid var(--c700);transition:.15s}
+.stat:hover{box-shadow:0 10px 15px -3px rgba(0,0,0,.1)}
+.stat .lbl{font-size:.75rem;color:var(--s500);text-transform:uppercase;letter-spacing:.5px}
+.stat .val{font-size:1.6rem;font-weight:700;color:var(--s800)}
+.panel{background:white;border-radius:var(--rad);box-shadow:var(--sh);overflow:hidden}
+.panel-h{padding:.875rem 1.25rem;border-bottom:1px solid var(--s200);font-weight:600;font-size:.95rem;display:flex;justify-content:space-between;align-items:center}
+.panel-b{padding:1.25rem;overflow-x:auto}
+.fg{display:flex;flex-direction:column;gap:.35rem;margin-bottom:1rem}
+.fg label{font-size:.85rem;font-weight:600;color:var(--s700)}
+.fg input,.fg textarea{padding:.55rem .75rem;border:1px solid var(--s300);border-radius:8px;font-size:.9rem;outline:none;font-family:inherit;transition:.15s}
+.fg input:focus,.fg textarea:focus{border-color:var(--c700);box-shadow:0 0 0 3px var(--c100)}
+.btn{padding:.5rem 1.1rem;border-radius:8px;font-weight:600;cursor:pointer;font-size:.85rem;border:none;transition:.15s;display:inline-flex;align-items:center;gap:.35rem}
+.btn-p{background:var(--c700);color:white}.btn-p:hover{background:var(--c600)}
+.btn-s{background:var(--g600);color:white}.btn-s:hover{background:var(--g700)}
+.btn-d{background:var(--r600);color:white}.btn-d:hover{opacity:.85}
+.btn-sm{padding:.35rem .8rem;font-size:.78rem}
+.badge{display:inline-flex;padding:.15rem .55rem;border-radius:6px;font-size:.75rem;font-weight:600}
+.bg-a{background:var(--s100);color:var(--s800)}.bg-s{background:var(--c100);color:var(--c700)}
+.bg-i{background:var(--y100);color:var(--y700)}.bg-o{background:var(--y50);color:var(--y500)}
+.bg-h{background:var(--g100);color:var(--g700)}.bg-r{background:var(--r100);color:var(--r600)}
+table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:680px}
+th{text-align:left;padding:.6rem .75rem;color:var(--s500);font-weight:600;font-size:.75rem;text-transform:uppercase;border-bottom:2px solid var(--s200)}
+td{padding:.6rem .75rem;border-bottom:1px solid var(--s100)}tr:hover td{background:var(--c50)}
+.empty{text-align:center;padding:2rem;color:var(--s400)}
+.columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem}
+.kanban-col{background:var(--s100);border-radius:var(--rad);padding:.75rem;min-height:100px}
+.kanban-col h3{font-size:.8rem;font-weight:700;color:var(--s600);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.5px}
+.kanban-card{background:white;border-radius:8px;padding:.6rem .7rem;margin-bottom:.5rem;box-shadow:var(--sh);font-size:.8rem;transition:.15s}
+.kanban-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.kanban-card .nm{font-weight:700}
+.kanban-card .rl{font-size:.7rem;color:var(--s500)}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">&#x1F4CB; Recruitment ATS</div>
+  <nav>
+    <button class="active" data-tab="dashboard">Dashboard</button>
+    <button data-tab="candidates">Candidates</button>
+    <button data-tab="jobs">Jobs</button>
+    <button data-tab="post">+ New Job</button>
+  </nav>
+</header>
+<main id="app"></main>
+
+<script>
+(function(){
+var LS='ats2';
+function load(){try{var r=localStorage.getItem(LS);return r?JSON.parse(r):{jobs:[],candidates:[]}}catch(e){return{jobs:[],candidates:[]}}}
+var D=load();function save(){localStorage.setItem(LS,JSON.stringify(D))}
+var tab='dashboard',app=document.getElementById('app');
+function ID(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function fmt(ts){return new Date(ts).toLocaleDateString()}
+
+var STAGES=['Applied','Screening','Interview','Offer','Hired','Rejected'];
+var BADGES=['bg-a','bg-s','bg-i','bg-o','bg-h','bg-r'];
+
+function badge(stage){var i=STAGES.indexOf(stage);return '<span class="badge '+BADGES[i]+'">'+stage+'</span>'}
+function nextStage(stage){var i=STAGES.indexOf(stage);return i<4?STAGES[i+1]:stage}
+
+// ═══ KANBAN COLUMN ═══
+function kanban(stage){
+  var cards=D.candidates.filter(function(c){return c.stage===stage});
+  return '<div class="kanban-col"><h3>'+stage+' ('+cards.length+')</h3>'+
+    cards.map(function(c){
+      return '<div class="kanban-card"><div class="nm">'+c.name+'</div><div class="rl">'+c.email+' &middot; '+(D.jobs.find(function(j){return j.id===c.jobId})||{}).title+'</div><div style="margin-top:.35rem;display:flex;gap:.25rem;flex-wrap:wrap;justify-content:flex-end">'+
+        (stage!=='Hired'&&stage!=='Rejected'?'<button class="btn btn-sm btn-p" onclick="advance(\''+c.id+'\')">&#10132;</button>':'')+
+        (stage!=='Rejected'?'<button class="btn btn-sm btn-d" onclick="reject(\''+c.id+'\')">Reject</button>':'')+
+      '</div></div>';
+    }).join('')+(cards.length===0?'<div style="color:var(--s400);font-size:.73rem;text-align:center;padding:.4rem">—</div>':'')+
+  '</div>';
+}
+
+// ═══ DASHBOARD ═══
+function renderDashboard(){
+  var open=D.jobs.filter(function(j){return j.status==='open'}).length;
+  var total=D.candidates.length;
+  var hired=D.candidates.filter(function(c){return c.stage==='Hired'}).length;
+  var apps=D.candidates.filter(function(c){return c.stage==='Applied'}).length;
+  app.innerHTML=
+    '<div class="stats">'+
+      '<div class="stat"><span class="lbl">Open Jobs</span><span class="val">'+open+'</span></div>'+
+      '<div class="stat"><span class="lbl">Total Candidates</span><span class="val">'+total+'</span></div>'+
+      '<div class="stat"><span class="lbl">Hired</span><span class="val">'+hired+'</span></div>'+
+      '<div class="stat"><span class="lbl">New Apps</span><span class="val">'+apps+'</span></div>'+
+    '</div>'+
+    '<div class="panel"><div class="panel-h">Candidate Pipeline</div><div class="panel-b"><div class="columns">'+
+      STAGES.map(kanban).join('')+
+    '</div></div></div>';
+}
+
+// ═══ CANDIDATES TABLE ═══
+function renderCandidates(){
+  var list=D.candidates.slice().reverse();
+  app.innerHTML=
+    '<div class="panel"><div class="panel-h"><span>All Candidates ('+list.length+')</span></div><div class="panel-b">'+
+    (list.length===0?'<div class="empty">No candidates yet.</div>':
+     '<table><thead><tr><th>Name</th><th>Email</th><th>Job</th><th>Stage</th><th>Applied</th><th>Actions</th></tr></thead><tbody>'+
+     list.map(function(c){
+       var j=D.jobs.find(function(jj){return jj.id===c.jobId});
+       return '<tr><td><strong>'+c.name+'</strong></td><td>'+c.email+'</td><td>'+(j?j.title:'—')+'</td><td>'+badge(c.stage)+'</td><td>'+fmt(c.date)+'</td><td>'+
+         (c.stage!=='Hired'&&c.stage!=='Rejected'?'<button class="btn btn-sm btn-p" onclick="advance(\''+c.id+'\')">Advance</button> ':'')+
+         (c.stage!=='Rejected'?'<button class="btn btn-sm btn-d" onclick="reject(\''+c.id+'\')">Reject</button>':'')+
+       '</td></tr>';
+     }).join('')+'</tbody></table>')+
+    '</div></div>';
+}
+
+// ═══ JOBS TABLE ═══
+function renderJobs(){
+  var list=D.jobs.slice().reverse();
+  app.innerHTML=
+    '<div class="panel"><div class="panel-h"><span>Job Postings ('+list.length+')</span></div><div class="panel-b">'+
+    (list.length===0?'<div class="empty">No jobs posted. Click + New Job to add one.</div>':
+     '<table><thead><tr><th>Title</th><th>Dept</th><th>Status</th><th>Posted</th><th>Apps</th><th>Actions</th></tr></thead><tbody>'+
+     list.map(function(j){
+       var cnt=D.candidates.filter(function(c){return c.jobId===j.id}).length;
+       return '<tr><td><strong>'+j.title+'</strong></td><td>'+j.dept+'</td><td>'+(j.status==='open'?'<span class="badge bg-s">Open</span>':'<span class="badge bg-r">Closed</span>')+'</td><td>'+fmt(j.date)+'</td><td>'+cnt+'</td><td>'+
+         '<button class="btn btn-sm btn-p" onclick="addCandidateToJob(\''+j.id+'\')">+ Candidate</button> '+
+         (j.status==='open'?'<button class="btn btn-sm btn-d" onclick="closeJob(\''+j.id+'\')">Close</button>':'')+
+       '</td></tr>';
+     }).join('')+'</tbody></table>')+
+    '</div></div>';
+}
+
+// ═══ POST JOB ═══
+function renderPostJob(){
+  app.innerHTML=
+    '<div class="panel" style="max-width:600px">'+
+      '<div class="panel-h">Post New Job</div><div class="panel-b">'+
+        '<div class="fg"><label>Job Title</label><input id="jtitle" placeholder="Senior Frontend Developer"></div>'+
+        '<div class="fg"><label>Department</label><input id="jdept" placeholder="Engineering"></div>'+
+        '<div class="fg"><label>Description</label><textarea id="jdesc" rows="3" placeholder="Job description..."></textarea></div>'+
+        '<button class="btn btn-p" onclick="postJob()">Post Job</button>'+
+        '<div id="jmsg" style="margin-top:.5rem;font-size:.85rem"></div>'+
+      '</div></div>';
+}
+
+/* actions */
+window.postJob=function(){
+  var t=document.getElementById('jtitle'),d=document.getElementById('jdept');
+  if(!t.value.trim()){document.getElementById('jmsg').innerHTML='<span style="color:var(--r600)">Title required.</span>';return}
+  D.jobs.push({id:ID(),title:t.value.trim(),dept:d.value.trim(),description:document.getElementById('jdesc').value,status:'open',date:Date.now()});
+  save();document.getElementById('jmsg').innerHTML='<span style="color:var(--g700)">Job posted.</span>';
+  t.value='';d.value='';document.getElementById('jdesc').value='';
+};
+window.closeJob=function(id){var j=D.jobs.find(function(x){return x.id===id});if(j)j.status='closed';save();render();};
+window.advance=function(id){var c=D.candidates.find(function(x){return x.id===id});if(c)c.stage=nextStage(c.stage);save();render();};
+window.reject=function(id){var c=D.candidates.find(function(x){return x.id===id});if(c)c.stage='Rejected';save();render();};
+window.addCandidateToJob=function(jobId){
+  var job=D.jobs.find(function(x){return x.id===jobId});if(!job)return;
+  var name=prompt('Candidate name for '+job.title+':');if(!name)return;
+  var email=prompt('Email:')||'';
+  D.candidates.push({id:ID(),jobId:jobId,name:name,email:email,stage:'Applied',date:Date.now()});
+  save();render();
+};
+
+var pages={'dashboard':renderDashboard,'candidates':renderCandidates,'jobs':renderJobs,'post':renderPostJob};
+function render(){pages[tab]();}
+document.querySelector('header nav').addEventListener('click',function(e){
+  if(e.target.tagName==='BUTTON'&&e.target.dataset.tab){
+    var a=document.querySelector('header nav button.active');if(a)a.classList.remove('active');
+    e.target.classList.add('active');tab=e.target.dataset.tab;render();
+  }
+});
+render();
+})();
+</script>
+</body>
+</html>
