@@ -1,0 +1,16 @@
+{
+  "title": "Smart Waste Management Platform",
+  "description": "A comprehensive single-page platform for municipalities, citizens, and waste collection staff. Includes citizen complaint reporting, real-time complaint tracking, route planning dashboard, recycling initiative tracking, and operational analytics — all backed by localStorage so the app runs offline after first load.",
+  "author": {
+    "name": "Archit Adish Gupta",
+    "github": "arcgod-design"
+  },
+  "tags": [
+    "JavaScript",
+    "HTML",
+    "CSS",
+    "Dashboard",
+    "Environment",
+    "Smart City"
+  ]
+}
